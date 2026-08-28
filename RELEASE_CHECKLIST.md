@@ -22,7 +22,9 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The GitHub Actions workflow builds the self-contained single-file release, validates the package, creates the SHA-256 file and publishes the tagged GitHub Release.
+The GitHub Actions workflow builds the self-contained single-file release, validates the package, creates the SHA-256 file and publishes the tagged GitHub Release automatically.
+
+The workflow also supports manual execution from **Actions → Release → Run workflow** with a release tag.
 
 ## Code signing
 
