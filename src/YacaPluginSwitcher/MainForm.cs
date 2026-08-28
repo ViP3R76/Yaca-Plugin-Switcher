@@ -13,6 +13,7 @@ public sealed class MainForm : Form
     private readonly Panel _pageHost = new();
     private readonly Label _pageTitle = new();
     private readonly Button _backButton = new();
+    private readonly Label _languageIndicator = new();
     private Form? _embeddedPage;
     private Panel? _dashboard;
     private Panel? _switchPage;
@@ -145,15 +146,13 @@ public sealed class MainForm : Form
         _pageTitle.TextAlign = ContentAlignment.MiddleCenter;
         navigation.Controls.Add(_pageTitle, 1, 0);
 
-        navigation.Controls.Add(new Label
-        {
-            Text = IsGerman ? "DE" : "EN",
-            AutoSize = true,
-            Dock = DockStyle.Fill,
-            ForeColor = Theme.SecondaryForeground,
-            TextAlign = ContentAlignment.MiddleRight,
-            Padding = new Padding(0, 0, 4, 0)
-        }, 2, 0);
+        _languageIndicator.Text = IsGerman ? "DE" : "EN";
+        _languageIndicator.AutoSize = true;
+        _languageIndicator.Dock = DockStyle.Fill;
+        _languageIndicator.ForeColor = Theme.SecondaryForeground;
+        _languageIndicator.TextAlign = ContentAlignment.MiddleRight;
+        _languageIndicator.Padding = new Padding(0, 0, 4, 0);
+        navigation.Controls.Add(_languageIndicator, 2, 0);
         root.Controls.Add(navigation, 0, 1);
 
         _pageHost.Dock = DockStyle.Fill;
@@ -180,8 +179,10 @@ public sealed class MainForm : Form
         _dashboard = BuildDashboard();
         _pageHost.Controls.Add(_dashboard);
         _dashboard.Dock = DockStyle.Fill;
+        _backButton.Text = BackText;
         _backButton.Visible = false;
         _pageTitle.Text = OverviewText;
+        _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _activePage = "home";
         RefreshDashboard();
     }
@@ -208,7 +209,7 @@ public sealed class MainForm : Form
         var statusCards = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Theme.Background, Margin = Padding.Empty };
         statusCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         statusCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        _dashboardCurrent = AddStatusCard(statusCards, 0, "AKTUELL INSTALLIERT", "—", Theme.Accent);
+        _dashboardCurrent = AddStatusCard(statusCards, 0, IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED", "—", Theme.Accent);
         _dashboardTs3 = AddTs3Card(statusCards, 1);
         root.Controls.Add(statusCards, 0, 0);
 
@@ -232,7 +233,7 @@ public sealed class MainForm : Form
         var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 1, BackColor = Theme.Surface, Margin = new Padding(0, 6, 0, 0) };
         for (var i = 0; i < 4; i++)
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        AddFooterStatus(footer, 0, IsGerman ? "BACKUPS" : "BACKUPS", () => _service.Settings.AutomaticBackup ? (IsGerman ? "Automatisch aktiv" : "Automatic on") : (IsGerman ? "Automatisch aus" : "Automatic off"), _service.Settings.AutomaticBackup ? Theme.Success : Theme.Warning);
+        AddFooterStatus(footer, 0, "BACKUPS", () => _service.Settings.AutomaticBackup ? (IsGerman ? "Automatisch aktiv" : "Automatic on") : (IsGerman ? "Automatisch aus" : "Automatic off"), _service.Settings.AutomaticBackup ? Theme.Success : Theme.Warning);
         AddFooterStatus(footer, 1, IsGerman ? "AUFBEWAHRUNG" : "RETENTION", () => $"{_service.Settings.MaxBackups} Backups", Theme.Accent);
         AddFooterStatus(footer, 2, "LOGS", () => IsGerman ? "3 Tage" : "3 days", Theme.BrandGold);
         AddFooterStatus(footer, 3, IsGerman ? "SPRACHE" : "LANGUAGE", () => IsGerman ? "Deutsch" : "English", Theme.Accent);
@@ -263,8 +264,9 @@ public sealed class MainForm : Form
         table.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         table.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
         table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        table.Controls.Add(new Label { Text = "TEAMSPEAK 3", Dock = DockStyle.Fill, ForeColor = Theme.SecondaryForeground, BackColor = Theme.Surface, Font = new Font("Segoe UI Semibold", 9F), TextAlign = ContentAlignment.MiddleLeft }, 0, 0);
-        table.SetColumnSpan(table.GetControlFromPosition(0, 0)!, 2);
+        var heading = new Label { Text = "TEAMSPEAK 3", Dock = DockStyle.Fill, ForeColor = Theme.SecondaryForeground, BackColor = Theme.Surface, Font = new Font("Segoe UI Semibold", 9F), TextAlign = ContentAlignment.MiddleLeft };
+        table.Controls.Add(heading, 0, 0);
+        table.SetColumnSpan(heading, 2);
         var value = new Label { Text = "—", Dock = DockStyle.Fill, ForeColor = Theme.Success, BackColor = Theme.Surface, Font = new Font("Segoe UI Semibold", 15F), TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true };
         table.Controls.Add(value, 0, 1);
         var close = new Button { Text = Texts.CloseTeamspeak, Width = 150, Height = 34, Anchor = AnchorStyles.Right | AnchorStyles.Bottom, Visible = false, Margin = new Padding(6, 2, 0, 0) };
@@ -469,8 +471,10 @@ public sealed class MainForm : Form
         _pageHost.Controls.Add(_embeddedPage);
         _embeddedPage.Show();
         _embeddedPage.BringToFront();
+        _backButton.Text = BackText;
         _backButton.Visible = true;
         _pageTitle.Text = title;
+        _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _activePage = "embedded";
     }
 
