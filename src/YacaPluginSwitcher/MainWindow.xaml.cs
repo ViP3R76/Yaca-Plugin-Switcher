@@ -1,6 +1,4 @@
 using System.Globalization;
-using YacaPluginSwitcher.Configuration;
-using Localization = YacaPluginSwitcher.Configuration.Localization;
 using YacaPluginSwitcher.Core;
 using YacaPluginSwitcher.Models;
 namespace YacaPluginSwitcher;

@@ -7,3 +7,4 @@ global using System.Windows.Input;
 global using System.Windows.Media;
 global using System.Windows.Media.Imaging;
 global using Localization = YacaPluginSwitcher.Configuration.Localization;
+global using UiText = YacaPluginSwitcher.Configuration.UiText;
