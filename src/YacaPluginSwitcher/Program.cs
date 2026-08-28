@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using YacaPluginSwitcher.Configuration;
+using YacaPluginSwitcher.UI;
 
 namespace YacaPluginSwitcher;
 
@@ -38,7 +39,9 @@ internal static class Program
                 return;
             }
 
-            Application.Run(new ProfessionalMainForm(service));
+            var form = new ProfessionalMainForm(service);
+            ProfessionalVisuals.Apply(form);
+            Application.Run(form);
         }
         catch (Exception ex)
         {
