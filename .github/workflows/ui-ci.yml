@@ -8,12 +8,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
 
 permissions:
   contents: read
+  actions: write
+
+env:
+  RUN_RETENTION_COUNT: '10'
 
 jobs:
   build:
+    if: github.event_name != 'schedule'
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -61,6 +68,7 @@ jobs:
             ${{ env.UI_TEST_ZIP }}
             ${{ env.UI_TEST_SHA }}
           if-no-files-found: error
+          retention-days: 10
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v6
@@ -68,3 +76,43 @@ jobs:
           name: single-window-ui-build-log
           path: build.log
           if-no-files-found: warn
+          retention-days: 10
+
+  cleanup-runs:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep only the latest 10 runs per workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          keep="${RUN_RETENTION_COUNT}"
+
+          for workflow in ui-ci.yml release.yml; do
+            mapfile -t run_ids < <(
+              gh api --paginate \
+                -H 'Accept: application/vnd.github+json' \
+                "/repos/${REPO}/actions/workflows/${workflow}/runs?per_page=100" \
+                --jq '.workflow_runs | .[] | .id' \
+                | head -n "${keep}"
+            )
+
+            if [ "${#run_ids[@]}" -lt "${keep}" ]; then
+              echo "${workflow}: ${#run_ids[@]} runs found; nothing to delete."
+              continue
+            fi
+
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${REPO}/actions/workflows/${workflow}/runs?per_page=100" \
+              --jq '.workflow_runs | .[] | .id' \
+              | tail -n +$((keep + 1)) \
+              | while read -r run_id; do
+                  [ -z "${run_id}" ] && continue
+                  echo "Deleting ${workflow} run ${run_id}"
+                  gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}"
+                done
+          done
