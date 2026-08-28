@@ -71,7 +71,7 @@ public sealed class ProfessionalMainForm : Form
         ResumeLayout(true);
     }
 
-    private Control BuildHeader()
+    private static TableLayoutPanel BuildHeader()
     {
         var header = new TableLayoutPanel
         {
@@ -110,7 +110,7 @@ public sealed class ProfessionalMainForm : Form
         return header;
     }
 
-    private Control BuildNavigation()
+    private TableLayoutPanel BuildNavigation()
     {
         var nav = new TableLayoutPanel
         {
@@ -158,7 +158,7 @@ public sealed class ProfessionalMainForm : Form
         RefreshHome();
     }
 
-    private Control BuildDashboard()
+    private TableLayoutPanel BuildDashboard()
     {
         var root = new TableLayoutPanel
         {
@@ -204,7 +204,7 @@ public sealed class ProfessionalMainForm : Form
         table.Controls.Add(value, 0, 1); card.Controls.Add(table); host.Controls.Add(card, column, 0); return value;
     }
 
-    private static (Label Value, Button Close) AddTs3Card(TableLayoutPanel host, int column)
+    private (Label Value, Button Close) AddTs3Card(TableLayoutPanel host, int column)
     {
         var card = Card(Theme.Success);
         var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, BackColor = Theme.Surface, Padding = new Padding(18, 10, 18, 10) };
@@ -254,7 +254,7 @@ public sealed class ProfessionalMainForm : Form
         _backButton.Visible = true; _refreshButton.Visible = true; _pageTitle.Text = IsGerman ? "YACA wechseln" : "Switch YACA"; RefreshSwitchPage(false);
     }
 
-    private Control BuildSwitchPage()
+    private TableLayoutPanel BuildSwitchPage()
     {
         var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Theme.Background, Margin = Padding.Empty };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 54)); root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -290,7 +290,7 @@ public sealed class ProfessionalMainForm : Form
         if (_activePage != "home") return;
         try
         {
-            var text = Texts; var current = _service.DetectCurrent(); var plugins = _service.ScanPlugins().GroupBy(GetPluginKey, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+            var text = Texts; var current = _service.DetectCurrent(); var plugins = _service.ScanPlugins().GroupBy(GetPluginKey, StringComparer.OrdinalIgnoreCase).Select(g => g[0]).ToList();
             var notice = announce ? GetNewPluginNotice(plugins, text) : null; if (!_pluginBaselineInitialized) SetPluginBaseline(plugins);
             _currentValue!.Text = current?.DisplayName ?? (File.Exists(_service.TargetFile) ? text.UnknownInvalid : text.NotInstalled); _currentValue.ForeColor = current is null ? Theme.Warning : Theme.Success;
             var running = TeamSpeakDetector.IsRunning(); _ts3Value!.Text = running ? (IsGerman ? "● GESTARTET" : "● RUNNING") : (IsGerman ? "✓ NICHT GESTARTET" : "✓ NOT RUNNING"); _ts3Value.ForeColor = running ? Theme.Error : Theme.Success; _ts3Close!.Visible = running; _ts3Close.Text = text.CloseTeamspeak;
@@ -305,7 +305,7 @@ public sealed class ProfessionalMainForm : Form
         if (_switchRows is null) return;
         try
         {
-            var text = Texts; var current = _service.DetectCurrent(); var plugins = _service.ScanPlugins().GroupBy(GetPluginKey, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList(); var notice = announce ? GetNewPluginNotice(plugins, text) : null; if (!_pluginBaselineInitialized) SetPluginBaseline(plugins);
+            var text = Texts; var current = _service.DetectCurrent(); var plugins = _service.ScanPlugins().GroupBy(GetPluginKey, StringComparer.OrdinalIgnoreCase).Select(g => g[0]).ToList(); var notice = announce ? GetNewPluginNotice(plugins, text) : null; if (!_pluginBaselineInitialized) SetPluginBaseline(plugins);
             _switchRows.SuspendLayout(); _switchRows.Controls.Clear(); _switchRows.RowStyles.Clear(); _switchRows.RowCount = 0;
             if (!string.IsNullOrWhiteSpace(notice)) AddSwitchLabel(notice, Theme.Success); if (plugins.Count == 0) AddSwitchLabel(text.NoPlugins, Theme.Warning);
             foreach (var plugin in plugins)
