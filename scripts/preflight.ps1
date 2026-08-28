@@ -46,7 +46,8 @@ $mainForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/MainForm.cs') -
 if ($mainForm -notmatch 'OpenPluginsFolder\(\)') { throw 'Local Plugins folder action missing.' }
 if ($mainForm -match 'SetTargetDirectory\(dialog\.SelectedPath\)') { throw 'Plugins Folder must not change target directory.' }
 if ($mainForm -notmatch 'FormBorderStyle\s*=\s*FormBorderStyle\.Sizable') { throw 'Main form must be resizable.' }
-if ($mainForm -notmatch 'MinimumSize\s*=\s*new Size\(700, 560\)') { throw 'Main form minimum size is incorrect.' }
+# Keep this synchronized with MainForm.MinimumSize. The current stable UI requires 760x560.
+if ($mainForm -notmatch 'MinimumSize\s*=\s*new Size\(760, 560\)') { throw 'Main form minimum size is incorrect.' }
 if ($mainForm -notmatch 'MakeButton\(text\.CloseTeamspeak, 210\)') { throw 'TeamSpeak close button width is incorrect.' }
 if ($mainForm -match 'MainForm_Resize') { throw 'Obsolete MainForm_Resize handler remains.' }
 if ($mainForm -match 'ShowError\(ex\.Message\)|_status\.Text\s*=.*ex\.Message') { throw 'MainForm exposes raw exception messages.' }
@@ -85,10 +86,9 @@ if ($readme -match '%APPDATA%.*configuration|%LOCALAPPDATA%.*configuration') { t
 Write-Host 'Static preflight: PASS' -ForegroundColor Green
 Write-Host 'Run dotnet build/test on Windows with the .NET 10 SDK for compiler/analyzer validation.' -ForegroundColor Yellow
 
-
 # User releases intentionally contain no debug symbols.
-$Project = Join-Path $Root "src\YacaPluginSwitcher\YacaPluginSwitcher.csproj"
+$Project = Join-Path $Root 'src\YacaPluginSwitcher\YacaPluginSwitcher.csproj'
 $ProjectText = Get-Content $Project -Raw
-if ($ProjectText -notmatch '<DebugSymbols>false</DebugSymbols>') { throw "Release must disable debug symbols." }
-if ($ProjectText -notmatch '<DebugType>None</DebugType>') { throw "Release must disable PDB generation." }
-Write-Host "PDB generation disabled: PASS" -ForegroundColor Green
+if ($ProjectText -notmatch '<DebugSymbols>false</DebugSymbols>') { throw 'Release must disable debug symbols.' }
+if ($ProjectText -notmatch '<DebugType>None</DebugType>') { throw 'Release must disable PDB generation.' }
+Write-Host 'PDB generation disabled: PASS' -ForegroundColor Green
