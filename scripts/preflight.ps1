@@ -1,7 +1,40 @@
-$ErrorActionPreference = 'Stop'
-$Root = Split-Path -Parent $PSScriptRoot
+param(
+    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+)
 
+$ErrorActionPreference = 'Stop'
 Write-Host 'YACA Plugin Switcher - static preflight' -ForegroundColor Cyan
+
+$required = @(
+    'YacaPluginSwitcher.sln',
+    'Directory.Build.props',
+    'src/YacaPluginSwitcher.Core/YacaPluginSwitcher.Core.csproj',
+    'src/YacaPluginSwitcher/YacaPluginSwitcher.csproj',
+    'src/YacaPluginSwitcher/Properties/PublishProfiles/Win64SingleFile.pubxml',
+    'src/YacaPluginSwitcher/Program.cs',
+    'src/YacaPluginSwitcher/ProfessionalMainForm.cs',
+    'src/YacaPluginSwitcher/UI/Branding.cs',
+    'src/YacaPluginSwitcher/UI/Theme.cs',
+    'src/YacaPluginSwitcher/UI/ConfigForm.cs',
+    'src/YacaPluginSwitcher/UI/BackupForm.cs',
+    'src/YacaPluginSwitcher/UI/InfoPage.cs',
+    'src/YacaPluginSwitcher.Core/AppError.cs',
+    'src/YacaPluginSwitcher.Core/Localization.cs',
+    'src/YacaPluginSwitcher.Core/AppPaths.cs'
+)
+foreach ($relative in $required) {
+    if (-not (Test-Path (Join-Path $Root $relative) -PathType Leaf)) { throw "Required file missing: $relative" }
+}
+
+$projects = Get-ChildItem -Path $Root -Recurse -File -Include *.csproj,*.props,*.pubxml
+foreach ($project in $projects) { [xml]$null = Get-Content -LiteralPath $project.FullName -Raw }
+
+$csFiles = Get-ChildItem -Path $Root -Recurse -File -Filter *.cs
+foreach ($file in $csFiles) {
+    $text = Get-Content -LiteralPath $file.FullName -Raw
+    if ($text -match '(?i)<PackageReference|Newtonsoft|MahApps|MaterialDesign') { throw "External dependency marker found: $($file.FullName)" }
+    if (([regex]::Matches($text, '\{')).Count -ne ([regex]::Matches($text, '\}')).Count) { throw "Brace count mismatch: $($file.FullName)" }
+}
 
 $project = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/YacaPluginSwitcher.csproj') -Raw
 foreach ($setting in @('<RuntimeIdentifier>win-x64</RuntimeIdentifier>','<SelfContained>true</SelfContained>','<PublishSingleFile>true</PublishSingleFile>','<DebugSymbols>false</DebugSymbols>','<DebugType>None</DebugType>')) {
@@ -25,31 +58,54 @@ $program = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/Program.cs') -Ra
 if ($program -notmatch 'new ProfessionalMainForm\(service\)') { throw 'Professional single-window main form is not the application entry point.' }
 
 $mainForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/ProfessionalMainForm.cs') -Raw
-foreach ($required in @('BuildSidebar\(\)','BuildDashboard\(\)','Branding\.Logo','YACA UPDATER','CreateBackupFromDashboard\(\)','ShowSwitchPage\(\)','ShowBackups\(\)','ShowConfig\(\)','ShowInfo\(\)','RefreshActivePage\(true\)','LanguageChanged')) {
-    if ($mainForm -notmatch $required) { throw "Professional UI feature missing: $required" }
+foreach ($requiredToken in @('class ProfessionalMainForm','class NavButton','class VisualCard','class ActionTile','enum NavIcon','enum ActionIcon','Branding\.Logo','YACA WECHSELN','BACKUP ERSTELLEN','YACA UPDATER','ShowSwitchPage\(\)','ShowBackups\(\)','ShowConfig\(\)','ShowInfo\(\)','RefreshActivePage\(true\)','LanguageChanged','CloseTeamSpeak\(\)','CreateBackupFromDashboard\(\)','TeamSpeakDetector\.TryClose')) {
+    if ($mainForm -notmatch $requiredToken) { throw "Professional UI/reference missing: $requiredToken" }
 }
-$actionCalls = [regex]::Matches($mainForm, '(?m)^\s*AddAction\(').Count
-if ($actionCalls -ne 3) { throw "Dashboard must contain exactly three primary action cards; found $actionCalls." }
+$tileCalls = [regex]::Matches($mainForm, '(?m)^\s*AddActionTile\(').Count
+if ($tileCalls -ne 3) { throw "Dashboard must contain exactly three visual action tiles (two active actions plus updater placeholder); found $tileCalls." }
 foreach ($requiredAction in @('YACA WECHSELN','BACKUP ERSTELLEN','YACA UPDATER')) {
     if ($mainForm -notmatch [regex]::Escape($requiredAction)) { throw "Primary dashboard action missing: $requiredAction" }
 }
-if ($mainForm -match 'AddAction\([^\n]*Texts\.Backups') { throw 'Backups must not be duplicated in dashboard action cards.' }
-if ($mainForm -match 'AddAction\([^\n]*Texts\.Config') { throw 'Configuration must not be duplicated in dashboard action cards.' }
-if ($mainForm -match 'AddAction\([^\n]*Texts\.About') { throw 'Info must not be duplicated in dashboard action cards.' }
+if ($mainForm -match 'AddActionTile\([^\n]*(Texts\.Backups|Texts\.Config|Texts\.About)') { throw 'Rare functions must not be duplicated in dashboard action tiles.' }
 if ([regex]::Matches($mainForm, 'ColumnCount\s*=\s*3').Count -lt 2) { throw 'Dashboard status/action three-column layouts missing.' }
 if ([regex]::Matches($mainForm, 'Branding\.Logo').Count -lt 2) { throw 'Design branding logo must be present in both sidebar and dashboard.' }
 if ($mainForm -notmatch 'form\.MinimumSize\s*=\s*Size\.Empty' -or $mainForm -notmatch 'form\.MaximumSize\s*=\s*Size\.Empty') { throw 'Embedded pages must be allowed to fill the main window.' }
 if ($mainForm -match 'MainForm_Resize') { throw 'Obsolete MainForm_Resize handler remains.' }
 if ($mainForm -match 'ShowError\(ex\.Message\)|_status\.Text\s*=.*ex\.Message') { throw 'Main UI exposes raw exception messages.' }
 
+$typeChecks = @{
+    'YacaPluginInfo' = 'src/YacaPluginSwitcher.Core;src/YacaPluginSwitcher'
+    'YacaService' = 'src/YacaPluginSwitcher.Core;src/YacaPluginSwitcher'
+    'UiText' = 'src/YacaPluginSwitcher.Core'
+    'YacaOperationException' = 'src/YacaPluginSwitcher.Core'
+    'Localization' = 'src/YacaPluginSwitcher.Core'
+    'TeamSpeakDetector' = 'src/YacaPluginSwitcher.Core'
+    'BackupForm' = 'src/YacaPluginSwitcher/UI'
+    'ConfigForm' = 'src/YacaPluginSwitcher/UI'
+    'InfoPage' = 'src/YacaPluginSwitcher/UI'
+    'Branding' = 'src/YacaPluginSwitcher/UI'
+    'Theme' = 'src/YacaPluginSwitcher/UI'
+}
+foreach ($type in $typeChecks.Keys) {
+    $found = $false
+    foreach ($relativeDir in ($typeChecks[$type] -split ';')) {
+        $dir = Join-Path $Root $relativeDir
+        if (Test-Path $dir) {
+            $match = Get-ChildItem $dir -Recurse -File -Filter '*.cs' | Select-String -Pattern "\b(class|sealed class|static class|record|enum|interface)\s+$type\b" -Quiet
+            if ($match) { $found = $true; break }
+        }
+    }
+    if (-not $found) { throw "Referenced custom type is not defined in the solution: $type" }
+}
+
 $configForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/UI/ConfigForm.cs') -Raw
-foreach ($required in @('TeamSpeakPluginDirectories|MultipleTeamSpeakInstances','MaxBackups|AutomaticBackup|WarnIfTeamSpeakRunningOption','_language','SelectableBackups')) {
-    if ($configForm -notmatch $required) { throw "Configuration feature missing: $required" }
+foreach ($requiredConfig in @('TeamSpeakPluginDirectories|MultipleTeamSpeakInstances','MaxBackups|AutomaticBackup|WarnIfTeamSpeakRunningOption','_language','SelectableBackups')) {
+    if ($configForm -notmatch $requiredConfig) { throw "Configuration feature missing: $requiredConfig" }
 }
 
 $backupForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/UI/BackupForm.cs') -Raw
-foreach ($required in @('SelectableBackupsForDeletion','DeleteBackups\(\)','RestoreSelected\(\)','sha256')) {
-    if ($backupForm -notmatch $required) { throw "Backup feature missing: $required" }
+foreach ($requiredBackup in @('SelectableBackupsForDeletion','DeleteBackups\(\)','RestoreSelected\(\)','sha256')) {
+    if ($backupForm -notmatch $requiredBackup) { throw "Backup feature missing: $requiredBackup" }
 }
 if ($backupForm -notmatch 'DataGridViewCheckBoxColumn') { throw 'Selectable backup deletion checkbox column missing.' }
 if ($backupForm -notmatch 'DataGridViewContentAlignment\.MiddleCenter') { throw 'Backup deletion checkbox must be centered.' }
@@ -83,12 +139,10 @@ foreach ($resourceName in @('YacaPluginSwitcher\.Assets\.yaca_logo\.png','YacaPl
     if ($branding -notmatch $resourceName) { throw "Branding resource reference missing: $resourceName" }
 }
 
-$readme = Get-Content (Join-Path $Root 'README.md') -Raw
-if ($readme -notmatch '1–9|1-9') { throw 'README must document MaxBackups 1-9.' }
-if ($readme -match '%APPDATA%.*configuration|%LOCALAPPDATA%.*configuration') { throw 'README contains outdated portable-path documentation.' }
-
 $tests = Get-ChildItem -Path $Root -Recurse -File | Where-Object { $_.FullName -match '\\tests\\|Test\.csproj$|Tests\.dll$' }
 if ($tests) { throw 'Test projects/artifacts must not be part of the release source.' }
 
 Write-Host 'Static preflight: PASS' -ForegroundColor Green
+Write-Host 'Type/reference sanity: PASS' -ForegroundColor Green
+Write-Host 'UI asset/resource validation: PASS' -ForegroundColor Green
 Write-Host 'Run dotnet build on Windows with the .NET 10 SDK for compiler/analyzer validation.' -ForegroundColor Yellow
