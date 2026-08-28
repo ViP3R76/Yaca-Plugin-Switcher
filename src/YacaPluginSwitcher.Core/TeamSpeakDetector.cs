@@ -6,6 +6,8 @@ namespace YacaPluginSwitcher.Core;
 public static class TeamSpeakDetector
 {
     private const uint WmClose = 0x0010;
+    private const uint SmtoAbortIfHung = 0x0002;
+    private const uint CloseMessageTimeoutMilliseconds = 2000;
     private static readonly string[] ProcessNames = ["ts3client_win64", "ts3client"];
     private static readonly EnumWindowsProc EnumWindowsCallback = CollectProcessWindow;
 
@@ -64,12 +66,15 @@ public static class TeamSpeakDetector
                 return;
 
             process.Refresh();
+
+            // First use the normal .NET graceful-close mechanism.
             _ = process.CloseMainWindow();
 
-            // CloseMainWindow() can return false for some TS3 builds even though
-            // the client has a normal top-level window. Fall back to WM_CLOSE on
-            // every top-level window owned by the process. This is still a graceful
-            // close request; no process termination is performed.
+            // TS3 builds can expose a non-standard main window handle. In that
+            // case CloseMainWindow() may return without actually closing the UI.
+            // Enumerate all top-level windows belonging to this process and send
+            // a synchronous WM_CLOSE request. This remains a graceful close and
+            // deliberately never terminates the process forcibly.
             PostCloseToProcessWindows(process.Id);
         }
         catch (InvalidOperationException)
@@ -99,24 +104,23 @@ public static class TeamSpeakDetector
     private static bool CollectProcessWindow(IntPtr hWnd, IntPtr lParam)
     {
         var handle = GCHandle.FromIntPtr(lParam);
-        try
-        {
-            if (handle.Target is not WindowSearchState state)
-                return true;
-
-            _ = GetWindowThreadProcessId(hWnd, out var windowProcessId);
-            if (windowProcessId != (uint)state.ProcessId || !IsWindowVisible(hWnd))
-                return true;
-
-            _ = PostMessageW(hWnd, WmClose, IntPtr.Zero, IntPtr.Zero);
+        if (handle.Target is not WindowSearchState state)
             return true;
-        }
-        finally
-        {
-            // EnumWindows invokes the callback repeatedly, so the GCHandle must
-            // remain valid until enumeration has completed. It is freed by the
-            // caller after EnumWindows returns.
-        }
+
+        _ = GetWindowThreadProcessId(hWnd, out var windowProcessId);
+        if (windowProcessId != (uint)state.ProcessId || !IsWindowVisible(hWnd))
+            return true;
+
+        _ = SendMessageTimeoutW(
+            hWnd,
+            WmClose,
+            IntPtr.Zero,
+            IntPtr.Zero,
+            SmtoAbortIfHung,
+            CloseMessageTimeoutMilliseconds,
+            out _);
+
+        return true;
     }
 
     private static List<Process> GetRunningProcesses()
@@ -168,9 +172,15 @@ public static class TeamSpeakDetector
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool IsWindowVisible(IntPtr hWnd);
 
-    [DllImport("user32.dll", ExactSpelling = true, EntryPoint = "PostMessageW")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+    [DllImport("user32.dll", ExactSpelling = true, EntryPoint = "SendMessageTimeoutW")]
+    private static extern IntPtr SendMessageTimeoutW(
+        IntPtr hWnd,
+        uint msg,
+        IntPtr wParam,
+        IntPtr lParam,
+        uint flags,
+        uint timeout,
+        out IntPtr result);
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
