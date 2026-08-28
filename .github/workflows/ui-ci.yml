@@ -1,13 +1,6 @@
 name: Single Window UI CI
 
 on:
-  push:
-    branches:
-      - feature/single-window-ui
-  pull_request:
-    branches:
-      - main
-      - feature/single-window-ui
   workflow_dispatch:
 
 permissions:
