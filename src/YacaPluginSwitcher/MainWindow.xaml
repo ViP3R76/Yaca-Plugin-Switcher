@@ -125,6 +125,8 @@
                                        FontWeight="SemiBold"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
+                            <TextBlock x:Name="StatusText"
+                                       Visibility="Collapsed" />
                         </Grid>
                     </Grid>
                 </Border>
