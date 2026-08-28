@@ -6,7 +6,7 @@ internal static class ProfessionalVisuals
 {
     private static readonly HashSet<Control> Hooked = [];
     public static void Apply(Control root){HookTree(root);root.ControlAdded-=RootControlAdded;root.ControlAdded+=RootControlAdded;RemoveEmptyContentHeader(root);root.Invalidate(true);}
-    private static void RootControlAdded(object? sender,ControlEventArgs e){HookTree(e.Control);RemoveEmptyContentHeader(e.Control);}
+    private static void RootControlAdded(object? sender,ControlEventArgs e){HookTree(e.Control!);RemoveEmptyContentHeader(e.Control!);}
     private static void HookTree(Control control){if(Hooked.Add(control)){control.ControlAdded+=RootControlAdded;if(control is Button b)StyleButton(b);else if(control is Panel p)StylePanel(p);else if(control is Label l)StyleLabel(l);}foreach(Control child in control.Controls)HookTree(child);}
     private static void RemoveEmptyContentHeader(Control root){foreach(Control child in root.Controls){if(child is not TableLayoutPanel table||table.RowCount!=2||table.RowStyles.Count<2||table.RowStyles[0].SizeType!=SizeType.Absolute||table.RowStyles[0].Height>50)continue;if(table.Controls.Count==0||table.Controls[0]is not Label label||!string.IsNullOrWhiteSpace(label.Text))continue;table.RowStyles[0].Height=0;label.Visible=false;table.Padding=Padding.Empty;}foreach(Control child in root.Controls)RemoveEmptyContentHeader(child);}
     private static void StylePanel(Panel panel){if(panel.BackColor==Color.FromArgb(13,14,18))panel.BackColor=Theme.Sidebar;if(panel.Parent is TableLayoutPanel parent&&(parent.ColumnCount==3||parent.ColumnCount==2)){panel.Paint-=CardPaint;panel.Paint+=CardPaint;}if(panel.Controls.Count==1&&panel.Controls[0]is PictureBox){panel.Paint-=LogoCardPaint;panel.Paint+=LogoCardPaint;}}
