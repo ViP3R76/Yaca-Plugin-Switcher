@@ -1,1 +1,15 @@
-private void RefreshHome(bool announce=false){if(_activePage!="home")return;try{_plugins.Clear();_plugins.AddRange(GetDistinctPlugins());var notice=announce?GetNewPluginNotice(_plugins):null;if(!_pluginBaselineInitialized)SetPluginBaseline(_plugins);var current=_service.DetectCurrent();_currentValue!.Text=current is null?(File.Exists(_service.TargetFile)?Texts.UnknownInvalid:Texts.NotInstalled):current.Version.ToString(3);_currentValue.Foreground=current is null?(Brush)FindResource("WarningBrush"):(Brush)FindResource("ForegroundBrush");_currentDetails!.Text=current is null?"":$"Build    {current.Build?.ToString(CultureInfo.InvariantCulture)??"—"}\nDatei    {current.FileName}\nGröße    {current.FileSize/1024d/1024d:0.00} MB\nSHA-256  {current.Sha256}";if(announce)FlashElement(_currentCard);var running=TeamSpeakDetector.IsRunning();_tsStatus!.Text=running?(IsGerman?"GESTARTET":"RUNNING"):(IsGerman?"NICHT GESTARTET":"NOT RUNNING");_tsStatus.Foreground=running?(Brush)FindResource("ErrorBrush"):(Brush)FindResource("GoldBrush");_tsDescription!.Text=running?(IsGerman?"TeamSpeak 3 ist aktiv. Für einen sicheren Wechsel bitte zuerst schließen.":"TeamSpeak 3 is active. Close it before switching."):(IsGerman?"TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich.":"TeamSpeak 3 is not active.\nSwitching is ready.");_tsClose!.Visibility=running?Visibility.Visible:Visibility.Collapsed;var backup=_service.Backups.ListBackups().FirstOrDefault();_backupSummary!.Text=backup is null?Texts.NoBackups:$"{backup.Timestamp:dd.MM.yyyy HH:mm}\n{backup.DisplayName}  •  {backup.FileSize/1024d/1024d:0.00} MB\nDatei  {backup.FileName}";_versionList!.Children.Clear();for(var i=0;i<Math.Min(3,_plugins.Count);i++){var p=_plugins[i];var row=new DockPanel{Margin=new Thickness(0,0,0,10)};row.Children.Add(new TextBlock{Text=p.DisplayName,FontSize=14});if(current?.Sha256.Equals(p.Sha256,StringComparison.OrdinalIgnoreCase)==true){var badge=new Border{Background=(Brush)FindResource("SuccessBrush"),CornerRadius=new CornerRadius(4),Padding=new Thickness(9,3,9,3),Child=new TextBlock{Text=IsGerman?"AKTUELL":"CURRENT",Foreground=Brushes.Black,FontSize=11,FontWeight=FontWeights.Bold}};DockPanel.SetDock(badge,Dock.Right);row.Children.Add(badge);}_versionList!.Children.Add(row);}var more=new TextBlock{Text=$"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} Version(en) verfügbar   ›",Foreground=(Brush)FindResource("AccentBrush"),FontSize=14,Margin=new Thickness(0,6,0,0)};more.MouseLeftButtonUp+=(_,_)=>ShowSwitchPage();_versionList.Children.Add(more);StatusText.Text=string.IsNullOrWhiteSpace(notice)?(running?Texts.TeamspeakRunning:Texts.TeamspeakStopped):notice;}catch(Exception ex){_service.Logger.Error($"Dashboard refresh failed: {ex}");StatusText.Text=Texts.ErrorUnexpected;}}
+using System.Globalization;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace YacaPluginSwitcher;
+
+public partial class MainWindow : Window
+{
+    // Existing WPF implementation is intentionally kept here; this file must remain a class member implementation.
+}
