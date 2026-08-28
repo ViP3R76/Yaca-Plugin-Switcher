@@ -8,6 +8,12 @@ foreach ($setting in @('<RuntimeIdentifier>win-x64</RuntimeIdentifier>','<SelfCo
     if ($project -notmatch [regex]::Escape($setting)) { throw "Project setting missing: $setting" }
 }
 
+foreach ($resource in @('Assets\\yaca_logo.png','Assets\\discord_icon.png','Assets\\github_icon.png')) {
+    $resourcePath = Join-Path $Root "src/YacaPluginSwitcher/$resource"
+    if (-not (Test-Path -LiteralPath $resourcePath -PathType Leaf)) { throw "Required UI asset missing: $resource" }
+    if ($project -notmatch [regex]::Escape("<EmbeddedResource Include=\"$resource\" />")) { throw "UI asset is not embedded: $resource" }
+}
+
 $appPaths = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher.Core/AppPaths.cs') -Raw
 if ($appPaths -match 'LocalApplicationData|ApplicationData') { throw 'Portable paths must not use APPDATA or LOCALAPPDATA.' }
 if ($appPaths -notmatch 'SettingsFilePath\s*=\s*Path\.Combine\(BaseDirectory,\s*"config\.json"\)') { throw 'config.json must be stored beside the executable.' }
@@ -21,11 +27,16 @@ $mainForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/ProfessionalMai
 foreach ($required in @('BuildSidebar\(\)','BuildDashboard\(\)','Branding\.Logo','YACA UPDATER','CreateBackupFromDashboard\(\)','ShowSwitchPage\(\)','ShowBackups\(\)','ShowConfig\(\)','ShowInfo\(\)','RefreshActivePage\(true\)','LanguageChanged')) {
     if ($mainForm -notmatch $required) { throw "Professional UI feature missing: $required" }
 }
-if ([regex]::Matches($mainForm, 'AddAction\(').Count -ne 3) { throw 'Dashboard must contain exactly three primary action cards.' }
+$actionCalls = [regex]::Matches($mainForm, '(?m)^\s*AddAction\(').Count
+if ($actionCalls -ne 3) { throw "Dashboard must contain exactly three primary action cards; found $actionCalls." }
+foreach ($requiredAction in @('YACA WECHSELN','BACKUP ERSTELLEN','YACA UPDATER')) {
+    if ($mainForm -notmatch [regex]::Escape($requiredAction)) { throw "Primary dashboard action missing: $requiredAction" }
+}
 if ($mainForm -match 'AddAction\([^\n]*Texts\.Backups') { throw 'Backups must not be duplicated in dashboard action cards.' }
 if ($mainForm -match 'AddAction\([^\n]*Texts\.Config') { throw 'Configuration must not be duplicated in dashboard action cards.' }
 if ($mainForm -match 'AddAction\([^\n]*Texts\.About') { throw 'Info must not be duplicated in dashboard action cards.' }
 if ([regex]::Matches($mainForm, 'ColumnCount\s*=\s*3').Count -lt 2) { throw 'Dashboard status/action three-column layouts missing.' }
+if ([regex]::Matches($mainForm, 'Branding\.Logo').Count -lt 2) { throw 'Design branding logo must be present in both sidebar and dashboard.' }
 if ($mainForm -notmatch 'form\.MinimumSize\s*=\s*Size\.Empty' -or $mainForm -notmatch 'form\.MaximumSize\s*=\s*Size\.Empty') { throw 'Embedded pages must be allowed to fill the main window.' }
 if ($mainForm -match 'MainForm_Resize') { throw 'Obsolete MainForm_Resize handler remains.' }
 if ($mainForm -match 'ShowError\(ex\.Message\)|_status\.Text\s*=.*ex\.Message') { throw 'Main UI exposes raw exception messages.' }
@@ -67,7 +78,9 @@ if ($info -notmatch 'github\.com/ViP3R76/Yaca-Plugin-Switcher') { throw 'GitHub 
 if ($info -notmatch 'Branding\.DiscordIcon' -or $info -notmatch 'Branding\.GitHubIcon') { throw 'Community/GitHub branding icons missing.' }
 
 $branding = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/UI/Branding.cs') -Raw
-if ($branding -notmatch 'YacaPluginSwitcher\.Assets\.yaca_logo\.png') { throw 'YACA branding resource missing.' }
+foreach ($resourceName in @('YacaPluginSwitcher\.Assets\.yaca_logo\.png','YacaPluginSwitcher\.Assets\.discord_icon\.png','YacaPluginSwitcher\.Assets\.github_icon\.png')) {
+    if ($branding -notmatch $resourceName) { throw "Branding resource reference missing: $resourceName" }
+}
 
 $readme = Get-Content (Join-Path $Root 'README.md') -Raw
 if ($readme -notmatch '1–9|1-9') { throw 'README must document MaxBackups 1-9.' }
