@@ -6,13 +6,13 @@ namespace YacaPluginSwitcher;
 
 public partial class App : Application
 {
-    private Mutex? _mutex;
     public static YacaService? Service { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        _mutex = new Mutex(true, "Local\\ViP3r76.YacaPluginSwitcher", out var createdNew);
+        var mutex = new Mutex(true, "Local\\ViP3r76.YacaPluginSwitcher", out var createdNew);
+        Properties["SingleInstanceMutex"] = mutex;
         if (!createdNew)
         {
             var text = Localization.Get(Localization.DetectSystemLanguage());
@@ -27,7 +27,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _mutex?.Dispose();
+        if (Properties["SingleInstanceMutex"] is IDisposable mutex) mutex.Dispose();
         base.OnExit(e);
     }
 
