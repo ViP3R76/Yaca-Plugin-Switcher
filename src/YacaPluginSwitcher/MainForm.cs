@@ -38,7 +38,6 @@ public sealed class MainForm : Form
     public MainForm(YacaService? service = null)
     {
         _service = service ?? new YacaService();
-
         Text = Texts.Title;
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Font;
@@ -50,7 +49,6 @@ public sealed class MainForm : Form
         BackColor = Theme.Background;
         ForeColor = Theme.Foreground;
         DarkMode.Apply(this);
-
         BuildShell();
         Shown += (_, _) => RefreshDashboard();
     }
@@ -58,72 +56,22 @@ public sealed class MainForm : Form
     private void BuildShell()
     {
         Controls.Clear();
-        var root = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            Padding = new Padding(24, 18, 24, 18),
-            BackColor = Theme.Background,
-            ForeColor = Theme.Foreground
-        };
+        var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, Padding = new Padding(24, 18, 24, 18), BackColor = Theme.Background, ForeColor = Theme.Foreground };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 92));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
 
-        var header = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 1,
-            BackColor = Theme.Background,
-            ForeColor = Theme.Foreground,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
+        var header = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1, BackColor = Theme.Background, ForeColor = Theme.Foreground, Margin = Padding.Empty, Padding = Padding.Empty };
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-        header.Controls.Add(new Label
-        {
-            Text = "YACA\nPLUGIN SWITCHER",
-            Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI Semibold", 18F),
-            ForeColor = Theme.Foreground,
-            BackColor = Theme.Background,
-            TextAlign = ContentAlignment.MiddleLeft,
-            AutoEllipsis = true
-        }, 0, 0);
-        header.Controls.Add(new PictureBox
-        {
-            Dock = DockStyle.Fill,
-            SizeMode = PictureBoxSizeMode.Zoom,
-            Image = Branding.Logo,
-            BackColor = Theme.Background,
-            Margin = Padding.Empty
-        }, 1, 0);
-        header.Controls.Add(new Label
-        {
-            Text = "by ViP3R_76",
-            Dock = DockStyle.Fill,
-            Font = new Font("Segoe UI Semibold", 11F),
-            ForeColor = Theme.BrandGold,
-            BackColor = Theme.Background,
-            TextAlign = ContentAlignment.MiddleRight,
-            Padding = new Padding(0, 0, 4, 0)
-        }, 2, 0);
+        header.Controls.Add(new Label { Text = "YACA\nPLUGIN SWITCHER", Dock = DockStyle.Fill, Font = new Font("Segoe UI Semibold", 18F), ForeColor = Theme.Foreground, BackColor = Theme.Background, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true }, 0, 0);
+        header.Controls.Add(new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom, Image = Branding.Logo, BackColor = Theme.Background, Margin = Padding.Empty }, 1, 0);
+        header.Controls.Add(new Label { Text = "by ViP3R_76", Dock = DockStyle.Fill, Font = new Font("Segoe UI Semibold", 11F), ForeColor = Theme.BrandGold, BackColor = Theme.Background, TextAlign = ContentAlignment.MiddleRight, Padding = new Padding(0, 0, 4, 0) }, 2, 0);
         root.Controls.Add(header, 0, 0);
 
-        var navigation = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 4,
-            RowCount = 1,
-            BackColor = Theme.Background,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
+        var navigation = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 1, BackColor = Theme.Background, Margin = Padding.Empty, Padding = Padding.Empty };
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -228,12 +176,12 @@ public sealed class MainForm : Form
         AddFooterStatus(footer, 0, "BACKUPS", () => _service.Settings.AutomaticBackup ? (IsGerman ? "Automatisch aktiv" : "Automatic on") : (IsGerman ? "Automatisch aus" : "Automatic off"), _service.Settings.AutomaticBackup ? Theme.Success : Theme.Warning);
         AddFooterStatus(footer, 1, IsGerman ? "AUFBEWAHRUNG" : "RETENTION", () => $"{_service.Settings.MaxBackups} Backups", Theme.Accent);
         AddFooterStatus(footer, 2, "LOGS", () => IsGerman ? "3 Tage" : "3 days", Theme.BrandGold);
-        AddFooterStatus(footer, 3, IsGerman ? "SPRACHE" : "LANGUAGE", () => IsGerman ? "Deutsch" : "English", Theme.Accent);
+        _dashboardStatus = AddFooterStatus(footer, 3, "STATUS", () => IsGerman ? "Bereit" : "Ready", Theme.Success);
         root.Controls.Add(footer, 0, 3);
         return page;
     }
 
-    private Label AddStatusCard(TableLayoutPanel host, int column, string title, string value, Color accent)
+    private static Label AddStatusCard(TableLayoutPanel host, int column, string title, string value, Color accent)
     {
         var panel = MakeCard(accent);
         var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Theme.Surface, Padding = new Padding(18, 12, 18, 12) };
@@ -272,21 +220,9 @@ public sealed class MainForm : Form
         return value;
     }
 
-    private void AddActionCard(TableLayoutPanel host, int column, string icon, string title, string subtitle, Color accent, Action action)
+    private static void AddActionCard(TableLayoutPanel host, int column, string icon, string title, string subtitle, Color accent, Action action)
     {
-        var button = new Button
-        {
-            Text = $"{icon}  {title}\n{subtitle}",
-            Dock = DockStyle.Fill,
-            Height = 110,
-            Margin = new Padding(5),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Theme.Surface,
-            ForeColor = Theme.Foreground,
-            Font = new Font("Segoe UI Semibold", 10F),
-            TextAlign = ContentAlignment.MiddleCenter,
-            Cursor = Cursors.Hand
-        };
+        var button = new Button { Text = $"{icon}  {title}\n{subtitle}", Dock = DockStyle.Fill, Height = 110, Margin = new Padding(5), FlatStyle = FlatStyle.Flat, BackColor = Theme.Surface, ForeColor = Theme.Foreground, Font = new Font("Segoe UI Semibold", 10F), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
         button.FlatAppearance.BorderColor = accent;
         button.FlatAppearance.MouseOverBackColor = Theme.ControlHover;
         button.FlatAppearance.BorderSize = 1;
@@ -294,7 +230,7 @@ public sealed class MainForm : Form
         host.Controls.Add(button, column, 0);
     }
 
-    private Label AddInfoCard(TableLayoutPanel host, int column, string title)
+    private static Label AddInfoCard(TableLayoutPanel host, int column, string title)
     {
         var panel = MakeCard(Theme.Control);
         var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, BackColor = Theme.Surface, Padding = new Padding(18, 12, 18, 12) };
@@ -319,11 +255,12 @@ public sealed class MainForm : Form
         return panel;
     }
 
-    private void AddFooterStatus(TableLayoutPanel host, int column, string title, Func<string> value, Color accent)
+    private static Label AddFooterStatus(TableLayoutPanel host, int column, string title, Func<string> value, Color accent)
     {
         var label = new Label { Dock = DockStyle.Fill, BackColor = Theme.Surface, ForeColor = accent, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F) };
         label.Text = $"{title}\n{value()}";
         host.Controls.Add(label, column, 0);
+        return label;
     }
 
     private void RefreshCurrentPage(bool announceNewPlugins)
@@ -420,16 +357,7 @@ public sealed class MainForm : Form
                     foreach (var plugin in plugins)
                     {
                         var active = current is not null && string.Equals(current.Sha256, plugin.Sha256, StringComparison.OrdinalIgnoreCase);
-                        var button = new Button
-                        {
-                            Text = active ? $"{plugin.DisplayName}   —   {text.Active.TrimEnd(':')}" : plugin.DisplayName,
-                            Height = 46,
-                            Dock = DockStyle.Top,
-                            Margin = new Padding(0, 0, 0, 8),
-                            TextAlign = ContentAlignment.MiddleLeft,
-                            ForeColor = active ? Theme.Success : Theme.Foreground,
-                            BackColor = active ? Color.FromArgb(38, 52, 44) : Theme.Control
-                        };
+                        var button = new Button { Text = active ? $"{plugin.DisplayName}   —   {text.Active.TrimEnd(':')}" : plugin.DisplayName, Height = 46, Dock = DockStyle.Top, Margin = new Padding(0, 0, 0, 8), TextAlign = ContentAlignment.MiddleLeft, ForeColor = active ? Theme.Success : Theme.Foreground, BackColor = active ? Color.FromArgb(38, 52, 44) : Theme.Control };
                         Theme.StyleButton(button);
                         button.ForeColor = active ? Theme.Success : Theme.Foreground;
                         button.BackColor = active ? Color.FromArgb(38, 52, 44) : Theme.Control;
@@ -528,16 +456,15 @@ public sealed class MainForm : Form
             _dashboardCurrent!.Text = current?.DisplayName ?? (File.Exists(_service.TargetFile) ? text.UnknownInvalid : text.NotInstalled);
             _dashboardCurrent.ForeColor = current is null ? Theme.Warning : Theme.Success;
             var running = TeamSpeakDetector.IsRunning();
-            _dashboardTs3!.Text = running ? "● GESTARTET" : "✓ NICHT GESTARTET";
-            if (!IsGerman)
-                _dashboardTs3.Text = running ? "● RUNNING" : "✓ NOT RUNNING";
+            _dashboardTs3!.Text = running ? (IsGerman ? "● GESTARTET" : "● RUNNING") : (IsGerman ? "✓ NICHT GESTARTET" : "✓ NOT RUNNING");
             _dashboardTs3.ForeColor = running ? Theme.Error : Theme.Success;
             if (_dashboardTs3.Tag is Button closeButton)
             {
                 closeButton.Visible = running;
                 closeButton.Text = text.CloseTeamspeak;
             }
-            var backup = _service.Backups.ListBackups().FirstOrDefault();
+            var backups = _service.Backups.ListBackups();
+            var backup = backups.Count > 0 ? backups[0] : null;
             _dashboardBackup!.Text = backup is null ? text.NoBackups : $"{backup.Timestamp:dd.MM.yyyy HH:mm:ss}\n{backup.DisplayName}\n{backup.FileSize:N0} Bytes";
             _dashboardVersions!.Text = plugins.Count == 0 ? text.NoPlugins : string.Join(Environment.NewLine, plugins.Select(p => p.DisplayName));
             _dashboardStatus!.Text = running ? text.TeamspeakRunning : text.TeamspeakStopped;
@@ -642,12 +569,7 @@ public sealed class MainForm : Form
         try
         {
             Directory.CreateDirectory(_service.Paths.PluginDirectory);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"\"{_service.Paths.PluginDirectory}\"",
-                UseShellExecute = true
-            });
+            Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"\"{_service.Paths.PluginDirectory}\"", UseShellExecute = true });
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or IOException)
         {
