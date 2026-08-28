@@ -39,6 +39,39 @@ jobs:
           Get-Content build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Validate UI test package
+        shell: pwsh
+        run: |
+          $releaseDir = Join-Path $PWD 'releases'
+          $zip = Get-ChildItem $releaseDir -Filter 'YacaPluginSwitcher-v*-win-x64.zip' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if ($null -eq $zip) { throw 'No user-ready UI test ZIP was generated.' }
+
+          Add-Type -AssemblyName System.IO.Compression
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($zip.FullName)
+          try {
+            $files = @($archive.Entries | Where-Object { -not [string]::IsNullOrEmpty($_.Name) })
+            $exe = @($files | Where-Object { $_.Name -match '(?i)\.exe$' })
+            $forbidden = @($files | Where-Object { $_.Name -match '(?i)\.(pdb|dll|deps\.json|runtimeconfig\.json)$' })
+            if ($exe.Count -ne 1) { throw "UI test package must contain exactly one EXE; found $($exe.Count)." }
+            if ($forbidden.Count -ne 0) { throw "Forbidden files in UI test package: $($forbidden.Name -join ', ')" }
+          }
+          finally { $archive.Dispose() }
+
+          $hash = (Get-FileHash -LiteralPath $zip.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $shaPath = "$($zip.FullName).sha256"
+          "$hash  $($zip.Name)" | Set-Content -LiteralPath $shaPath -Encoding ascii
+          "UI_TEST_ZIP=$($zip.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "UI_TEST_SHA=$shaPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Upload UI test package
+        uses: actions/upload-artifact@v6
+        with:
+          name: YacaPluginSwitcher-ui-test-win-x64
+          path: |
+            ${{ env.UI_TEST_ZIP }}
+            ${{ env.UI_TEST_SHA }}
+          if-no-files-found: error
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v6
