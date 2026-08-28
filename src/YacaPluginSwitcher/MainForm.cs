@@ -58,7 +58,6 @@ public sealed class MainForm : Form
     private void BuildShell()
     {
         Controls.Clear();
-
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -86,7 +85,6 @@ public sealed class MainForm : Form
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
         header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-
         header.Controls.Add(new Label
         {
             Text = "YACA\nPLUGIN SWITCHER",
@@ -97,7 +95,6 @@ public sealed class MainForm : Form
             TextAlign = ContentAlignment.MiddleLeft,
             AutoEllipsis = true
         }, 0, 0);
-
         header.Controls.Add(new PictureBox
         {
             Dock = DockStyle.Fill,
@@ -106,7 +103,6 @@ public sealed class MainForm : Form
             BackColor = Theme.Background,
             Margin = Padding.Empty
         }, 1, 0);
-
         header.Controls.Add(new Label
         {
             Text = "by ViP3R_76",
@@ -132,7 +128,6 @@ public sealed class MainForm : Form
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
         _backButton.Text = BackText;
         _backButton.Width = 100;
         _backButton.Height = 36;
@@ -140,14 +135,12 @@ public sealed class MainForm : Form
         Theme.StyleButton(_backButton);
         _backButton.Click += (_, _) => ShowHome();
         navigation.Controls.Add(_backButton, 0, 0);
-
         _pageTitle.Text = OverviewText;
         _pageTitle.Dock = DockStyle.Fill;
         _pageTitle.Font = new Font("Segoe UI Semibold", 11F);
         _pageTitle.ForeColor = Theme.SecondaryForeground;
         _pageTitle.TextAlign = ContentAlignment.MiddleCenter;
         navigation.Controls.Add(_pageTitle, 1, 0);
-
         _refreshButton.Text = IsGerman ? "Aktualisieren" : "Refresh";
         _refreshButton.Width = 110;
         _refreshButton.Height = 34;
@@ -155,7 +148,6 @@ public sealed class MainForm : Form
         Theme.StyleButton(_refreshButton);
         _refreshButton.Click += (_, _) => RefreshCurrentPage(true);
         navigation.Controls.Add(_refreshButton, 2, 0);
-
         _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _languageIndicator.AutoSize = true;
         _languageIndicator.Dock = DockStyle.Fill;
@@ -169,7 +161,6 @@ public sealed class MainForm : Form
         _pageHost.BackColor = Theme.Background;
         _pageHost.Padding = Padding.Empty;
         root.Controls.Add(_pageHost, 0, 2);
-
         ShowHome();
     }
 
@@ -182,7 +173,6 @@ public sealed class MainForm : Form
             page.FormClosed -= EmbeddedPageClosed;
             page.Close();
         }
-
         _pageHost.Controls.Clear();
         _switchPage = null;
         _switchRows = null;
@@ -194,6 +184,7 @@ public sealed class MainForm : Form
         _pageTitle.Text = OverviewText;
         _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _refreshButton.Text = IsGerman ? "Aktualisieren" : "Refresh";
+        _refreshButton.Visible = true;
         _activePage = "home";
         RefreshDashboard();
     }
@@ -202,15 +193,7 @@ public sealed class MainForm : Form
     {
         var page = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Background, Padding = Padding.Empty };
         _dashboard = page;
-
-        var root = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 4,
-            BackColor = Theme.Background,
-            ForeColor = Theme.Foreground
-        };
+        var root = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4, BackColor = Theme.Background, ForeColor = Theme.Foreground };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 126));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 126));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -225,13 +208,12 @@ public sealed class MainForm : Form
         root.Controls.Add(statusCards, 0, 0);
 
         var actions = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, RowCount = 1, BackColor = Theme.Background, Margin = Padding.Empty };
-        for (var i = 0; i < 5; i++)
-            actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+        for (var i = 0; i < 5; i++) actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
         AddActionCard(actions, 0, "⇄", SwitchText, IsGerman ? "Version wechseln" : "Switch version", Theme.Accent, ShowSwitchPage);
         AddActionCard(actions, 1, "+", BackupCreateText, IsGerman ? "Aktuelle Version sichern" : "Save current version", Theme.Accent, CreateBackupFromDashboard);
         AddActionCard(actions, 2, "◉", Texts.Backups, IsGerman ? "Verwalten & wiederherstellen" : "Manage & restore", Theme.Accent, () => ShowEmbeddedPage(new BackupForm(_service), Texts.Backups));
         AddActionCard(actions, 3, "⚙", Texts.Config, IsGerman ? "Optionen konfigurieren" : "Configure options", Theme.BrandGold, () => ShowEmbeddedPage(new ConfigForm(_service), Texts.ConfigTitle));
-        AddActionCard(actions, 4, "ⓘ", Texts.About, IsGerman ? "YACA / TeamSpeak / Community" : "YACA / TeamSpeak / Community", Theme.BrandGold, () => ShowEmbeddedPage(new AboutForm(_service.Settings.Language), Texts.AboutTitle));
+        AddActionCard(actions, 4, "ⓘ", Texts.About, "YACA / TeamSpeak / Community", Theme.BrandGold, () => ShowEmbeddedPage(new AboutForm(_service.Settings.Language), Texts.AboutTitle));
         root.Controls.Add(actions, 0, 1);
 
         var lower = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Theme.Background, Margin = Padding.Empty };
@@ -242,14 +224,12 @@ public sealed class MainForm : Form
         root.Controls.Add(lower, 0, 2);
 
         var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 1, BackColor = Theme.Surface, Margin = new Padding(0, 6, 0, 0) };
-        for (var i = 0; i < 4; i++)
-            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        for (var i = 0; i < 4; i++) footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
         AddFooterStatus(footer, 0, "BACKUPS", () => _service.Settings.AutomaticBackup ? (IsGerman ? "Automatisch aktiv" : "Automatic on") : (IsGerman ? "Automatisch aus" : "Automatic off"), _service.Settings.AutomaticBackup ? Theme.Success : Theme.Warning);
         AddFooterStatus(footer, 1, IsGerman ? "AUFBEWAHRUNG" : "RETENTION", () => $"{_service.Settings.MaxBackups} Backups", Theme.Accent);
         AddFooterStatus(footer, 2, "LOGS", () => IsGerman ? "3 Tage" : "3 days", Theme.BrandGold);
         AddFooterStatus(footer, 3, IsGerman ? "SPRACHE" : "LANGUAGE", () => IsGerman ? "Deutsch" : "English", Theme.Accent);
         root.Controls.Add(footer, 0, 3);
-
         return page;
     }
 
@@ -353,7 +333,6 @@ public sealed class MainForm : Form
             RefreshSwitchPage(announceNewPlugins);
             return;
         }
-
         if (_activePage == "home")
             RefreshDashboard();
     }
@@ -367,6 +346,7 @@ public sealed class MainForm : Form
         _pageHost.Controls.Add(_switchPage);
         _switchPage.Dock = DockStyle.Fill;
         _backButton.Visible = true;
+        _refreshButton.Visible = true;
         _pageTitle.Text = SwitchText;
         _activePage = "switch";
         RefreshSwitchPage(false);
@@ -380,7 +360,6 @@ public sealed class MainForm : Form
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
         page.Controls.Add(root);
-
         var top = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Theme.Background };
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -390,14 +369,12 @@ public sealed class MainForm : Form
         refresh.Click += (_, _) => RefreshSwitchPage(true);
         top.Controls.Add(refresh, 1, 0);
         root.Controls.Add(top, 0, 0);
-
         var host = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Surface, Padding = new Padding(14), AutoScroll = true };
         DarkMode.ApplyScrollBarTheme(host);
         _switchRows = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 1, RowCount = 0, BackColor = Theme.Surface, ForeColor = Theme.Foreground };
         _switchRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         host.Controls.Add(_switchRows);
         root.Controls.Add(host, 0, 1);
-
         var bottom = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1, BackColor = Theme.Background };
         bottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         bottom.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -422,7 +399,6 @@ public sealed class MainForm : Form
             var notice = announceNewPlugins ? GetNewPluginNotice(plugins, text) : null;
             if (!_pluginBaselineInitialized)
                 SetPluginBaseline(plugins);
-
             _switchRows.SuspendLayout();
             try
             {
@@ -434,7 +410,6 @@ public sealed class MainForm : Form
                     _switchRows.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                     _switchRows.Controls.Add(new Label { Text = notice, AutoSize = true, ForeColor = Theme.Success, BackColor = Theme.Surface, Margin = new Padding(0, 0, 0, 10) }, 0, _switchRows.RowCount++);
                 }
-
                 if (plugins.Count == 0)
                 {
                     _switchRows.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -496,6 +471,7 @@ public sealed class MainForm : Form
         _embeddedPage.BringToFront();
         _backButton.Text = BackText;
         _backButton.Visible = true;
+        _refreshButton.Visible = false;
         _pageTitle.Text = title;
         _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _activePage = "embedded";
@@ -516,7 +492,6 @@ public sealed class MainForm : Form
             if (MessageBox.Show(this, text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
         }
-
         try
         {
             var current = _service.DetectCurrent();
@@ -550,10 +525,8 @@ public sealed class MainForm : Form
             var plugins = _service.ScanPlugins().GroupBy(GetPluginKey, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
             if (!_pluginBaselineInitialized)
                 SetPluginBaseline(plugins);
-
             _dashboardCurrent!.Text = current?.DisplayName ?? (File.Exists(_service.TargetFile) ? text.UnknownInvalid : text.NotInstalled);
             _dashboardCurrent.ForeColor = current is null ? Theme.Warning : Theme.Success;
-
             var running = TeamSpeakDetector.IsRunning();
             _dashboardTs3!.Text = running ? "● GESTARTET" : "✓ NICHT GESTARTET";
             if (!IsGerman)
@@ -564,11 +537,8 @@ public sealed class MainForm : Form
                 closeButton.Visible = running;
                 closeButton.Text = text.CloseTeamspeak;
             }
-
             var backup = _service.Backups.ListBackups().FirstOrDefault();
-            _dashboardBackup!.Text = backup is null
-                ? text.NoBackups
-                : $"{backup.Timestamp:dd.MM.yyyy HH:mm:ss}\n{backup.DisplayName}\n{backup.FileSize:N0} Bytes";
+            _dashboardBackup!.Text = backup is null ? text.NoBackups : $"{backup.Timestamp:dd.MM.yyyy HH:mm:ss}\n{backup.DisplayName}\n{backup.FileSize:N0} Bytes";
             _dashboardVersions!.Text = plugins.Count == 0 ? text.NoPlugins : string.Join(Environment.NewLine, plugins.Select(p => p.DisplayName));
             _dashboardStatus!.Text = running ? text.TeamspeakRunning : text.TeamspeakStopped;
             Text = text.Title;
@@ -590,12 +560,9 @@ public sealed class MainForm : Form
             _pluginBaselineInitialized = true;
             return null;
         }
-
         var newPlugins = plugins.Where(plugin => !_knownValidPluginKeys.Contains(GetPluginKey(plugin))).ToList();
         _knownValidPluginKeys = currentKeys;
-        return newPlugins.Count == 0
-            ? null
-            : string.Format(CultureInfo.CurrentCulture, text.NewValidPluginFound, string.Join(", ", newPlugins.Select(p => p.DisplayName)));
+        return newPlugins.Count == 0 ? null : string.Format(CultureInfo.CurrentCulture, text.NewValidPluginFound, string.Join(", ", newPlugins.Select(p => p.DisplayName)));
     }
 
     private static string GetPluginKey(YacaPluginInfo plugin) => $"{plugin.FilePath}|{plugin.Sha256}";
@@ -616,13 +583,11 @@ public sealed class MainForm : Form
             MessageBox.Show(this, $"{plugin.DisplayName} {text.AlreadyActiveMessage}", text.AlreadyActiveTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
-
         if (_service.Settings.WarnIfTeamSpeakRunning && TeamSpeakDetector.IsRunning())
         {
             if (MessageBox.Show(this, text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 return;
         }
-
         try
         {
             Cursor = Cursors.WaitCursor;
@@ -653,10 +618,8 @@ public sealed class MainForm : Form
             RefreshDashboard();
             return;
         }
-
         if (MessageBox.Show(this, text.CloseTeamspeakQuestion, text.TeamspeakRunningTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
             return;
-
         try
         {
             Cursor = Cursors.WaitCursor;
