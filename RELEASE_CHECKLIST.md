@@ -1,17 +1,11 @@
 # Release Checklist
 
-## Local release validation
-- [ ] Confirm `Version` in `Directory.Build.props`.
-- [ ] Run `dotnet restore YacaPluginSwitcher.sln`.
-- [ ] Run `dotnet build YacaPluginSwitcher.sln -c Release --no-restore`.
-- [ ] Confirm the user ZIP contains exactly one `.exe` and no `.pdb`, `.dll`, `.deps.json`, or `.runtimeconfig.json`.
-- [ ] Confirm the generated SHA-256 checksum.
-- [ ] Test the EXE on clean Windows 10/11 x64.
+- Confirm Version in Directory.Build.props.
+- Build Release | x64 on Windows with .NET 10.
+- Confirm the user ZIP contains exactly one EXE and no PDB, DLL, deps.json or runtimeconfig.json.
+- Confirm SHA-256 checksum.
+- Test first start, TeamSpeak detection, plugin scan, backup/restore, configuration, language selection and TeamSpeak close.
 
-## GitHub release
-A tag matching `vMAJOR.MINOR.PATCH` triggers the automated Windows x64 release workflow. The workflow builds, validates, checksums and publishes the ready-to-use ZIP to the GitHub Release.
+## GitHub
 
-Manual workflow execution is also available from the Actions tab.
-
-## Code signing
-Code signing is intentionally not required yet. It can be inserted before ZIP creation when a trusted Authenticode certificate is available.
+A tag matching `vMAJOR.MINOR.PATCH` triggers the automated release workflow. It builds, validates, checksums and publishes the ready-to-use ZIP to the GitHub Release.
