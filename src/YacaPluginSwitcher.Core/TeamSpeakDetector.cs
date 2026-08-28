@@ -67,14 +67,15 @@ public static class TeamSpeakDetector
 
             process.Refresh();
 
-            // First use the normal .NET graceful-close mechanism.
-            _ = process.CloseMainWindow();
+            // Prefer the normal .NET graceful-close request when a main window exists.
+            if (process.MainWindowHandle != IntPtr.Zero)
+            {
+                _ = SendCloseMessage(process.MainWindowHandle);
+            }
 
-            // TS3 builds can expose a non-standard main window handle. In that
-            // case CloseMainWindow() may return without actually closing the UI.
-            // Enumerate all top-level windows belonging to this process and send
-            // a synchronous WM_CLOSE request. This remains a graceful close and
-            // deliberately never terminates the process forcibly.
+            // TeamSpeak can expose helper/Qt top-level windows rather than a conventional
+            // MainWindowHandle. Enumerate every top-level window owned by the process,
+            // including currently hidden windows, and request WM_CLOSE gracefully.
             PostCloseToProcessWindows(process.Id);
         }
         catch (InvalidOperationException)
@@ -85,6 +86,23 @@ public static class TeamSpeakDetector
         {
             // The process may have exited or no longer allow inspection.
         }
+    }
+
+    private static bool SendCloseMessage(IntPtr hWnd)
+    {
+        if (hWnd == IntPtr.Zero)
+            return false;
+
+        _ = SendMessageTimeoutW(
+            hWnd,
+            WmClose,
+            IntPtr.Zero,
+            IntPtr.Zero,
+            SmtoAbortIfHung,
+            CloseMessageTimeoutMilliseconds,
+            out _);
+
+        return true;
     }
 
     private static void PostCloseToProcessWindows(int processId)
@@ -108,18 +126,12 @@ public static class TeamSpeakDetector
             return true;
 
         _ = GetWindowThreadProcessId(hWnd, out var windowProcessId);
-        if (windowProcessId != (uint)state.ProcessId || !IsWindowVisible(hWnd))
+        if (windowProcessId != (uint)state.ProcessId)
             return true;
 
-        _ = SendMessageTimeoutW(
-            hWnd,
-            WmClose,
-            IntPtr.Zero,
-            IntPtr.Zero,
-            SmtoAbortIfHung,
-            CloseMessageTimeoutMilliseconds,
-            out _);
-
+        // Do not require visibility: TS3 may keep its actual application window hidden
+        // while exposing the tray UI. WM_CLOSE is still a graceful shutdown request.
+        _ = SendCloseMessage(hWnd);
         return true;
     }
 
@@ -167,10 +179,6 @@ public static class TeamSpeakDetector
 
     [DllImport("user32.dll", ExactSpelling = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
-
-    [DllImport("user32.dll", ExactSpelling = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool IsWindowVisible(IntPtr hWnd);
 
     [DllImport("user32.dll", ExactSpelling = true, EntryPoint = "SendMessageTimeoutW")]
     private static extern IntPtr SendMessageTimeoutW(
