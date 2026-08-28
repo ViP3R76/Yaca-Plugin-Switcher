@@ -1,32 +1,899 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Windows.Shapes;
 using YacaPluginSwitcher.Core;
 using YacaPluginSwitcher.Models;
+
 namespace YacaPluginSwitcher;
+
 public partial class MainWindow : Window
 {
-private readonly YacaService _service;private readonly List<(string Key,Button Button)> _navButtons=[];private readonly List<YacaPluginInfo> _plugins=[];private string _activePage="home";private TextBlock? _currentValue,_currentDetails,_currentStatus,_tsStatus,_tsDescription,_backupSummary;private Button? _tsClose;private StackPanel? _versionList;private HashSet<string> _knownPlugins=new(StringComparer.OrdinalIgnoreCase);private bool _pluginBaselineInitialized;private UiText Texts=>Localization.Get(_service.Settings.Language);private bool IsGerman=>Localization.Normalize(_service.Settings.Language)==Localization.German;
-public MainWindow(YacaService service){_service=service??throw new ArgumentNullException(nameof(service));InitializeComponent();VersionText.Text=$"v{GetType().Assembly.GetName().Version?.ToString(3)??"1.1.0"}";BuildNavigation();LoadLanguageSelector();ShowHome();}
-private void BuildNavigation(){NavPanel.Children.Clear();_navButtons.Clear();AddNav("home","⌂","Dashboard",ShowHome);AddNav("refresh","↻",IsGerman?"Aktualisieren":"Refresh",()=>RefreshActivePage(true));AddNav("switch","⇄",IsGerman?"YACA wechseln":"Switch YACA",ShowSwitchPage);AddNav("backup-create","＋",IsGerman?"Backup erstellen":"Create Backup",CreateBackupFromDashboard);NavPanel.Children.Add(new Separator{Margin=new Thickness(10,12,0,12),Background=(Brush)FindResource("AccentSoftBrush")});AddNav("backups","▣",Texts.Backups,ShowBackups);AddNav("config","⚙",Texts.Config,ShowConfig);AddNav("info","ⓘ",Texts.About,ShowInfo);}
-private void AddNav(string key,string icon,string text,Action action){var content=new StackPanel{Orientation=Orientation.Horizontal};content.Children.Add(new TextBlock{Text=icon,FontSize=23,Width=34,VerticalAlignment=VerticalAlignment.Center});content.Children.Add(new TextBlock{Text=text,FontSize=14,VerticalAlignment=VerticalAlignment.Center});var button=new Button{Style=(Style)FindResource("NavButtonStyle"),Height=46,Tag=key,Content=content};button.Click+=(_,_)=>action();NavPanel.Children.Add(button);_navButtons.Add((key,button));}
-private void SetActiveNav(string key){foreach(var item in _navButtons){var selected=item.Key.Equals(key,StringComparison.OrdinalIgnoreCase);item.Button.Background=selected?(Brush)FindResource("NavSelectedBrush"):Brushes.Transparent;item.Button.Foreground=selected?(Brush)FindResource("GoldBrush"):(Brush)FindResource("ForegroundBrush");item.Button.BorderBrush=selected?(Brush)FindResource("GoldBrush"):Brushes.Transparent;item.Button.BorderThickness=selected?new Thickness(1):new Thickness(0);}}
-private void LoadLanguageSelector(){LanguageCombo.Items.Clear();LanguageCombo.Items.Add(Texts.LanguageGerman);LanguageCombo.Items.Add(Texts.LanguageEnglish);LanguageCombo.SelectedIndex=IsGerman?0:1;}
-private void ShowHome(){_activePage="home";PageHost.Content=BuildDashboard();SetActiveNav("home");RefreshHome();}
-private Grid BuildDashboard(){var root=new Grid{Margin=new Thickness(0,4,0,0)};root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(270)});root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(270)});root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});var top=new Grid();top.ColumnDefinitions.Add(new ColumnDefinition());top.ColumnDefinitions.Add(new ColumnDefinition());top.ColumnDefinitions.Add(new ColumnDefinition());var current=MakeCard((Brush)FindResource("AccentBrush"));var cg=new Grid();cg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(34)});cg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});cg.Children.Add(Header("♢  "+(IsGerman?"AKTUELL INSTALLIERT":"CURRENTLY INSTALLED"),(Brush)FindResource("AccentBrush")));var cs=new Grid{Margin=new Thickness(0,4,0,0)};cs.RowDefinitions.Add(new RowDefinition{Height=new GridLength(30)});cs.RowDefinitions.Add(new RowDefinition{Height=new GridLength(52)});cs.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});_currentStatus=new TextBlock{Text="",FontSize=13,FontWeight=FontWeights.Bold,Foreground=(Brush)FindResource("SuccessBrush"),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};Grid.SetRow(_currentStatus,0);cs.Children.Add(_currentStatus);_currentValue=new TextBlock{Text="—",FontSize=30,FontWeight=FontWeights.SemiBold,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};Grid.SetRow(_currentValue,1);cs.Children.Add(_currentValue);_currentDetails=new TextBlock{FontSize=13,Foreground=(Brush)FindResource("SecondaryBrush"),LineHeight=21,HorizontalAlignment=HorizontalAlignment.Center,TextAlignment=TextAlignment.Center};Grid.SetRow(_currentDetails,2);cs.Children.Add(_currentDetails);cg.Children.Add(cs);current.Child=cg;Grid.SetColumn(current,0);top.Children.Add(current);var logoHost=new Grid{Margin=new Thickness(6)};logoHost.Children.Add(new Image{Source=LoadLogo(),Stretch=Stretch.Uniform,Margin=new Thickness(12,2,12,2)});Grid.SetColumn(logoHost,1);top.Children.Add(logoHost);var ts=MakeCard((Brush)FindResource("GoldBrush"));var tg=new Grid();tg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(34)});tg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});tg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(44)});tg.Children.Add(Header("◉  TEAMSpeak 3 STATUS",(Brush)FindResource("GoldBrush")));var tsStack=new StackPanel{Margin=new Thickness(0,8,0,0)};Grid.SetRow(tsStack,1);_tsStatus=new TextBlock{Name="TsStatus",Text="—",FontSize=28,FontWeight=FontWeights.SemiBold,Foreground=(Brush)FindResource("GoldBrush")};_tsDescription=new TextBlock{Name="TsDescription",FontSize=14,Foreground=(Brush)FindResource("SecondaryBrush"),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,10,0,0)};tsStack.Children.Add(_tsStatus);tsStack.Children.Add(_tsDescription);tg.Children.Add(tsStack);_tsClose=new Button{Content="◉  TS3 schließen",Visibility=Visibility.Collapsed,Style=(Style)FindResource("TileButtonStyle"),Foreground=(Brush)FindResource("GoldBrush"),BorderBrush=(Brush)FindResource("GoldBrush")};_tsClose.Click+=(_,_)=>CloseTeamSpeak();Grid.SetRow(_tsClose,2);tg.Children.Add(_tsClose);ts.Child=tg;Grid.SetColumn(ts,2);top.Children.Add(ts);Grid.SetRow(top,0);root.Children.Add(top);var actions=new Grid{Margin=new Thickness(0,8,0,8)};for(var i=0;i<3;i++)actions.ColumnDefinitions.Add(new ColumnDefinition());AddTile(actions,0,"⇄","YACA WECHSELN",IsGerman?"Version auswählen\nund wechseln":"Select a version\nand switch",(Brush)FindResource("AccentBrush"),ShowSwitchPage);AddTile(actions,1,"＋","BACKUP ERSTELLEN",IsGerman?"Aktuelle Version\nsichern":"Save current version",(Brush)FindResource("GoldBrush"),CreateBackupFromDashboard);AddTile(actions,2,"☁","YACA UPDATER",IsGerman?"Neueste DLL prüfen\nund herunterladen":"Check and download\nlatest DLL",(Brush)FindResource("AccentBrush"),ShowComingSoon,true);Grid.SetRow(actions,1);root.Children.Add(actions);var lower=new Grid();lower.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(.98,GridUnitType.Star)});lower.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1.02,GridUnitType.Star)});var backup=MakeCard((Brush)FindResource("BorderBrush"));var bg=new Grid();bg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(34)});bg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});bg.Children.Add(Header("▱  "+(IsGerman?"LETZTES BACKUP":"LATEST BACKUP"),(Brush)FindResource("AccentBrush")));_backupSummary=new TextBlock{FontSize=14,Foreground=(Brush)FindResource("ForegroundBrush"),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,10,0,0)};Grid.SetRow(_backupSummary,1);bg.Children.Add(_backupSummary);backup.Child=bg;Grid.SetColumn(backup,0);lower.Children.Add(backup);var versions=MakeCard((Brush)FindResource("BorderBrush"));var vg=new Grid();vg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(34)});vg.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});vg.Children.Add(Header("◉  "+(IsGerman?"VERFÜGBARE YACA-VERSIONEN":"AVAILABLE YACA VERSIONS"),(Brush)FindResource("AccentBrush")));_versionList=new StackPanel{Margin=new Thickness(0,8,0,0)};Grid.SetRow(_versionList,1);vg.Children.Add(_versionList);versions.Child=vg;Grid.SetColumn(versions,1);lower.Children.Add(versions);Grid.SetRow(lower,2);root.Children.Add(lower);return root;}
-private static TextBlock Header(string text,Brush accent)=>new(){Text=text,Foreground=accent,FontSize=16,FontWeight=FontWeights.SemiBold,VerticalAlignment=VerticalAlignment.Center};private Border MakeCard(Brush border){var card=new Border{Style=(Style)FindResource("CardStyle"),BorderBrush=border,BorderThickness=new Thickness(1)};AddPanelWave(card,border);return card;}private static BitmapImage LoadLogo()=>new(new Uri("pack://application:,,,/YacaPluginSwitcher;component/Assets/yaca_logo.png"));private static void AddPanelWave(Border card,Brush accent){var grid=new Grid();var content=card.Child;card.Child=grid;if(content is not null)grid.Children.Add(content);grid.Children.Add(new Path{Data=Geometry.Parse("M 0,38 C 18,12 30,64 48,38 S 78,12 96,38"),Stroke=accent,StrokeThickness=1.2,Opacity=.22,Stretch=Stretch.Fill,Width=92,Height=64,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Bottom,Margin=new Thickness(-1,0,0,-1)});grid.Children.Add(new Path{Data=Geometry.Parse("M 0,38 C 18,12 30,64 48,38 S 78,12 96,38"),Stroke=accent,StrokeThickness=1.2,Opacity=.22,Stretch=Stretch.Fill,Width=92,Height=64,HorizontalAlignment=HorizontalAlignment.Right,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(0,-1,-1,0),RenderTransform=new ScaleTransform(-1,1)});}
-private void AddTile(Grid host,int column,string icon,string title,string subtitle,Brush accent,Action action,bool coming=false){var button=new Button{Style=(Style)FindResource("TileButtonStyle"),BorderBrush=accent,Margin=new Thickness(6)};var tileGrid=new Grid();var panel=new StackPanel{HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};panel.Children.Add(BuildGraphicIcon(icon,accent));panel.Children.Add(new TextBlock{Text=title,FontSize=23,FontWeight=FontWeights.SemiBold,HorizontalAlignment=HorizontalAlignment.Center,Margin=new Thickness(0,8,0,4)});panel.Children.Add(new TextBlock{Text=subtitle,FontSize=14,Foreground=(Brush)FindResource("SecondaryBrush"),TextAlignment=TextAlignment.Center});tileGrid.Children.Add(panel);if(coming)tileGrid.Children.Add(new Border{HorizontalAlignment=HorizontalAlignment.Right,VerticalAlignment=VerticalAlignment.Top,Background=(Brush)FindResource("NavSelectedBrush"),CornerRadius=new CornerRadius(5),Padding=new Thickness(11,5,11,5),Margin=new Thickness(0,-2,-2,0),Child=new TextBlock{Text=IsGerman?"BALD\nVERFÜGBAR":"COMING\nSOON",Foreground=Brushes.White,FontSize=11,FontWeight=FontWeights.SemiBold,TextAlignment=TextAlignment.Center}});button.Content=tileGrid;button.Click+=(_,_)=>action();Grid.SetColumn(button,column);host.Children.Add(button);}
-private static FrameworkElement BuildGraphicIcon(string kind,Brush accent){var canvas=new Canvas{Width=62,Height=62,HorizontalAlignment=HorizontalAlignment.Center};if(kind=="＋"){canvas.Children.Add(new Rectangle{Width=3,Height=48,Fill=accent,Canvas.Left=29,Canvas.Top=7});canvas.Children.Add(new Rectangle{Width=48,Height=3,Fill=accent,Canvas.Left=7,Canvas.Top=29});}else if(kind=="⇄"){canvas.Children.Add(new Path{Data=Geometry.Parse("M 8,20 L 48,20 M 38,10 L 48,20 L 38,30"),Stroke=accent,StrokeThickness=3});canvas.Children.Add(new Path{Data=Geometry.Parse("M 54,42 L 14,42 M 24,32 L 14,42 L 24,52"),Stroke=accent,StrokeThickness=3});}else{canvas.Children.Add(new Path{Data=Geometry.Parse("M 16,44 C 7,44 4,36 8,30 C 10,26 14,24 19,25 C 22,17 29,13 37,15 C 44,16 48,21 49,27 C 56,27 60,32 60,38 C 60,44 55,48 49,48 L 16,48 Z"),Fill=accent});canvas.Children.Add(new Path{Data=Geometry.Parse("M 31,26 L 31,45 M 23,38 L 31,46 L 39,38"),Stroke=Brushes.Black,StrokeThickness=3});}return canvas;}
-private void RefreshHome(bool announce=false){if(_activePage!="home")return;try{_plugins.Clear();_plugins.AddRange(GetDistinctPlugins());var notice=announce?GetNewPluginNotice(_plugins):null;if(!_pluginBaselineInitialized)SetPluginBaseline(_plugins);var current=_service.DetectCurrent();if(current is null){_currentStatus!.Text="";_currentValue!.Text=File.Exists(_service.TargetFile)?Texts.UnknownInvalid:Texts.NotInstalled;_currentDetails!.Text="";}else{var m=Regex.Match(current.DisplayName??string.Empty,@"(?i)^YACA\s+([0-9]+(?:\.[0-9]+){1,3})\s*\(\s*Build:\s*([^\)]+)\)");var version=m.Success?m.Groups[1].Value:current.DisplayName;var build=m.Success?m.Groups[2].Value:"—";var changed=File.GetLastWriteTime(current.FilePath);_currentStatus!.Text=IsGerman?"●  AKTIV":"●  ACTIVE";_currentValue!.Text=$"YACA {version}";_currentValue.Foreground=(Brush)FindResource("ForegroundBrush");_currentDetails!.Text=$"Größe    {current.FileSize/1024d/1024d:0.00} MB\nGeändert  {changed:dd.MM.yyyy HH:mm:ss}\nVersion   {version}\nBuild     {build}";}
-var running=TeamSpeakDetector.IsRunning();_tsStatus!.Text=running?(IsGerman?"GESTARTET":"RUNNING"):(IsGerman?"NICHT GESTARTET":"NOT RUNNING");_tsStatus.Foreground=running?(Brush)FindResource("ErrorBrush"):(Brush)FindResource("GoldBrush");_tsDescription!.Text=running?(IsGerman?"TeamSpeak 3 ist aktiv. Für einen sicheren Wechsel bitte zuerst schließen.":"TeamSpeak 3 is active. Close it before switching."):(IsGerman?"TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich.":"TeamSpeak 3 is not active.\nSwitching is ready.");_tsClose!.Visibility=running?Visibility.Visible:Visibility.Collapsed;var backup=_service.Backups.ListBackups().FirstOrDefault();_backupSummary!.Text=backup is null?Texts.NoBackups:$"{backup.Timestamp:dd.MM.yyyy HH:mm}\n{backup.DisplayName}  •  {backup.FileSize/1024d/1024d:0.00} MB\nDatei  {backup.FileName}";_versionList!.Children.Clear();for(var i=0;i<Math.Min(3,_plugins.Count);i++){var p=_plugins[i];var row=new DockPanel{Margin=new Thickness(0,0,0,10)};row.Children.Add(new TextBlock{Text=p.DisplayName,FontSize=14});if(current?.Sha256.Equals(p.Sha256,StringComparison.OrdinalIgnoreCase)==true){var badge=new Border{Background=(Brush)FindResource("SuccessBrush"),CornerRadius=new CornerRadius(4),Padding=new Thickness(9,3,9,3),Child=new TextBlock{Text=IsGerman?"AKTUELL":"CURRENT",Foreground=Brushes.Black,FontSize=11,FontWeight=FontWeights.Bold}};DockPanel.SetDock(badge,Dock.Right);row.Children.Add(badge);}_versionList.Children.Add(row);}var more=new TextBlock{Text=$"{_plugins.Count} Version(en) verfügbar   ›",Foreground=(Brush)FindResource("AccentBrush"),FontSize=14,Margin=new Thickness(0,6,0,0)};more.MouseLeftButtonUp+=(_,_)=>ShowSwitchPage();_versionList.Children.Add(more);StatusText.Text=string.IsNullOrWhiteSpace(notice)?(running?Texts.TeamspeakRunning:Texts.TeamspeakStopped):notice;}catch(Exception ex){_service.Logger.Error($"Dashboard refresh failed: {ex}");StatusText.Text=Texts.ErrorUnexpected;}}
-private List<YacaPluginInfo> GetDistinctPlugins(){var result=new List<YacaPluginInfo>();var seen=new HashSet<string>(StringComparer.OrdinalIgnoreCase);foreach(var p in _service.ScanPlugins())if(seen.Add($"{p.FilePath}|{p.Sha256}"))result.Add(p);return result;}
-private string? GetNewPluginNotice(IReadOnlyList<YacaPluginInfo> plugins){var keys=plugins.Select(p=>$"{p.FilePath}|{p.Sha256}").ToHashSet(StringComparer.OrdinalIgnoreCase);if(!_pluginBaselineInitialized){_knownPlugins=keys;_pluginBaselineInitialized=true;return null;}var added=plugins.Where(p=>!_knownPlugins.Contains($"{p.FilePath}|{p.Sha256}")).ToList();_knownPlugins=keys;return added.Count==0?null:string.Format(CultureInfo.CurrentCulture,Texts.NewValidPluginFound,string.Join(", ",added.Select(p=>p.DisplayName)));}
-private void SetPluginBaseline(IReadOnlyList<YacaPluginInfo> plugins){_knownPlugins=plugins.Select(p=>$"{p.FilePath}|{p.Sha256}").ToHashSet(StringComparer.OrdinalIgnoreCase);_pluginBaselineInitialized=true;}
-private void ShowSwitchPage(){_activePage="switch";SetActiveNav("switch");var root=new Grid();root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(54)});root.RowDefinitions.Add(new RowDefinition{Height=new GridLength(1,GridUnitType.Star)});root.Children.Add(new TextBlock{Text=IsGerman?"YACA wechseln":"Switch YACA",FontSize=24,FontWeight=FontWeights.SemiBold,VerticalAlignment=VerticalAlignment.Center});var list=new StackPanel();var scroll=new ScrollViewer{Content=list,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};Grid.SetRow(scroll,1);root.Children.Add(scroll);var current=_service.DetectCurrent();foreach(var p in GetDistinctPlugins()){var active=current?.Sha256.Equals(p.Sha256,StringComparison.OrdinalIgnoreCase)==true;var b=new Button{Style=(Style)FindResource("TileButtonStyle"),BorderBrush=active?(Brush)FindResource("SuccessBrush"):(Brush)FindResource("AccentBrush"),Margin=new Thickness(6),Height=58,HorizontalContentAlignment=HorizontalAlignment.Left,Content=new TextBlock{Text=active?$"{p.DisplayName}   —   {Texts.Active.TrimEnd(':')}":p.DisplayName,FontSize=15,Foreground=active?(Brush)FindResource("SuccessBrush"):(Brush)FindResource("ForegroundBrush")}};b.Click+=(_,_)=>Activate(p);list.Children.Add(b);}PageHost.Content=root;}
-private void Activate(YacaPluginInfo plugin){var text=Texts;var current=_service.DetectCurrent();if(current?.Sha256.Equals(plugin.Sha256,StringComparison.OrdinalIgnoreCase)==true){MessageBox.Show(text.AlreadyActiveMessage,text.AlreadyActiveTitle,MessageBoxButton.OK,MessageBoxImage.Information);return;}if(_service.Settings.WarnIfTeamSpeakRunning&&TeamSpeakDetector.IsRunning()&&MessageBox.Show(text.TeamspeakRunningMessage,text.TeamspeakRunningTitle,MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;try{Mouse.OverrideCursor=Cursors.Wait;_service.Installer.Install(plugin,_service.TargetFile,current,_service.Settings.AutomaticBackup,_service.Settings.MaxBackups);MessageBox.Show($"{plugin.DisplayName} {text.ActivatedMessage}",text.SuccessTitle,MessageBoxButton.OK,MessageBoxImage.Information);}catch(Exception ex)when(ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or YacaOperationException){_service.Logger.Error($"YACA switch failed: {ex}");ShowError(Localization.GetErrorMessage(ex,text,text.ErrorUnexpected));}finally{Mouse.OverrideCursor=null;ShowSwitchPage();}}
-private void CreateBackupFromDashboard(){var text=Texts;if(TeamSpeakDetector.IsRunning()&&_service.Settings.WarnIfTeamSpeakRunning&&MessageBox.Show(text.TeamspeakRunningMessage,text.TeamspeakRunningTitle,MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;try{var current=_service.DetectCurrent();if(current is null){ShowError(text.NotInstalled);return;}if(_service.Backups.CreateBackup(_service.TargetFile,current) is null){ShowError(text.ErrorUnexpected);return;}_service.Backups.Trim(_service.Settings.MaxBackups);RefreshHome();}catch(Exception ex)when(ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException){_service.Logger.Error($"Dashboard backup failed: {ex}");ShowError(Localization.GetErrorMessage(ex,text,text.ErrorUnexpected));}}
-private void CloseTeamSpeak(){var text=Texts;if(!TeamSpeakDetector.IsRunning()){RefreshHome();return;}if(MessageBox.Show(text.CloseTeamspeakQuestion,text.TeamspeakRunningTitle,MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes)return;try{Mouse.OverrideCursor=Cursors.Wait;if(!TeamSpeakDetector.TryClose(TimeSpan.FromSeconds(5)))MessageBox.Show(text.CloseTeamspeakFailed,text.TeamspeakRunningTitle,MessageBoxButton.OK,MessageBoxImage.Error);}catch(Exception ex)when(ex is InvalidOperationException or System.ComponentModel.Win32Exception){ShowError(Localization.GetErrorMessage(ex,text,text.CloseTeamspeakFailed));}finally{Mouse.OverrideCursor=null;RefreshHome();}}
-private void ShowBackups(){_activePage="backups";SetActiveNav("backups");PageHost.Content=new BackupView(_service,this);}private void ShowConfig(){_activePage="config";SetActiveNav("config");PageHost.Content=new ConfigView(_service,this);}private void ShowInfo(){_activePage="info";SetActiveNav("info");PageHost.Content=new InfoView(_service.Settings.Language);}private void ShowComingSoon(){MessageBox.Show(IsGerman?"Der YACA Updater wird in einer späteren Version verfügbar sein.":"The YACA Updater will be available in a future version.","YACA Updater",MessageBoxButton.OK,MessageBoxImage.Information);}internal void ReturnHome()=>ShowHome();
-private void RefreshActivePage(bool announce){if(_activePage=="home")RefreshHome(announce);else if(_activePage=="switch")ShowSwitchPage();else if(_activePage=="backups")PageHost.Content=new BackupView(_service,this);else if(_activePage=="config")PageHost.Content=new ConfigView(_service,this);}
-private void ShowError(string message)=>MessageBox.Show(message,Texts.ErrorTitle,MessageBoxButton.OK,MessageBoxImage.Error);private void Minimize_Click(object sender,RoutedEventArgs e)=>WindowState=WindowState.Minimized;private void Maximize_Click(object sender,RoutedEventArgs e)=>WindowState=WindowState==WindowState.Maximized?WindowState.Normal:WindowState.Maximized;private void Close_Click(object sender,RoutedEventArgs e)=>Close();
-private void LanguageCombo_SelectionChanged(object sender,SelectionChangedEventArgs e){if(!IsInitialized||LanguageCombo.SelectedIndex<0)return;var language=LanguageCombo.SelectedIndex==0?Localization.German:Localization.English;if(string.Equals(_service.Settings.Language,language,StringComparison.OrdinalIgnoreCase))return;_service.Settings.Language=language;_service.Settings.Save();BuildNavigation();LoadLanguageSelector();ShowHome();}
+    private readonly YacaService _service;
+    private readonly List<(string Key, Button Button)> _navButtons = [];
+    private readonly List<YacaPluginInfo> _plugins = [];
+    private string _activePage = "home";
+    private TextBlock? _currentValue, _currentDetails, _currentStatus, _tsStatus, _tsDescription, _backupSummary;
+    private Button? _tsClose;
+    private StackPanel? _versionList;
+    private HashSet<string> _knownPlugins = new(StringComparer.OrdinalIgnoreCase);
+    private bool _pluginBaselineInitialized;
+
+    private UiText Texts => Localization.Get(_service.Settings.Language);
+    private bool IsGerman => Localization.Normalize(_service.Settings.Language) == Localization.German;
+
+    public MainWindow(YacaService service)
+    {
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        InitializeComponent();
+        VersionText.Text = $"v{GetType().Assembly.GetName().Version?.ToString(3) ?? "1.1.0"}";
+        BuildNavigation();
+        LoadLanguageSelector();
+        ShowHome();
+    }
+
+    private void BuildNavigation()
+    {
+        NavPanel.Children.Clear();
+        _navButtons.Clear();
+
+        AddNav("home", "⌂", "Dashboard", ShowHome);
+        AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
+        AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
+        AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
+
+        NavPanel.Children.Add(new Separator
+        {
+            Margin = new Thickness(10, 12, 0, 12),
+            Background = (Brush)FindResource("AccentSoftBrush")
+        });
+
+        AddNav("backups", "▣", Texts.Backups, ShowBackups);
+        AddNav("config", "⚙", Texts.Config, ShowConfig);
+        AddNav("info", "ⓘ", Texts.About, ShowInfo);
+
+        NavPanel.Children.Add(new Separator
+        {
+            Margin = new Thickness(10, 12, 0, 12),
+            Background = (Brush)FindResource("AccentSoftBrush")
+        });
+        AddNav("exit", "⏻", IsGerman ? "Beenden" : "Exit", ExitApplication);
+    }
+
+    private void AddNav(string key, string icon, string text, Action action)
+    {
+        var content = new StackPanel { Orientation = Orientation.Horizontal };
+        content.Children.Add(new TextBlock
+        {
+            Text = icon,
+            FontSize = 23,
+            Width = 34,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        content.Children.Add(new TextBlock
+        {
+            Text = text,
+            FontSize = 14,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+
+        var button = new Button
+        {
+            Style = (Style)FindResource("NavButtonStyle"),
+            Height = 46,
+            Tag = key,
+            Content = content
+        };
+        button.Click += (_, _) => action();
+        NavPanel.Children.Add(button);
+        _navButtons.Add((key, button));
+    }
+
+    private void SetActiveNav(string key)
+    {
+        foreach (var item in _navButtons)
+        {
+            var selected = item.Key.Equals(key, StringComparison.OrdinalIgnoreCase);
+            item.Button.Background = selected
+                ? (Brush)FindResource("NavSelectedBrush")
+                : Brushes.Transparent;
+            item.Button.Foreground = selected
+                ? (Brush)FindResource("GoldBrush")
+                : (Brush)FindResource("ForegroundBrush");
+            item.Button.BorderBrush = selected
+                ? (Brush)FindResource("GoldBrush")
+                : Brushes.Transparent;
+            item.Button.BorderThickness = selected ? new Thickness(1) : new Thickness(0);
+        }
+    }
+
+    private void LoadLanguageSelector()
+    {
+        LanguageCombo.Items.Clear();
+        LanguageCombo.Items.Add(Texts.LanguageGerman);
+        LanguageCombo.Items.Add(Texts.LanguageEnglish);
+        LanguageCombo.SelectedIndex = IsGerman ? 0 : 1;
+    }
+
+    private void ShowHome()
+    {
+        _activePage = "home";
+        PageHost.Content = BuildDashboard();
+        SetActiveNav("home");
+        RefreshHome();
+    }
+
+    private Grid BuildDashboard()
+    {
+        var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(270) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(270) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        var top = new Grid();
+        top.ColumnDefinitions.Add(new ColumnDefinition());
+        top.ColumnDefinitions.Add(new ColumnDefinition());
+        top.ColumnDefinitions.Add(new ColumnDefinition());
+
+        var current = MakeCard((Brush)FindResource("AccentBrush"));
+        var cg = new Grid();
+        cg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });
+        cg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        cg.Children.Add(Header(
+            "♢  " + (IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED"),
+            (Brush)FindResource("AccentBrush")));
+
+        var cs = new Grid { Margin = new Thickness(0, 4, 0, 0) };
+        cs.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
+        cs.RowDefinitions.Add(new RowDefinition { Height = new GridLength(52) });
+        cs.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        _currentStatus = new TextBlock
+        {
+            Text = "",
+            FontSize = 13,
+            FontWeight = FontWeights.Bold,
+            Foreground = (Brush)FindResource("SuccessBrush"),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetRow(_currentStatus, 0);
+        cs.Children.Add(_currentStatus);
+
+        _currentValue = new TextBlock
+        {
+            Text = "—",
+            FontSize = 30,
+            FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetRow(_currentValue, 1);
+        cs.Children.Add(_currentValue);
+
+        _currentDetails = new TextBlock
+        {
+            FontSize = 13,
+            Foreground = (Brush)FindResource("SecondaryBrush"),
+            LineHeight = 21,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center
+        };
+        Grid.SetRow(_currentDetails, 2);
+        cs.Children.Add(_currentDetails);
+
+        cg.Children.Add(cs);
+        current.Child = cg;
+        Grid.SetColumn(current, 0);
+        top.Children.Add(current);
+
+        var logoHost = new Grid { Margin = new Thickness(6) };
+        logoHost.Children.Add(new Image
+        {
+            Source = LoadLogo(),
+            Stretch = Stretch.Uniform,
+            Margin = new Thickness(12, 2, 12, 2)
+        });
+        Grid.SetColumn(logoHost, 1);
+        top.Children.Add(logoHost);
+
+        var ts = MakeCard((Brush)FindResource("GoldBrush"));
+        var tg = new Grid();
+        tg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });
+        tg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        tg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(44) });
+        tg.Children.Add(Header("◉  TEAMSpeak 3 STATUS", (Brush)FindResource("GoldBrush")));
+
+        var tsStack = new StackPanel { Margin = new Thickness(0, 8, 0, 0) };
+        Grid.SetRow(tsStack, 1);
+        _tsStatus = new TextBlock
+        {
+            Text = "—",
+            FontSize = 28,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("GoldBrush")
+        };
+        _tsDescription = new TextBlock
+        {
+            FontSize = 14,
+            Foreground = (Brush)FindResource("SecondaryBrush"),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        tsStack.Children.Add(_tsStatus);
+        tsStack.Children.Add(_tsDescription);
+        tg.Children.Add(tsStack);
+
+        _tsClose = new Button
+        {
+            Content = "◉  TS3 schließen",
+            Visibility = Visibility.Collapsed,
+            Style = (Style)FindResource("TileButtonStyle"),
+            Foreground = (Brush)FindResource("GoldBrush"),
+            BorderBrush = (Brush)FindResource("GoldBrush")
+        };
+        _tsClose.Click += (_, _) => CloseTeamSpeak();
+        Grid.SetRow(_tsClose, 2);
+        tg.Children.Add(_tsClose);
+        ts.Child = tg;
+        Grid.SetColumn(ts, 2);
+        top.Children.Add(ts);
+
+        Grid.SetRow(top, 0);
+        root.Children.Add(top);
+
+        var actions = new Grid { Margin = new Thickness(0, 8, 0, 8) };
+        for (var i = 0; i < 3; i++)
+            actions.ColumnDefinitions.Add(new ColumnDefinition());
+
+        AddTile(actions, 0, "⇄", "YACA WECHSELN",
+            IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch",
+            (Brush)FindResource("AccentBrush"), ShowSwitchPage);
+        AddTile(actions, 1, "＋", "BACKUP ERSTELLEN",
+            IsGerman ? "Aktuelle Version\nsichern" : "Save current version",
+            (Brush)FindResource("GoldBrush"), CreateBackupFromDashboard);
+        AddTile(actions, 2, "☁", "YACA UPDATER",
+            IsGerman ? "Neueste DLL prüfen\nund herunterladen" : "Check and download\nlatest DLL",
+            (Brush)FindResource("AccentBrush"), ShowComingSoon, true);
+
+        Grid.SetRow(actions, 1);
+        root.Children.Add(actions);
+
+        var lower = new Grid();
+        lower.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(.98, GridUnitType.Star) });
+        lower.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.02, GridUnitType.Star) });
+
+        var backup = MakeCard((Brush)FindResource("BorderBrush"));
+        var bg = new Grid();
+        bg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });
+        bg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        bg.Children.Add(Header(
+            "▱  " + (IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"),
+            (Brush)FindResource("AccentBrush")));
+        _backupSummary = new TextBlock
+        {
+            FontSize = 14,
+            Foreground = (Brush)FindResource("ForegroundBrush"),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        Grid.SetRow(_backupSummary, 1);
+        bg.Children.Add(_backupSummary);
+        backup.Child = bg;
+        Grid.SetColumn(backup, 0);
+        lower.Children.Add(backup);
+
+        var versions = MakeCard((Brush)FindResource("BorderBrush"));
+        var vg = new Grid();
+        vg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });
+        vg.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        vg.Children.Add(Header(
+            "◉  " + (IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS"),
+            (Brush)FindResource("AccentBrush")));
+        _versionList = new StackPanel { Margin = new Thickness(0, 8, 0, 0) };
+        Grid.SetRow(_versionList, 1);
+        vg.Children.Add(_versionList);
+        versions.Child = vg;
+        Grid.SetColumn(versions, 1);
+        lower.Children.Add(versions);
+
+        Grid.SetRow(lower, 2);
+        root.Children.Add(lower);
+        return root;
+    }
+
+    private static TextBlock Header(string text, Brush accent) => new()
+    {
+        Text = text,
+        Foreground = accent,
+        FontSize = 16,
+        FontWeight = FontWeights.SemiBold,
+        VerticalAlignment = VerticalAlignment.Center
+    };
+
+    private Border MakeCard(Brush border)
+    {
+        var card = new Border
+        {
+            Style = (Style)FindResource("CardStyle"),
+            BorderBrush = border,
+            BorderThickness = new Thickness(1)
+        };
+        AddPanelWave(card, border);
+        return card;
+    }
+
+    private static BitmapImage LoadLogo() => new(new Uri("pack://application:,,,/YacaPluginSwitcher;component/Assets/yaca_logo.png"));
+
+    private static void AddPanelWave(Border card, Brush accent)
+    {
+        var grid = new Grid();
+        var content = card.Child;
+        card.Child = grid;
+        if (content is not null)
+            grid.Children.Add(content);
+
+        grid.Children.Add(new Path
+        {
+            Data = Geometry.Parse("M 0,38 C 18,12 30,64 48,38 S 78,12 96,38"),
+            Stroke = accent,
+            StrokeThickness = 1.2,
+            Opacity = .22,
+            Stretch = Stretch.Fill,
+            Width = 92,
+            Height = 64,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(-1, 0, 0, -1)
+        });
+
+        grid.Children.Add(new Path
+        {
+            Data = Geometry.Parse("M 0,38 C 18,12 30,64 48,38 S 78,12 96,38"),
+            Stroke = accent,
+            StrokeThickness = 1.2,
+            Opacity = .22,
+            Stretch = Stretch.Fill,
+            Width = 92,
+            Height = 64,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, -1, -1, 0),
+            RenderTransform = new ScaleTransform(-1, 1)
+        });
+    }
+
+    private void AddTile(Grid host, int column, string icon, string title, string subtitle, Brush accent, Action action, bool coming = false)
+    {
+        var button = new Button
+        {
+            Style = (Style)FindResource("TileButtonStyle"),
+            BorderBrush = accent,
+            Margin = new Thickness(6)
+        };
+        var tileGrid = new Grid();
+        var panel = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        panel.Children.Add(BuildGraphicIcon(icon, accent));
+        panel.Children.Add(new TextBlock
+        {
+            Text = title,
+            FontSize = 23,
+            FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 8, 0, 4)
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = subtitle,
+            FontSize = 14,
+            Foreground = (Brush)FindResource("SecondaryBrush"),
+            TextAlignment = TextAlignment.Center
+        });
+        tileGrid.Children.Add(panel);
+
+        if (coming)
+        {
+            tileGrid.Children.Add(new Border
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Background = (Brush)FindResource("NavSelectedBrush"),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(11, 5, 11, 5),
+                Margin = new Thickness(0, -2, -2, 0),
+                Child = new TextBlock
+                {
+                    Text = IsGerman ? "BALD\nVERFÜGBAR" : "COMING\nSOON",
+                    Foreground = Brushes.White,
+                    FontSize = 11,
+                    FontWeight = FontWeights.SemiBold,
+                    TextAlignment = TextAlignment.Center
+                }
+            });
+        }
+
+        button.Content = tileGrid;
+        button.Click += (_, _) => action();
+        Grid.SetColumn(button, column);
+        host.Children.Add(button);
+    }
+
+    private static Canvas BuildGraphicIcon(string kind, Brush accent)
+    {
+        var canvas = new Canvas
+        {
+            Width = 62,
+            Height = 62,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+
+        if (kind == "＋")
+        {
+            var vertical = new Rectangle { Width = 3, Height = 48, Fill = accent };
+            Canvas.SetLeft(vertical, 29);
+            Canvas.SetTop(vertical, 7);
+            canvas.Children.Add(vertical);
+
+            var horizontal = new Rectangle { Width = 48, Height = 3, Fill = accent };
+            Canvas.SetLeft(horizontal, 7);
+            Canvas.SetTop(horizontal, 29);
+            canvas.Children.Add(horizontal);
+        }
+        else if (kind == "⇄")
+        {
+            canvas.Children.Add(new Path
+            {
+                Data = Geometry.Parse("M 8,20 L 48,20 M 38,10 L 48,20 L 38,30"),
+                Stroke = accent,
+                StrokeThickness = 3
+            });
+            canvas.Children.Add(new Path
+            {
+                Data = Geometry.Parse("M 54,42 L 14,42 M 24,32 L 14,42 L 24,52"),
+                Stroke = accent,
+                StrokeThickness = 3
+            });
+        }
+        else
+        {
+            canvas.Children.Add(new Path
+            {
+                Data = Geometry.Parse("M 16,44 C 7,44 4,36 8,30 C 10,26 14,24 19,25 C 22,17 29,13 37,15 C 44,16 48,21 49,27 C 56,27 60,32 60,38 C 60,44 55,48 49,48 L 16,48 Z"),
+                Fill = accent
+            });
+            canvas.Children.Add(new Path
+            {
+                Data = Geometry.Parse("M 31,26 L 31,45 M 23,38 L 31,46 L 39,38"),
+                Stroke = Brushes.Black,
+                StrokeThickness = 3
+            });
+        }
+
+        return canvas;
+    }
+
+    private void RefreshHome(bool announce = false)
+    {
+        if (_activePage != "home")
+            return;
+
+        try
+        {
+            _plugins.Clear();
+            _plugins.AddRange(GetDistinctPlugins());
+            var notice = announce ? GetNewPluginNotice(_plugins) : null;
+            if (!_pluginBaselineInitialized)
+                SetPluginBaseline(_plugins);
+
+            var current = _service.DetectCurrent();
+            if (current is null)
+            {
+                _currentStatus!.Text = "";
+                _currentValue!.Text = File.Exists(_service.TargetFile) ? Texts.UnknownInvalid : Texts.NotInstalled;
+                _currentDetails!.Text = "";
+            }
+            else
+            {
+                var m = Regex.Match(
+                    current.DisplayName ?? string.Empty,
+                    @"(?i)^YACA\s+([0-9]+(?:\.[0-9]+){1,3})\s*\(\s*Build:\s*([^\)]+)\)");
+                var version = m.Success ? m.Groups[1].Value : current.DisplayName;
+                var build = m.Success ? m.Groups[2].Value : "—";
+                var changed = File.GetLastWriteTime(current.FilePath);
+                _currentStatus!.Text = IsGerman ? "●  AKTIV" : "●  ACTIVE";
+                _currentValue!.Text = $"YACA {version}";
+                _currentValue.Foreground = (Brush)FindResource("ForegroundBrush");
+                _currentDetails!.Text = $"Größe    {current.FileSize / 1024d / 1024d:0.00} MB\n" +
+                                        $"Geändert  {changed:dd.MM.yyyy HH:mm:ss}\n" +
+                                        $"Version   {version}\n" +
+                                        $"Build     {build}";
+            }
+
+            var running = TeamSpeakDetector.IsRunning();
+            _tsStatus!.Text = running
+                ? (IsGerman ? "GESTARTET" : "RUNNING")
+                : (IsGerman ? "NICHT GESTARTET" : "NOT RUNNING");
+            _tsStatus.Foreground = running
+                ? (Brush)FindResource("ErrorBrush")
+                : (Brush)FindResource("GoldBrush");
+            _tsDescription!.Text = running
+                ? (IsGerman
+                    ? "TeamSpeak 3 ist aktiv. Für einen sicheren Wechsel bitte zuerst schließen."
+                    : "TeamSpeak 3 is active. Close it before switching.")
+                : (IsGerman
+                    ? "TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich."
+                    : "TeamSpeak 3 is not active.\nSwitching is ready.");
+            _tsClose!.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+
+            var backup = _service.Backups.ListBackups().FirstOrDefault();
+            _backupSummary!.Text = backup is null
+                ? Texts.NoBackups
+                : $"{backup.Timestamp:dd.MM.yyyy HH:mm}\n" +
+                  $"{backup.DisplayName}  •  {backup.FileSize / 1024d / 1024d:0.00} MB\n" +
+                  $"Datei  {backup.FileName}";
+
+            _versionList!.Children.Clear();
+            for (var i = 0; i < Math.Min(3, _plugins.Count); i++)
+            {
+                var p = _plugins[i];
+                var row = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
+                row.Children.Add(new TextBlock { Text = p.DisplayName, FontSize = 14 });
+
+                if (current?.Sha256.Equals(p.Sha256, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    var badge = new Border
+                    {
+                        Background = (Brush)FindResource("SuccessBrush"),
+                        CornerRadius = new CornerRadius(4),
+                        Padding = new Thickness(9, 3, 9, 3),
+                        Child = new TextBlock
+                        {
+                            Text = IsGerman ? "AKTUELL" : "CURRENT",
+                            Foreground = Brushes.Black,
+                            FontSize = 11,
+                            FontWeight = FontWeights.Bold
+                        }
+                    };
+                    DockPanel.SetDock(badge, Dock.Right);
+                    row.Children.Add(badge);
+                }
+
+                _versionList.Children.Add(row);
+            }
+
+            var more = new TextBlock
+            {
+                Text = $"{_plugins.Count} Version(en) verfügbar   ›",
+                Foreground = (Brush)FindResource("AccentBrush"),
+                FontSize = 14,
+                Margin = new Thickness(0, 6, 0, 0)
+            };
+            more.MouseLeftButtonUp += (_, _) => ShowSwitchPage();
+            _versionList.Children.Add(more);
+            StatusText.Text = string.IsNullOrWhiteSpace(notice)
+                ? (running ? Texts.TeamspeakRunning : Texts.TeamspeakStopped)
+                : notice;
+        }
+        catch (Exception ex)
+        {
+            _service.Logger.Error($"Dashboard refresh failed: {ex}");
+            StatusText.Text = Texts.ErrorUnexpected;
+        }
+    }
+
+    private List<YacaPluginInfo> GetDistinctPlugins()
+    {
+        var result = new List<YacaPluginInfo>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in _service.ScanPlugins())
+        {
+            if (seen.Add($"{p.FilePath}|{p.Sha256}"))
+                result.Add(p);
+        }
+        return result;
+    }
+
+    private string? GetNewPluginNotice(IReadOnlyList<YacaPluginInfo> plugins)
+    {
+        var keys = plugins
+            .Select(p => $"{p.FilePath}|{p.Sha256}")
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!_pluginBaselineInitialized)
+        {
+            _knownPlugins = keys;
+            _pluginBaselineInitialized = true;
+            return null;
+        }
+
+        var added = plugins
+            .Where(p => !_knownPlugins.Contains($"{p.FilePath}|{p.Sha256}"))
+            .ToList();
+        _knownPlugins = keys;
+        return added.Count == 0
+            ? null
+            : string.Format(
+                CultureInfo.CurrentCulture,
+                Texts.NewValidPluginFound,
+                string.Join(", ", added.Select(p => p.DisplayName)));
+    }
+
+    private void SetPluginBaseline(IReadOnlyList<YacaPluginInfo> plugins)
+    {
+        _knownPlugins = plugins
+            .Select(p => $"{p.FilePath}|{p.Sha256}")
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _pluginBaselineInitialized = true;
+    }
+
+    private void ShowSwitchPage()
+    {
+        _activePage = "switch";
+        SetActiveNav("switch");
+
+        var root = new Grid();
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(54) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.Children.Add(new TextBlock
+        {
+            Text = IsGerman ? "YACA wechseln" : "Switch YACA",
+            FontSize = 24,
+            FontWeight = FontWeights.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+
+        var list = new StackPanel();
+        var scroll = new ScrollViewer
+        {
+            Content = list,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
+        Grid.SetRow(scroll, 1);
+        root.Children.Add(scroll);
+
+        var current = _service.DetectCurrent();
+        foreach (var p in GetDistinctPlugins())
+        {
+            var active = current?.Sha256.Equals(p.Sha256, StringComparison.OrdinalIgnoreCase) == true;
+            var b = new Button
+            {
+                Style = (Style)FindResource("TileButtonStyle"),
+                BorderBrush = active
+                    ? (Brush)FindResource("SuccessBrush")
+                    : (Brush)FindResource("AccentBrush"),
+                Margin = new Thickness(6),
+                Height = 58,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Content = new TextBlock
+                {
+                    Text = active
+                        ? $"{p.DisplayName}   —   {Texts.Active.TrimEnd(':')}"
+                        : p.DisplayName,
+                    FontSize = 15,
+                    Foreground = active
+                        ? (Brush)FindResource("SuccessBrush")
+                        : (Brush)FindResource("ForegroundBrush")
+                }
+            };
+            b.Click += (_, _) => Activate(p);
+            list.Children.Add(b);
+        }
+
+        PageHost.Content = root;
+    }
+
+    private void Activate(YacaPluginInfo plugin)
+    {
+        var text = Texts;
+        var current = _service.DetectCurrent();
+        if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true)
+        {
+            MessageBox.Show(text.AlreadyActiveMessage, text.AlreadyActiveTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (_service.Settings.WarnIfTeamSpeakRunning &&
+            TeamSpeakDetector.IsRunning() &&
+            MessageBox.Show(text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            _service.Installer.Install(plugin, _service.TargetFile, current, _service.Settings.AutomaticBackup, _service.Settings.MaxBackups);
+            MessageBox.Show($"{plugin.DisplayName} {text.ActivatedMessage}", text.SuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or YacaOperationException)
+        {
+            _service.Logger.Error($"YACA switch failed: {ex}");
+            ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected));
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+            ShowSwitchPage();
+        }
+    }
+
+    private void CreateBackupFromDashboard()
+    {
+        var text = Texts;
+        if (TeamSpeakDetector.IsRunning() &&
+            _service.Settings.WarnIfTeamSpeakRunning &&
+            MessageBox.Show(text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            var current = _service.DetectCurrent();
+            if (current is null)
+            {
+                ShowError(text.NotInstalled);
+                return;
+            }
+
+            if (_service.Backups.CreateBackup(_service.TargetFile, current) is null)
+            {
+                ShowError(text.ErrorUnexpected);
+                return;
+            }
+
+            _service.Backups.Trim(_service.Settings.MaxBackups);
+            RefreshHome();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
+        {
+            _service.Logger.Error($"Dashboard backup failed: {ex}");
+            ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected));
+        }
+    }
+
+    private void CloseTeamSpeak()
+    {
+        var text = Texts;
+        if (!TeamSpeakDetector.IsRunning())
+        {
+            RefreshHome();
+            return;
+        }
+
+        if (MessageBox.Show(text.CloseTeamspeakQuestion, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            if (!TeamSpeakDetector.TryClose(TimeSpan.FromSeconds(5)))
+                MessageBox.Show(text.CloseTeamspeakFailed, text.TeamspeakRunningTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            ShowError(Localization.GetErrorMessage(ex, text, text.CloseTeamspeakFailed));
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+            RefreshHome();
+        }
+    }
+
+    private void ShowBackups()
+    {
+        _activePage = "backups";
+        SetActiveNav("backups");
+        PageHost.Content = new BackupView(_service, this);
+    }
+
+    private void ShowConfig()
+    {
+        _activePage = "config";
+        SetActiveNav("config");
+        PageHost.Content = new ConfigView(_service, this);
+    }
+
+    private void ShowInfo()
+    {
+        _activePage = "info";
+        SetActiveNav("info");
+        PageHost.Content = new InfoView(_service.Settings.Language);
+    }
+
+    private void ShowComingSoon()
+    {
+        MessageBox.Show(
+            IsGerman ? "Der YACA Updater wird in einer späteren Version verfügbar sein." : "The YACA Updater will be available in a future version.",
+            "YACA Updater",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    internal void ReturnHome() => ShowHome();
+
+    private void RefreshActivePage(bool announce)
+    {
+        if (_activePage == "home")
+            RefreshHome(announce);
+        else if (_activePage == "switch")
+            ShowSwitchPage();
+        else if (_activePage == "backups")
+            PageHost.Content = new BackupView(_service, this);
+        else if (_activePage == "config")
+            PageHost.Content = new ConfigView(_service, this);
+    }
+
+    private void ShowError(string message) => MessageBox.Show(message, Texts.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+
+    private void ExitApplication()
+    {
+        Close();
+    }
+
+    private void Minimize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void Maximize_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleMaximize();
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ToggleMaximize()
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            ToggleMaximize();
+            e.Handled = true;
+            return;
+        }
+
+        if (WindowState == WindowState.Normal)
+        {
+            try
+            {
+                DragMove();
+                e.Handled = true;
+            }
+            catch (InvalidOperationException)
+            {
+                // The window may already be processing a native move/resize operation.
+            }
+        }
+    }
+
+    private void LanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || LanguageCombo.SelectedIndex < 0)
+            return;
+
+        var language = LanguageCombo.SelectedIndex == 0
+            ? Localization.German
+            : Localization.English;
+        if (string.Equals(_service.Settings.Language, language, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _service.Settings.Language = language;
+        _service.Settings.Save();
+        BuildNavigation();
+        LoadLanguageSelector();
+        ShowHome();
+    }
 }
