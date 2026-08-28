@@ -1,7 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
+using Path = System.Windows.Shapes.Path;
+using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace YacaPluginSwitcher;
 
