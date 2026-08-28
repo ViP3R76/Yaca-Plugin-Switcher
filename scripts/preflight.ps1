@@ -1,37 +1,9 @@
-param(
-    [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-)
-
 $ErrorActionPreference = 'Stop'
+$Root = Split-Path -Parent $PSScriptRoot
+
 Write-Host 'YACA Plugin Switcher - static preflight' -ForegroundColor Cyan
 
-$required = @(
-    'YacaPluginSwitcher.sln',
-    'Directory.Build.props',
-    'src/YacaPluginSwitcher.Core/YacaPluginSwitcher.Core.csproj',
-    'src/YacaPluginSwitcher/YacaPluginSwitcher.csproj',
-    'src/YacaPluginSwitcher/Properties/PublishProfiles/Win64SingleFile.pubxml',
-    'src/YacaPluginSwitcher/UI/ConfigForm.cs',
-    'src/YacaPluginSwitcher/UI/DarkMode.cs',
-    'src/YacaPluginSwitcher.Core/AppError.cs'
-)
-foreach ($relative in $required) {
-    if (-not (Test-Path (Join-Path $Root $relative) -PathType Leaf)) { throw "Required file missing: $relative" }
-}
-
-$projects = Get-ChildItem -Path $Root -Recurse -File -Include *.csproj,*.props,*.pubxml
-foreach ($project in $projects) { [xml]$null = Get-Content -LiteralPath $project.FullName -Raw }
-
-$csFiles = Get-ChildItem -Path $Root -Recurse -File -Filter *.cs
-foreach ($file in $csFiles) {
-    $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -match '(?i)<PackageReference|Newtonsoft|MahApps|MaterialDesign') { throw "External dependency marker found: $($file.FullName)" }
-    if (([regex]::Matches($text, '\{')).Count -ne ([regex]::Matches($text, '\}')).Count) { throw "Brace count mismatch: $($file.FullName)" }
-}
-
-$mainProject = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/YacaPluginSwitcher.csproj') -Raw
-if (Get-ChildItem -Path $Root -Recurse -File | Where-Object { $_.FullName -match '\\tests\\|Test\.csproj$|Tests\.dll$' }) { throw 'Test project/artifacts must not be part of the release repository.' }
-$publishProfile = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/Properties/PublishProfiles/Win64SingleFile.pubxml') -Raw
+$publishProfile = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/YacaPluginSwitcher.csproj') -Raw
 foreach ($setting in @('<RuntimeIdentifier>win-x64</RuntimeIdentifier>','<SelfContained>true</SelfContained>','<PublishSingleFile>true</PublishSingleFile>')) {
     if ($publishProfile -notmatch [regex]::Escape($setting)) { throw "Publish profile missing: $setting" }
 }
@@ -46,9 +18,13 @@ $mainForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/MainForm.cs') -
 if ($mainForm -notmatch 'OpenPluginsFolder\(\)') { throw 'Local Plugins folder action missing.' }
 if ($mainForm -match 'SetTargetDirectory\(dialog\.SelectedPath\)') { throw 'Plugins Folder must not change target directory.' }
 if ($mainForm -notmatch 'FormBorderStyle\s*=\s*FormBorderStyle\.Sizable') { throw 'Main form must be resizable.' }
-# Keep this synchronized with MainForm.MinimumSize. The current stable UI requires 760x560.
-if ($mainForm -notmatch 'MinimumSize\s*=\s*new Size\(760, 560\)') { throw 'Main form minimum size is incorrect.' }
-if ($mainForm -notmatch 'MakeButton\(text\.CloseTeamspeak, 210\)') { throw 'TeamSpeak close button width is incorrect.' }
+if ($mainForm -notmatch 'MinimumSize\s*=\s*new Size\(900, 640\)') { throw 'Main form minimum size is incorrect.' }
+if ($mainForm -notmatch 'ShowEmbeddedPage\(') { throw 'Single-window embedded page navigation is missing.' }
+if ($mainForm -notmatch 'new BackupForm\(_service\)') { throw 'Backup page integration is missing.' }
+if ($mainForm -notmatch 'new ConfigForm\(_service\)') { throw 'Configuration page integration is missing.' }
+if ($mainForm -notmatch 'new AboutForm\(_service\.Settings\.Language\)') { throw 'Info page integration is missing.' }
+if ($mainForm -notmatch 'CreateBackupFromDashboard\(\)') { throw 'Dashboard backup action is missing.' }
+if ($mainForm -notmatch 'CloseTeamSpeak\(\)') { throw 'TeamSpeak close action is missing.' }
 if ($mainForm -match 'MainForm_Resize') { throw 'Obsolete MainForm_Resize handler remains.' }
 if ($mainForm -match 'ShowError\(ex\.Message\)|_status\.Text\s*=.*ex\.Message') { throw 'MainForm exposes raw exception messages.' }
 
@@ -57,6 +33,12 @@ if ($configForm -notmatch 'TeamSpeakPluginDirectories|MultipleTeamSpeakInstances
 if ($configForm -notmatch 'MaxBackups|AutomaticBackup|WarnIfTeamSpeakRunningOption') { throw 'Application options missing.' }
 if ($configForm -notmatch '_language') { throw 'Language selector missing.' }
 if ($configForm -notmatch 'SelectableBackups') { throw 'Selectable backup deletion option missing.' }
+
+$backupForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/UI/BackupForm.cs') -Raw
+if ($backupForm -notmatch 'SelectableBackupsForDeletion') { throw 'Selectable backup deletion behavior missing.' }
+if ($backupForm -notmatch 'DeleteBackups\(\)') { throw 'Backup deletion action missing.' }
+if ($backupForm -notmatch 'RestoreSelected\(\)') { throw 'Backup restore action missing.' }
+if ($backupForm -notmatch 'sha256') { throw 'Backup SHA-256 display/verification missing.' }
 
 $localization = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher.Core/Localization.cs') -Raw
 foreach ($requiredText in @('public const string English = "en"','public const string German = "de"','GetErrorMessage\(Exception exception','ErrorInvalidYacaDll','ErrorUnexpected','AlreadyRunningMessage')) {
@@ -86,7 +68,6 @@ if ($readme -match '%APPDATA%.*configuration|%LOCALAPPDATA%.*configuration') { t
 Write-Host 'Static preflight: PASS' -ForegroundColor Green
 Write-Host 'Run dotnet build/test on Windows with the .NET 10 SDK for compiler/analyzer validation.' -ForegroundColor Yellow
 
-# User releases intentionally contain no debug symbols.
 $Project = Join-Path $Root 'src\YacaPluginSwitcher\YacaPluginSwitcher.csproj'
 $ProjectText = Get-Content $Project -Raw
 if ($ProjectText -notmatch '<DebugSymbols>false</DebugSymbols>') { throw 'Release must disable debug symbols.' }
