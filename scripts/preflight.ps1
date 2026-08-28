@@ -21,10 +21,11 @@ $mainForm = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher/ProfessionalMai
 foreach ($required in @('BuildSidebar\(\)','BuildDashboard\(\)','Branding\.Logo','YACA UPDATER','CreateBackupFromDashboard\(\)','ShowSwitchPage\(\)','ShowBackups\(\)','ShowConfig\(\)','ShowInfo\(\)','RefreshActivePage\(true\)','LanguageChanged')) {
     if ($mainForm -notmatch $required) { throw "Professional UI feature missing: $required" }
 }
+if ([regex]::Matches($mainForm, 'AddAction\(').Count -ne 3) { throw 'Dashboard must contain exactly three primary action cards.' }
 if ($mainForm -match 'AddAction\([^\n]*Texts\.Backups') { throw 'Backups must not be duplicated in dashboard action cards.' }
 if ($mainForm -match 'AddAction\([^\n]*Texts\.Config') { throw 'Configuration must not be duplicated in dashboard action cards.' }
 if ($mainForm -match 'AddAction\([^\n]*Texts\.About') { throw 'Info must not be duplicated in dashboard action cards.' }
-if ($mainForm -notmatch 'ColumnCount\s*=\s*3.*?ColumnCount\s*=\s*3') { throw 'Dashboard three-card layout missing.' }
+if ([regex]::Matches($mainForm, 'ColumnCount\s*=\s*3').Count -lt 2) { throw 'Dashboard status/action three-column layouts missing.' }
 if ($mainForm -notmatch 'form\.MinimumSize\s*=\s*Size\.Empty' -or $mainForm -notmatch 'form\.MaximumSize\s*=\s*Size\.Empty') { throw 'Embedded pages must be allowed to fill the main window.' }
 if ($mainForm -match 'MainForm_Resize') { throw 'Obsolete MainForm_Resize handler remains.' }
 if ($mainForm -match 'ShowError\(ex\.Message\)|_status\.Text\s*=.*ex\.Message') { throw 'Main UI exposes raw exception messages.' }
