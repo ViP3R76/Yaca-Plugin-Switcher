@@ -20,7 +20,7 @@ public partial class MainWindow
         try
         {
             _service.Settings.Language = language;
-            _service.SaveSettings();
+            _service.Settings.Save();
             BuildNavigation();
             LoadLanguageSelector();
             ShowHome();
