@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>YacaPluginSwitcher</AssemblyName>
+    <RootNamespace>YacaPluginSwitcher</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <ReleasePackageName>YacaPluginSwitcher-v$(InformationalVersion)-win-x64</ReleasePackageName>
+    <EnableDefaultApplicationIcon>false</EnableDefaultApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YacaPluginSwitcher.Core\YacaPluginSwitcher.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\yaca_logo.png" />
+    <EmbeddedResource Include="Assets\discord_icon.png" />
+    <EmbeddedResource Include="Assets\github_icon.png" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <IncludeSymbolsInSingleFile>false</IncludeSymbolsInSingleFile>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <Target Name="PublishReleaseFromBuild"
+          AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true'">
+    <Exec Command="dotnet publish &quot;$(MSBuildProjectFullPath)&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:YacaReleasePackaging=true --no-restore" />
+  </Target>
+
+  <Target Name="CreateReleasePackage" AfterTargets="Publish">
+    <PropertyGroup>
+      <!-- The repository root is two levels above this project: src/YacaPluginSwitcher. -->
+      <!-- Do not use SolutionDir: direct dotnet publish of this project must work too. -->
+      <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</RepositoryRoot>
+      <ReleaseDirectory>$(RepositoryRoot)\releases</ReleaseDirectory>
+      <ReleaseStage>$(ReleaseDirectory)\$(ReleasePackageName)</ReleaseStage>
+      <ReleaseZip>$(ReleaseDirectory)\$(ReleasePackageName).zip</ReleaseZip>
+      <PluginSourceDirectory>$(RepositoryRoot)\Plugins</PluginSourceDirectory>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(ReleaseStage)" Condition="Exists('$(ReleaseStage)')" />
+    <MakeDir Directories="$(ReleaseDirectory);$(ReleaseStage);$(ReleaseStage)\Plugins" />
+
+    <ItemGroup>
+      <PublishedFiles Include="$(PublishDir)**\*" />
+      <PluginFiles Include="$(PluginSourceDirectory)\**\*" />
+      <ReleasePdbFiles Include="$(PublishDir)**\*.pdb" />
+      <ReleaseDllFiles Include="$(PublishDir)**\*.dll" />
+      <ReleaseRuntimeFiles Include="$(PublishDir)**\*.deps.json;$(PublishDir)**\*.runtimeconfig.json" />
+      <ReleaseExeFiles Include="$(PublishDir)**\*.exe" />
+    </ItemGroup>
+
+    <Error Condition="@(ReleasePdbFiles) != ''" Text="Release packaging aborted: PDB files are not allowed in the user release." />
+    <Error Condition="@(ReleaseDllFiles) != ''" Text="Release packaging aborted: external DLL files are not allowed in the user release." />
+    <Error Condition="@(ReleaseRuntimeFiles) != ''" Text="Release packaging aborted: runtime metadata files are not allowed in the user release." />
+    <Error Condition="@(ReleaseExeFiles->Count()) != '1'" Text="Release packaging aborted: expected exactly one executable, found @(ReleaseExeFiles->Count())." />
+
+    <Copy SourceFiles="@(PublishedFiles)" DestinationFiles="@(PublishedFiles->'$(ReleaseStage)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles->'$(ReleaseStage)\Plugins\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="Exists('$(PluginSourceDirectory)')" />
+
+    <ItemGroup>
+      <FinalPdbFiles Include="$(ReleaseStage)\**\*.pdb" />
+      <FinalDllFiles Include="$(ReleaseStage)\**\*.dll" />
+      <FinalRuntimeFiles Include="$(ReleaseStage)\**\*.deps.json;$(ReleaseStage)\**\*.runtimeconfig.json" />
+      <FinalExeFiles Include="$(ReleaseStage)\**\*.exe" />
+    </ItemGroup>
+    <Error Condition="@(FinalPdbFiles) != ''" Text="Release validation failed: PDB found in staging directory." />
+    <Error Condition="@(FinalDllFiles) != ''" Text="Release validation failed: DLL found in staging directory." />
+    <Error Condition="@(FinalRuntimeFiles) != ''" Text="Release validation failed: runtime metadata found in staging directory." />
+    <Error Condition="@(FinalExeFiles->Count()) != '1'" Text="Release validation failed: staging directory must contain exactly one EXE." />
+
+    <Delete Files="$(ReleaseZip)" Condition="Exists('$(ReleaseZip)')" />
+    <ZipDirectory SourceDirectory="$(ReleaseStage)" DestinationFile="$(ReleaseZip)" Overwrite="true" />
+    <Message Importance="high" Text="Release ZIP erstellt: $(ReleaseZip)" />
+  </Target>
+</Project>
