@@ -14,10 +14,6 @@ public sealed class YacaService
     public BackupManager Backups { get; }
     public YacaInstaller Installer { get; }
 
-    /// <summary>
-    /// Resolves the target plugin directory. The multiple-instance list is intentionally
-    /// ignored unless the user explicitly enables multiple TeamSpeak installations.
-    /// </summary>
     public string TargetDirectory
     {
         get
@@ -53,22 +49,43 @@ public sealed class YacaService
 
     public YacaPluginInfo? DetectCurrent()
     {
-        if (!File.Exists(TargetFile))
-            return null;
+        foreach (var path in GetCurrentTargetCandidates())
+        {
+            if (!File.Exists(path))
+                continue;
 
-        var validation = YacaValidator.Validate(TargetFile);
-        if (!validation.IsValid || validation.Version is null || string.IsNullOrWhiteSpace(validation.Sha256))
-            return null;
+            var validation = YacaValidator.Validate(path);
+            if (!validation.IsValid || validation.Version is null || string.IsNullOrWhiteSpace(validation.Sha256))
+            {
+                Logger.Warn($"Installierte YACA-DLL gefunden, aber Validierung fehlgeschlagen: {path} -> {validation.Message}");
+                continue;
+            }
 
-        return new YacaPluginInfo(
-            TargetFile,
-            TargetFileName,
-            validation.Version,
-            validation.Build,
-            validation.FileSize,
-            validation.Sha256,
-            true,
-            validation.Message);
+            return new YacaPluginInfo(
+                path,
+                TargetFileName,
+                validation.Version,
+                validation.Build,
+                validation.FileSize,
+                validation.Sha256,
+                true,
+                validation.Message);
+        }
+
+        return null;
+    }
+
+    private IEnumerable<string> GetCurrentTargetCandidates()
+    {
+        var candidates = new List<string> { TargetFile };
+
+        if (!Settings.UseMultipleTeamSpeakInstances && !Settings.UseCustomTeamSpeakPluginDirectory)
+        {
+            foreach (var directory in GetTeamSpeakPluginDirectoryCandidates())
+                candidates.Add(Path.Combine(directory, TargetFileName));
+        }
+
+        return candidates.Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     public void SetTargetDirectory(string directory)
@@ -111,8 +128,6 @@ public sealed class YacaService
     {
         var defaultPath = GetDefaultTeamSpeakPluginDirectory();
 
-        // A null TeamSpeakPluginDirectory means "automatic detection" in single-instance mode.
-        // Do not persist the detected path; this keeps the default genuinely automatic.
         if (Settings.UseMultipleTeamSpeakInstances)
         {
             Settings.AddTeamSpeakPluginDirectory(defaultPath);
@@ -126,7 +141,6 @@ public sealed class YacaService
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // The app can still operate if the portable config cannot currently be written.
         }
     }
 }
