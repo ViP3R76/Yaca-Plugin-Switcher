@@ -17,3 +17,5 @@
 3. Check that no new compiler warnings are introduced.
 4. Update documentation when behavior changes.
 5. Do not include personal paths or private logs in commits/issues.
+
+Stable UI changes should preserve the existing behavior. Experimental UI redesign work belongs on a dedicated feature branch.
