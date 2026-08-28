@@ -9,3 +9,5 @@ For ordinary plugin validation or installation problems, open a GitHub issue wit
 ## Design notes
 
 The switcher does not load YACA DLLs into its own process. It reads them as binary files, validates their PE structure/signatures, computes a SHA-256 hash and copies them only after validation.
+
+Production releases are self-contained Windows x64 single-file executables and are validated by the release workflow before publication.
