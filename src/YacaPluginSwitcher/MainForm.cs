@@ -14,6 +14,7 @@ public sealed class MainForm : Form
     private readonly Label _pageTitle = new();
     private readonly Button _backButton = new();
     private readonly Label _languageIndicator = new();
+    private readonly Button _refreshButton = new();
     private Form? _embeddedPage;
     private Panel? _dashboard;
     private Panel? _switchPage;
@@ -121,7 +122,7 @@ public sealed class MainForm : Form
         var navigation = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 3,
+            ColumnCount = 4,
             RowCount = 1,
             BackColor = Theme.Background,
             Margin = Padding.Empty,
@@ -129,6 +130,7 @@ public sealed class MainForm : Form
         };
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
         _backButton.Text = BackText;
@@ -146,13 +148,21 @@ public sealed class MainForm : Form
         _pageTitle.TextAlign = ContentAlignment.MiddleCenter;
         navigation.Controls.Add(_pageTitle, 1, 0);
 
+        _refreshButton.Text = IsGerman ? "Aktualisieren" : "Refresh";
+        _refreshButton.Width = 110;
+        _refreshButton.Height = 34;
+        _refreshButton.Margin = new Padding(4, 1, 8, 1);
+        Theme.StyleButton(_refreshButton);
+        _refreshButton.Click += (_, _) => RefreshCurrentPage(true);
+        navigation.Controls.Add(_refreshButton, 2, 0);
+
         _languageIndicator.Text = IsGerman ? "DE" : "EN";
         _languageIndicator.AutoSize = true;
         _languageIndicator.Dock = DockStyle.Fill;
         _languageIndicator.ForeColor = Theme.SecondaryForeground;
         _languageIndicator.TextAlign = ContentAlignment.MiddleRight;
         _languageIndicator.Padding = new Padding(0, 0, 4, 0);
-        navigation.Controls.Add(_languageIndicator, 2, 0);
+        navigation.Controls.Add(_languageIndicator, 3, 0);
         root.Controls.Add(navigation, 0, 1);
 
         _pageHost.Dock = DockStyle.Fill;
@@ -183,6 +193,7 @@ public sealed class MainForm : Form
         _backButton.Visible = false;
         _pageTitle.Text = OverviewText;
         _languageIndicator.Text = IsGerman ? "DE" : "EN";
+        _refreshButton.Text = IsGerman ? "Aktualisieren" : "Refresh";
         _activePage = "home";
         RefreshDashboard();
     }
@@ -333,6 +344,18 @@ public sealed class MainForm : Form
         var label = new Label { Dock = DockStyle.Fill, BackColor = Theme.Surface, ForeColor = accent, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F) };
         label.Text = $"{title}\n{value()}";
         host.Controls.Add(label, column, 0);
+    }
+
+    private void RefreshCurrentPage(bool announceNewPlugins)
+    {
+        if (_activePage == "switch")
+        {
+            RefreshSwitchPage(announceNewPlugins);
+            return;
+        }
+
+        if (_activePage == "home")
+            RefreshDashboard();
     }
 
     private void ShowSwitchPage()
