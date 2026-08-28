@@ -77,15 +77,30 @@ public sealed class YacaService
 
     private IEnumerable<string> GetCurrentTargetCandidates()
     {
-        var candidates = new List<string> { TargetFile };
+        var candidates = new List<string>();
 
-        if (!Settings.UseMultipleTeamSpeakInstances && !Settings.UseCustomTeamSpeakPluginDirectory)
-        {
-            foreach (var directory in GetTeamSpeakPluginDirectoryCandidates())
-                candidates.Add(Path.Combine(directory, TargetFileName));
-        }
+        AddCandidate(candidates, TargetFile);
+        AddCandidate(candidates, Settings.TeamSpeakPluginDirectory);
+
+        foreach (var directory in Settings.TeamSpeakPluginDirectories)
+            AddCandidate(candidates, directory);
+
+        foreach (var directory in GetTeamSpeakPluginDirectoryCandidates())
+            AddCandidate(candidates, directory);
 
         return candidates.Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static void AddCandidate(List<string> candidates, string? directoryOrFile)
+    {
+        if (string.IsNullOrWhiteSpace(directoryOrFile))
+            return;
+
+        var value = directoryOrFile.Trim();
+        if (string.Equals(Path.GetFileName(value), TargetFileName, StringComparison.OrdinalIgnoreCase))
+            candidates.Add(value);
+        else
+            candidates.Add(Path.Combine(value, TargetFileName));
     }
 
     public void SetTargetDirectory(string directory)
