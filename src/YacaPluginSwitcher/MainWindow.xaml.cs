@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows.Shapes;
+using Path = System.Windows.Shapes.Path;
+using Rectangle = System.Windows.Shapes.Rectangle;
 using YacaPluginSwitcher.Core;
 using YacaPluginSwitcher.Models;
 
