@@ -68,7 +68,7 @@ if ($darkMode -notmatch 'SetWindowTheme') { throw 'Dark scrollbar P/Invoke missi
 if ($darkMode -notmatch 'uxtheme\.dll') { throw 'Dark scrollbar must use uxtheme.dll.' }
 
 $teamSpeak = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher.Core/TeamSpeakDetector.cs') -Raw
-if ($teamSpeak -notmatch 'EnumWindows' -or $teamSpeak -notmatch 'PostMessage') { throw 'Graceful TeamSpeak close fallback missing.' }
+if ($teamSpeak -notmatch 'EnumWindows' -or $teamSpeak -notmatch 'SendMessageTimeoutW') { throw 'Graceful TeamSpeak close implementation missing.' }
 if ($teamSpeak -match '\.Kill\(') { throw 'TeamSpeak close logic must never force-kill.' }
 
 $appError = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher.Core/AppError.cs') -Raw
