@@ -11,7 +11,8 @@ foreach ($setting in @('<RuntimeIdentifier>win-x64</RuntimeIdentifier>','<SelfCo
 foreach ($resource in @('Assets\yaca_logo.png','Assets\discord_icon.png','Assets\github_icon.png')) {
     $resourcePath = Join-Path $Root "src/YacaPluginSwitcher/$resource"
     if (-not (Test-Path -LiteralPath $resourcePath -PathType Leaf)) { throw "Required UI asset missing: $resource" }
-    if ($project -notmatch [regex]::Escape("<EmbeddedResource Include=\"$resource\" />")) { throw "UI asset is not embedded: $resource" }
+    $embeddedResource = '<EmbeddedResource Include="{0}" />' -f $resource
+    if ($project -notmatch [regex]::Escape($embeddedResource)) { throw "UI asset is not embedded: $resource" }
 }
 
 $appPaths = Get-Content (Join-Path $Root 'src/YacaPluginSwitcher.Core/AppPaths.cs') -Raw
