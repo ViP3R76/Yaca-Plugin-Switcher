@@ -38,7 +38,7 @@ internal static class Program
                 return;
             }
 
-            Application.Run(new MainForm(service));
+            Application.Run(new ProfessionalMainForm(service));
         }
         catch (Exception ex)
         {
