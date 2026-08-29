@@ -57,6 +57,7 @@ public partial class MainWindow
 
         var tileGrid = new Grid();
         tileGrid.Children.Add(panel);
+
         AddReferenceWave(tileGrid, "M 0,54 C 70,10 150,10 220,54 S 370,98 440,54 S 590,10 660,54 S 810,98 880,54 S 1030,10 1100,54", accent, 2.4, 0.55, 78);
         AddReferenceWave(tileGrid, "M 0,68 C 80,98 150,98 220,68 S 360,38 440,68 S 580,98 660,68 S 800,38 880,68 S 1020,98 1100,68", (Brush)FindResource("GoldBrush"), 1.5, 0.42, 62);
         AddReferenceWave(tileGrid, "M 0,80 C 90,55 155,55 230,80 S 365,105 440,80 S 575,55 660,80 S 795,105 880,80 S 1015,55 1100,80", accent, 1.0, 0.30, 48);
