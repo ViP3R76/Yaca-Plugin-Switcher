@@ -35,9 +35,40 @@ public partial class MainWindow
             var accent = key.Equals("home", StringComparison.OrdinalIgnoreCase)
                 ? (Brush)FindResource("GoldBrush")
                 : (Brush)FindResource("ForegroundBrush");
+            var icon = CreateIcon(data, accent, 30, 30, 2.35);
+            icon.Margin = new Thickness(0, 0, 12, 0);
             panel.Children.RemoveAt(0);
-            panel.Children.Insert(0, CreateIcon(data, accent, 28, 28, 2.35));
+            panel.Children.Insert(0, icon);
+
+            button.MouseEnter -= NavButton_MouseEnter;
+            button.MouseLeave -= NavButton_MouseLeave;
+            button.MouseEnter += NavButton_MouseEnter;
+            button.MouseLeave += NavButton_MouseLeave;
         }
+    }
+
+    private void NavButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (sender is not Button button)
+            return;
+
+        button.Background = (Brush)FindResource("NavSelectedBrush");
+        button.Foreground = (Brush)FindResource("GoldBrush");
+        button.BorderBrush = (Brush)FindResource("GoldBrush");
+        button.BorderThickness = new Thickness(1);
+    }
+
+    private void NavButton_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (sender is not Button button)
+            return;
+
+        var selected = button.Tag is string key && _navButtons.Any(x =>
+            x.Button == button && x.Key.Equals(_activePage, StringComparison.OrdinalIgnoreCase));
+        button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
+        button.Foreground = selected ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
+        button.BorderBrush = selected ? (Brush)FindResource("GoldBrush") : Brushes.Transparent;
+        button.BorderThickness = selected ? new Thickness(1) : new Thickness(0);
     }
 
     private void ApplyReferencePanelIcons()
@@ -56,8 +87,9 @@ public partial class MainWindow
             var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase)
                 ? (Brush)FindResource("GoldBrush")
                 : (Brush)FindResource("AccentBrush");
+            var icon = CreateIcon(data, accent, 72, 72, 3.6);
             parent.Children.RemoveAt(0);
-            parent.Children.Insert(0, CreateIcon(data, accent, 82, 82, 4.0));
+            parent.Children.Insert(0, icon);
         }
     }
 
