@@ -62,6 +62,11 @@ public sealed class YacaUpdaterService
     public async Task DownloadMissingAsync(IProgress<YacaUpdaterProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
+
+        // A kept archive or an archive left behind by an interrupted run must never
+        // become a dead-end. Process it before asking the remote API for new versions.
+        await ProcessExistingDownloadsAsync(progress, cancellationToken);
+
         var missing = await GetMissingVersionsAsync(cancellationToken);
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
         foreach (var version in missing)
@@ -84,6 +89,7 @@ public sealed class YacaUpdaterService
                     received += read;
                     progress?.Report(new(version, received, total, "Download", false, false, null));
                 }
+                await output.FlushAsync(cancellationToken);
                 await ProcessDownloadedArchiveAsync(version, archivePath, progress, cancellationToken);
             }
             catch (OperationCanceledException)
@@ -95,6 +101,45 @@ public sealed class YacaUpdaterService
             {
                 if (!_service.Settings.KeepYacaPluginDownloads) TryDelete(archivePath);
                 progress?.Report(new(version, 0, null, "Fehlgeschlagen", true, false, ex.Message));
+            }
+        }
+    }
+
+    private async Task ProcessExistingDownloadsAsync(IProgress<YacaUpdaterProgress>? progress, CancellationToken cancellationToken)
+    {
+        var archives = Directory.EnumerateFiles(DownloadDirectory, "yaca_*.ts3_plugin", SearchOption.TopDirectoryOnly)
+            .Select(path => (Path: path, Version: ExtractVersion(Path.GetFileName(path))))
+            .Where(x => !string.IsNullOrWhiteSpace(x.Version))
+            .OrderByDescending(x => ParseVersion(x.Version!))
+            .ToList();
+
+        foreach (var archive in archives)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var version = archive.Version!;
+            var tag = version.Replace(".", "", StringComparison.Ordinal);
+            var target = Path.Combine(_service.Paths.PluginDirectory, $"yaca_{tag}_win64.dll");
+
+            if (File.Exists(target))
+            {
+                var validation = YacaValidator.Validate(target);
+                if (validation.IsValid && validation.Version == ParseVersion(version))
+                    continue;
+            }
+
+            try
+            {
+                await ProcessDownloadedArchiveAsync(version, archive.Path, progress, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                progress?.Report(new(version, 0, null, "Fehlgeschlagen", true, false, ex.Message));
+                if (!_service.Settings.KeepYacaPluginDownloads)
+                    TryDelete(archive.Path);
             }
         }
     }
