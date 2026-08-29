@@ -82,7 +82,7 @@ public partial class MainWindow : Window
         try
         {
             _plugins.Clear(); _plugins.AddRange(GetDistinctPlugins()); var notice = announce ? GetNewPluginNotice(_plugins) : null; if (!_pluginBaselineInitialized) SetPluginBaseline(_plugins); var current = _service.DetectCurrent(); UpdateCurrentInstalled(current); if (announce) FlashElement(_currentCard);
-            var running = TeamSpeakDetector.IsRunning(); _tsStatus!.Text = running ? (IsGerman ? "GESTARTET" : "RUNNING") : (IsGerman ? "NICHT GESTARTET" : "NOT RUNNING"); _tsStatus.Foreground = running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"); _tsDescription!.Text = running ? (IsGerman ? "TeamSpeak 3 ist aktiv. Für einen sicheren Wechsel bitte zuerst schließen." : "TeamSpeak 3 is active. Close it before switching.") : (IsGerman ? "TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich." : "TeamSpeak 3 is not active.\nSwitching is ready."); _tsClose!.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+            var running = TeamSpeakDetector.IsRunning(); _tsStatus!.Text = running ? (IsGerman ? "GESTARTET" : "RUNNING") : (IsGerman ? "NICHT GESTARTET" : "NOT RUNNING"); _tsStatus.Foreground = running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"); _tsDescription!.Text = running ? (IsGerman ? "TeamSpeak 3 ist aktiv!\nFür einen sicheren Wechsel bitte zuerst schliessen." : "TeamSpeak 3 is active!\nFor a safe switch, please close it first.") : (IsGerman ? "TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich." : "TeamSpeak 3 is not active.\nSwitching is ready."); _tsClose!.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
             UpdateBackupSummary(_service.Backups.ListBackups().FirstOrDefault()); RenderVersionList(current); if (_pageStatus is not null) _pageStatus.Text = string.IsNullOrWhiteSpace(notice) ? (running ? Texts.TeamspeakRunning : Texts.TeamspeakStopped) : notice;
         }
         catch (Exception ex) { _service.Logger.Error($"Dashboard refresh failed: {ex}"); ShowError(Texts.ErrorUnexpected); }
@@ -102,7 +102,27 @@ public partial class MainWindow : Window
 
     private void Activate(YacaPluginInfo plugin) { var text = Texts; var current = _service.DetectCurrent(); if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true) { ShowPageStatus(text.AlreadyActiveMessage, false); return; } if (_service.Settings.WarnIfTeamSpeakRunning && TeamSpeakDetector.IsRunning() && MessageBox.Show(text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return; try { Mouse.OverrideCursor = Cursors.Wait; _service.Installer.Install(plugin, _service.TargetFile, current, _service.Settings.AutomaticBackup, _service.Settings.MaxBackups); ShowSwitchPage($"{plugin.DisplayName} {text.ActivatedMessage}"); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or YacaOperationException) { _service.Logger.Error($"YACA switch failed: {ex}"); ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected)); } finally { Mouse.OverrideCursor = null; } }
     private void CreateBackupFromDashboard() { var text = Texts; if (TeamSpeakDetector.IsRunning() && _service.Settings.WarnIfTeamSpeakRunning && MessageBox.Show(text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return; try { var current = _service.DetectCurrent(); if (current is null) { ShowError(text.NotInstalled); return; } if (_service.Backups.CreateBackup(_service.TargetFile, current, automatic: false) is null) { ShowError(text.ErrorUnexpected); return; } _service.Backups.Trim(_service.Settings.MaxBackups); RefreshHome(); FlashElement(_backupCard); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException) { _service.Logger.Error($"Dashboard backup failed: {ex}"); ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected)); } }
-    private void CloseTeamSpeak() { var text = Texts; if (!TeamSpeakDetector.IsRunning()) { RefreshHome(); return; } if (MessageBox.Show(text.CloseTeamspeakQuestion, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return; try { Mouse.OverrideCursor = Cursors.Wait; if (!TeamSpeakDetector.TryClose(TimeSpan.FromSeconds(5))) MessageBox.Show(text.CloseTeamspeakFailed, text.TeamspeakRunningTitle, MessageBoxButton.OK, MessageBoxImage.Error); } catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception) { ShowError(Localization.GetErrorMessage(ex, text, text.CloseTeamspeakFailed)); } finally { Mouse.OverrideCursor = null; RefreshHome(); } }
+    private void CloseTeamSpeak()
+    {
+        var text = Texts;
+        if (!TeamSpeakDetector.IsRunning()) { RefreshHome(); return; }
+        if (MessageBox.Show(text.CloseTeamspeakQuestion, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+            if (!TeamSpeakDetector.TryCloseWithElevation(TimeSpan.FromSeconds(10)))
+                MessageBox.Show(text.CloseTeamspeakFailed, text.TeamspeakRunningTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            ShowError(Localization.GetErrorMessage(ex, text, text.CloseTeamspeakFailed));
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+            RefreshHome();
+        }
+    }
     private void ShowBackups() { _activePage = "backups"; SetActiveNav("backups"); PageHost.Content = new BackupView(_service, this); }
     private void ShowConfig() { _activePage = "config"; SetActiveNav("config"); PageHost.Content = new ConfigView(_service, this); }
     private void ShowInfo() { _activePage = "info"; SetActiveNav("info"); PageHost.Content = new InfoView(_service.Settings.Language); }
