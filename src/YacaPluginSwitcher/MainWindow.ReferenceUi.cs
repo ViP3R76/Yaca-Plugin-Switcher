@@ -6,7 +6,7 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private void ApplyReferenceVisuals(object sender, RoutedEventArgs e)
     {
         ApplyReferenceNavigationIcons();
         ApplyReferencePanelIcons();
@@ -16,7 +16,7 @@ public partial class MainWindow
     {
         var icons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["home"] = "M 3,11 L 12,3 L 21,11 L 21,21 L 15,21 L 15,14 L 9,14 L 9,21 L 3,21 Z",
+            ["home"] = "M 3,10 L 12,3 L 21,10 L 21,21 L 15,21 L 15,14 L 9,14 L 9,21 L 3,21 Z",
             ["refresh"] = "M 20,11 A 8,8 0 1 0 18,16 M 20,5 L 20,11 L 14,11",
             ["switch"] = "M 3,8 L 21,8 M 16,3 L 21,8 L 16,13 M 21,16 L 3,16 M 8,11 L 3,16 L 8,21",
             ["backup-create"] = "M 4,4 L 20,4 L 20,20 L 4,20 Z M 12,8 L 12,16 M 8,12 L 16,12",
@@ -32,9 +32,11 @@ public partial class MainWindow
             if (button.Content is not StackPanel panel || panel.Children.Count == 0)
                 continue;
 
-            var icon = CreateIcon(data, (Brush)FindResource(key == "home" ? "GoldBrush" : "ForegroundBrush"), 28, 28, 2.35);
+            var accent = key.Equals("home", StringComparison.OrdinalIgnoreCase)
+                ? (Brush)FindResource("GoldBrush")
+                : (Brush)FindResource("ForegroundBrush");
             panel.Children.RemoveAt(0);
-            panel.Children.Insert(0, icon);
+            panel.Children.Insert(0, CreateIcon(data, accent, 28, 28, 2.35));
         }
     }
 
@@ -51,10 +53,11 @@ public partial class MainWindow
         {
             if (!iconMap.TryGetValue(text.Text.Trim(), out var data) || text.Parent is not Panel parent || parent.Children.Count == 0)
                 continue;
-            var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("AccentBrush");
-            var icon = CreateIcon(data, accent, 82, 82, 4.0);
+            var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase)
+                ? (Brush)FindResource("GoldBrush")
+                : (Brush)FindResource("AccentBrush");
             parent.Children.RemoveAt(0);
-            parent.Children.Insert(0, icon);
+            parent.Children.Insert(0, CreateIcon(data, accent, 82, 82, 4.0));
         }
     }
 
