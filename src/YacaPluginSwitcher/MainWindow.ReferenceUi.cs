@@ -99,11 +99,19 @@ public partial class MainWindow
     private void ApplyReferenceTileStyles()
     {
         var referenceStyle = (Style)FindResource("ReferenceTileButtonStyle");
-        var baseStyle = (Style)FindResource("TileButtonStyle");
+        var referenceTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "YACA WECHSELN",
+            "BACKUP ERSTELLEN",
+            "YACA UPDATER"
+        };
 
         foreach (var button in FindVisualButtons(PageHost).ToList())
         {
-            if (button.Style == baseStyle && button.ActualHeight >= 180)
+            var isReferenceTile = button.Tag is string tag && tag.Equals("reference-dashboard-tile", StringComparison.OrdinalIgnoreCase)
+                || FindVisualTextBlocks(button).Any(t => referenceTitles.Contains(t.Text.Trim()));
+
+            if (isReferenceTile)
                 button.Style = referenceStyle;
         }
     }
