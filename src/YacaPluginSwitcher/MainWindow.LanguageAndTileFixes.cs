@@ -18,9 +18,10 @@ public partial class MainWindow
     {
         var button = new Button
         {
-            Style = (Style)FindResource("TileButtonStyle"),
+            Style = (Style)FindResource("ReferenceTileButtonStyle"),
             BorderBrush = accent,
-            Margin = new Thickness(6)
+            Margin = new Thickness(6),
+            Tag = "reference-dashboard-tile"
         };
 
         var panel = new StackPanel
