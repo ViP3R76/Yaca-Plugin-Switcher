@@ -10,7 +10,6 @@ public partial class MainWindow
 {
     private readonly HashSet<Button> _enhancedNavigationButtons = [];
     private readonly List<TextBlock> _updaterStepLabels = [];
-    private Image? _teamSpeakStatusIcon;
     private StackPanel? _updaterStepPanel;
     private bool _enhancementsInitialized;
     private bool _teamSpeakStatusHooked;
@@ -89,9 +88,7 @@ public partial class MainWindow
 
     private void ApplyTeamSpeakStatusIcon()
     {
-        if (_tsStatus is null || _tsStatus.Parent is not StackPanel parent) return;
-        _teamSpeakStatusIcon ??= DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetTeamSpeakStopped, (Brush)FindResource("GoldBrush"), 52, 52);
-        if (!parent.Children.Contains(_teamSpeakStatusIcon)) parent.Children.Insert(0, _teamSpeakStatusIcon);
+        if (_tsStatus is null) return;
         if (!_teamSpeakStatusHooked)
         {
             _teamSpeakStatusHooked = true;
@@ -105,7 +102,7 @@ public partial class MainWindow
     {
         if (_teamSpeakStatusIcon is null || _tsStatus is null) return;
         var running = _tsStatus.Text.Equals("GESTARTET", StringComparison.OrdinalIgnoreCase) || _tsStatus.Text.Equals("RUNNING", StringComparison.OrdinalIgnoreCase);
-        _teamSpeakStatusIcon.Tag = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
+        DashboardIconRegistry.SetAsset(_teamSpeakStatusIcon, running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped);
         DashboardIconRegistry.SetFill(_teamSpeakStatusIcon, running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"));
     }
 
