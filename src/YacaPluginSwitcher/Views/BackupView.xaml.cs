@@ -26,7 +26,7 @@ public partial class BackupView : UserControl
         TitleText.Text = Texts.BackupTitle;
         _rows.Clear();
         foreach (var backup in _service.Backups.ListBackups())
-            _rows.Add(new BackupRow(backup));
+            _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
 
         Grid.ItemsSource = _rows;
 
@@ -35,11 +35,8 @@ public partial class BackupView : UserControl
         // otherwise all backups after confirmation.
         DeleteButton.Visibility = Visibility.Visible;
         DeleteButton.Content = SelectiveDeletionEnabled
-            ? (Localization.Normalize(_service.Settings.Language) == Localization.German ? "Backups löschen" : "Delete backups")
-            : (Localization.Normalize(_service.Settings.Language) == Localization.German ? "Alle Backups löschen" : "Delete all backups");
-
-        foreach (var row in _rows)
-            row.Selected = false;
+            ? (IsGerman() ? "Backups löschen" : "Delete backups")
+            : (IsGerman() ? "Alle Backups löschen" : "Delete all backups");
     }
 
     private void Delete_Click(object sender, RoutedEventArgs e)
@@ -145,11 +142,16 @@ public partial class BackupView : UserControl
     {
         public BackupInfo Info { get; }
         public bool Selected { get; set; }
+        public bool CanSelect { get; }
         public string DisplayName => Info.DisplayName;
         public DateTime Timestamp => Info.Timestamp;
         public string Sha256 => Info.Sha256;
         public string FileSizeDisplay => $"{Info.FileSize / 1024d / 1024d:0.00} MB";
 
-        public BackupRow(BackupInfo info) => Info = info;
+        public BackupRow(BackupInfo info, bool canSelect)
+        {
+            Info = info;
+            CanSelect = canSelect;
+        }
     }
 }
