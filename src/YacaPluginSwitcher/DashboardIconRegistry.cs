@@ -22,6 +22,7 @@ internal static class DashboardIconRegistry
     internal const string IconAssetUpdater = "icon_asset_updater";
     internal const string IconAssetInfo = "icon_asset_info";
     internal const string IconAssetExit = "icon_asset_exit";
+    internal const string IconAssetInstalled = "icon_asset_installed";
     internal const string IconAssetTeamSpeak = "icon_asset_teamspeak";
     internal const string IconAssetTeamSpeakActive = "icon_asset_teamspeak_active";
     internal const string IconAssetTeamSpeakInactive = "icon_asset_teamspeak_inactive";
@@ -37,6 +38,7 @@ internal static class DashboardIconRegistry
         [IconAssetUpdater] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
         [IconAssetInfo] = "/YacaPluginSwitcher;component/Assets/info-notepad-icon.svg",
         [IconAssetExit] = "/YacaPluginSwitcher;component/Assets/power-off-icon.svg",
+        [IconAssetInstalled] = "/YacaPluginSwitcher;component/Assets/checked-shield-icon.svg",
         [IconAssetTeamSpeak] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
         [IconAssetTeamSpeakActive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
         [IconAssetTeamSpeakInactive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
@@ -50,7 +52,7 @@ internal static class DashboardIconRegistry
         if (!TryGetAssetPath(assetKey, out var path))
             throw new InvalidOperationException($"Unknown dashboard icon asset '{assetKey}'.");
 
-        var icon = new SvgIcon
+        return new SvgIcon
         {
             UriSource = new Uri(path, UriKind.RelativeOrAbsolute),
             AppName = "YacaPluginSwitcher",
@@ -64,8 +66,6 @@ internal static class DashboardIconRegistry
             UseLayoutRounding = true,
             Tag = assetKey
         };
-
-        return icon;
     }
 
     internal static void SetFill(Image icon, Brush fill)
