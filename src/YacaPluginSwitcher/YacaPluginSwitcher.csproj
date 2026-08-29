@@ -23,6 +23,7 @@
     <Resource Include="Assets\github_icon.png" />
     <Resource Include="Assets\twitch_icon.svg" />
     <Content Include="Assets\yaca_switch_icon.svg" />
+    <Content Include="Assets\yaca_updater_icon.svg" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>None</DebugType>
