@@ -36,7 +36,7 @@ public sealed class YacaInstaller
         BackupInfo? backup = null;
         if (automaticBackup && File.Exists(targetFile))
         {
-            backup = _backups.CreateBackup(targetFile, current);
+            backup = _backups.CreateBackup(targetFile, current, automatic: true);
             if (backup is null)
                 throw new YacaOperationException(AppErrorCode.BackupFailed, "Backup creation failed.");
         }
