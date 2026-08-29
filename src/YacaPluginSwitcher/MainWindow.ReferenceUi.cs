@@ -12,6 +12,7 @@ public partial class MainWindow
         ApplyReferenceNavigationIcons();
         ApplyReferencePanelIcons();
         ApplyReferenceTileStyles();
+        ApplyReferenceDashboardGeometry();
     }
 
     private void ApplyReferenceNavigationLayout()
@@ -22,25 +23,17 @@ public partial class MainWindow
         NavPanel.Children.Clear();
         _navButtons.Clear();
 
-        AddNav("home", "⌂", IsGerman ? "Dashboard" : "Dashboard", ShowHome);
+        AddNav("home", "⌂", "Dashboard", ShowHome);
         AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
         AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
-        AddNav("updater", "☁", IsGerman ? "YACA Updater" : "YACA Updater", () => ShowComingSoon());
+        AddNav("updater", "☁", "YACA Updater", () => ShowComingSoon());
 
-        NavPanel.Children.Add(new Separator
-        {
-            Margin = new Thickness(10, 12, 0, 12),
-            Background = (Brush)FindResource("AccentSoftBrush")
-        });
+        NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
 
         AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
         AddNav("backups", "▣", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
 
-        NavPanel.Children.Add(new Separator
-        {
-            Margin = new Thickness(10, 12, 0, 12),
-            Background = (Brush)FindResource("AccentSoftBrush")
-        });
+        NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
 
         AddNav("info", "ⓘ", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
     }
@@ -84,7 +77,6 @@ public partial class MainWindow
     {
         if (sender is not Button button)
             return;
-
         button.Background = (Brush)FindResource("NavSelectedBrush");
         button.Foreground = (Brush)FindResource("GoldBrush");
         button.BorderBrush = (Brush)FindResource("GoldBrush");
@@ -95,9 +87,7 @@ public partial class MainWindow
     {
         if (sender is not Button button)
             return;
-
-        var selected = button.Tag is string key && _navButtons.Any(x =>
-            x.Button == button && x.Key.Equals(_activePage, StringComparison.OrdinalIgnoreCase));
+        var selected = button.Tag is string key && _navButtons.Any(x => x.Button == button && x.Key.Equals(_activePage, StringComparison.OrdinalIgnoreCase));
         button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
         button.Foreground = selected ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
         button.BorderBrush = selected ? (Brush)FindResource("GoldBrush") : Brushes.Transparent;
@@ -124,54 +114,71 @@ public partial class MainWindow
             parent.Children.RemoveAt(0);
             parent.Children.Insert(0, icon);
         }
-
         ApplyReferenceTileStyles();
     }
 
     private void ApplyReferenceTileStyles()
     {
         var referenceStyle = (Style)FindResource("TileButtonStyle");
-        var referenceTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "YACA WECHSELN",
-            "BACKUP ERSTELLEN",
-            "YACA UPDATER"
-        };
-
+        var referenceTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "YACA WECHSELN", "BACKUP ERSTELLEN", "YACA UPDATER" };
         foreach (var button in FindVisualButtons(PageHost).ToList())
         {
             var isReferenceTile = button.Tag is string tag && tag.Equals("reference-dashboard-tile", StringComparison.OrdinalIgnoreCase)
                 || FindVisualTextBlocks(button).Any(t => referenceTitles.Contains(t.Text.Trim()));
-
             if (isReferenceTile)
                 button.Style = referenceStyle;
         }
     }
 
+    private void ApplyReferenceDashboardGeometry()
+    {
+        if (PageHost.Content is not Grid root || root.RowDefinitions.Count < 3)
+            return;
+
+        root.RowDefinitions[0].Height = new GridLength(286);
+        root.RowDefinitions[1].Height = new GridLength(286);
+
+        var top = root.Children.OfType<Grid>().FirstOrDefault(child => Grid.GetRow(child) == 0);
+        if (top is null)
+            return;
+
+        var logo = top.Children.OfType<Border>()
+            .Select(border => new { Border = border, Image = border.Child as Image })
+            .FirstOrDefault(x => x.Image is not null);
+
+        if (logo is null)
+            return;
+
+        var column = Grid.GetColumn(logo.Border);
+        top.Children.Remove(logo.Border);
+
+        var freeLogo = new Image
+        {
+            Source = LoadLogo(),
+            Width = 260,
+            Height = 260,
+            Stretch = Stretch.Uniform,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsHitTestVisible = false
+        };
+        Grid.SetColumn(freeLogo, column);
+        top.Children.Add(freeLogo);
+    }
+
     private static System.Windows.Shapes.Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new()
     {
-        Data = Geometry.Parse(data),
-        Stroke = stroke,
-        StrokeThickness = thickness,
-        Fill = Brushes.Transparent,
-        Width = width,
-        Height = height,
-        Stretch = Stretch.Uniform,
-        HorizontalAlignment = HorizontalAlignment.Center,
-        VerticalAlignment = VerticalAlignment.Center
+        Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = thickness, Fill = Brushes.Transparent,
+        Width = width, Height = height, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
     };
 
     private static IEnumerable<TextBlock> FindVisualTextBlocks(DependencyObject root)
     {
         foreach (var child in LogicalTreeHelper.GetChildren(root))
         {
-            if (child is TextBlock text)
-                yield return text;
+            if (child is TextBlock text) yield return text;
             if (child is DependencyObject dependency)
-            {
-                foreach (var nested in FindVisualTextBlocks(dependency))
-                    yield return nested;
-            }
+                foreach (var nested in FindVisualTextBlocks(dependency)) yield return nested;
         }
     }
 
@@ -179,13 +186,9 @@ public partial class MainWindow
     {
         foreach (var child in LogicalTreeHelper.GetChildren(root))
         {
-            if (child is Button button)
-                yield return button;
+            if (child is Button button) yield return button;
             if (child is DependencyObject dependency)
-            {
-                foreach (var nested in FindVisualButtons(dependency))
-                    yield return nested;
-            }
+                foreach (var nested in FindVisualButtons(dependency)) yield return nested;
         }
     }
 }
