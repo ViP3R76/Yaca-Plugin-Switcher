@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using YacaPluginSwitcher.Core;
 using YacaPluginSwitcher.Models;
@@ -174,7 +175,33 @@ public partial class MainWindow : Window
     private void ShowPageStatus(string message, bool success) { if (_pageStatus is null) { ShowSwitchPage(message); return; } _pageStatus.Text = message; _pageStatus.Foreground = (Brush)FindResource(success ? "SuccessBrush" : "ForegroundBrush"); _pageStatusBorder!.BorderBrush = (Brush)FindResource(success ? "SuccessBrush" : "BorderBrush"); }
     private void FlashElement(Border? element) { if (element is null) return; _flashTimer?.Stop(); var original = element.BorderBrush; element.BorderBrush = (Brush)FindResource("GoldBrush"); _flashTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(650) }; _flashTimer.Tick += (_, _) => { element.BorderBrush = original; _flashTimer!.Stop(); }; _flashTimer.Start(); }
     private void ShowError(string message) { if (_activePage != "home" && _pageStatus is not null) { ShowPageStatus(message, false); return; } MessageBox.Show(message, Texts.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error); }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (FindVisualParent<Button>(e.OriginalSource as DependencyObject) is not null) return;
+        if (e.ClickCount == 2)
+        {
+            ToggleMaximize();
+            return;
+        }
+        if (e.ChangedButton == MouseButton.Left && WindowState == WindowState.Normal)
+        {
+            try { DragMove(); } catch (InvalidOperationException) { }
+        }
+    }
+
+    private void ToggleMaximize() => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    private void Maximize_Click(object sender, RoutedEventArgs e) => ToggleMaximize();
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+    {
+        while (child is not null)
+        {
+            if (child is T match) return match;
+            child = VisualTreeHelper.GetParent(child);
+        }
+        return null;
+    }
 }
