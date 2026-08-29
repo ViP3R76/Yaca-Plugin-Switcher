@@ -14,21 +14,16 @@ public sealed class AppSettings
 
     public string? TeamSpeakPluginDirectory { get; set; }
     public List<string> TeamSpeakPluginDirectories { get; set; } = [];
-    /// <summary>When false, only the automatically detected/configured single TS3 instance is used.</summary>
     public bool UseMultipleTeamSpeakInstances { get; set; }
-    /// <summary>When single-instance mode is active, true means the user explicitly selected a custom target path.</summary>
     public bool UseCustomTeamSpeakPluginDirectory { get; set; }
     public int MaxBackups { get; set; } = 4;
     public bool AutomaticBackup { get; set; } = true;
     public bool WarnIfTeamSpeakRunning { get; set; } = true;
-    /// <summary>Shows expert-only configuration options. New installations keep this disabled.</summary>
     public bool ExpertSettings { get; set; }
-    /// <summary>Enables normal informational logging. Warnings and errors remain available.</summary>
     public bool GeneralLogging { get; set; } = true;
-    /// <summary>Enables verbose diagnostic logging.</summary>
     public bool DebugLogging { get; set; }
-    /// <summary>Allows individual backup entries to be selected for deletion.</summary>
     public bool SelectableBackupsForDeletion { get; set; }
+    public bool KeepYacaPluginDownloads { get; set; }
     public string Language { get; set; } = string.Empty;
 
     [JsonIgnore]
@@ -51,7 +46,6 @@ public sealed class AppSettings
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
         {
-            // Startup must remain possible even when the portable config is damaged or inaccessible.
         }
 
         return new AppSettings
@@ -88,7 +82,6 @@ public sealed class AppSettings
             }
             catch
             {
-                // Cleanup must not mask the original save error.
             }
         }
     }
