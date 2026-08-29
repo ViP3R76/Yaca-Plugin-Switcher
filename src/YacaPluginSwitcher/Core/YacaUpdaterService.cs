@@ -72,7 +72,7 @@ public sealed class YacaUpdaterService
             try
             {
                 Report(progress, version, "Download", false, false, null);
-                using var response = await http.GetAsync(string.Format(CdnFormat, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var response = await http.GetAsync(string.Format(CultureInfo.InvariantCulture, CdnFormat, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var total = response.Content.Headers.ContentLength;
                 await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
