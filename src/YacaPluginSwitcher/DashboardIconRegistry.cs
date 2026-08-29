@@ -76,13 +76,41 @@ internal static class DashboardIconRegistry
         };
     }
 
+    internal static Image CreateNaturalIcon(string assetKey, double width, double height)
+    {
+        if (!TryGetAssetPath(assetKey, out var path))
+            throw new InvalidOperationException($"Unknown dashboard icon asset '{assetKey}'.");
+
+        return new SvgBitmap
+        {
+            UriSource = new Uri(path, UriKind.RelativeOrAbsolute),
+            AppName = "YacaPluginSwitcher",
+            Width = width,
+            Height = height,
+            Stretch = Stretch.Uniform,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            SnapsToDevicePixels = true,
+            UseLayoutRounding = true,
+            Tag = assetKey
+        };
+    }
+
     internal static void SetAsset(Image icon, string assetKey)
     {
-        if (icon is not SvgIcon svgIcon || !TryGetAssetPath(assetKey, out var path))
+        if (!TryGetAssetPath(assetKey, out var path))
             return;
 
-        svgIcon.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
-        svgIcon.Tag = assetKey;
+        if (icon is SvgBitmap bitmap)
+        {
+            bitmap.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            bitmap.Tag = assetKey;
+        }
+        else if (icon is SvgIcon iconControl)
+        {
+            iconControl.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            iconControl.Tag = assetKey;
+        }
     }
 
     internal static void SetFill(Image icon, Brush fill)
