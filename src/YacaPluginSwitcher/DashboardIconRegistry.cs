@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using SharpVectors.Converters;
 
 namespace YacaPluginSwitcher;
 
 /// <summary>
 /// Single source of truth for all dashboard/navigation icon assets.
-/// Asset names are intentionally explicit and are reused wherever the same
-/// physical icon is required. Rendering (size, colour and placement) remains
-/// the responsibility of the central DashboardRenderer/MainWindow.
+/// The registry owns asset names and SVG resource locations. The central
+/// renderer remains responsible for size, placement and context.
 /// </summary>
 internal static class DashboardIconRegistry
 {
@@ -26,27 +27,50 @@ internal static class DashboardIconRegistry
     internal const string IconAssetTeamSpeakInactive = "icon_asset_teamspeak_inactive";
     internal const string IconAssetSort = "icon_asset_sort";
 
-    private static readonly Dictionary<string, string> AssetPaths =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            [IconAssetDashboard] = "/YacaPluginSwitcher;component/Assets/dashboard-home-icon.svg",
-            [IconAssetRefresh] = "/YacaPluginSwitcher;component/Assets/refresh-update-icon.svg",
-            [IconAssetSync] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
-            [IconAssetBackup] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
-            [IconAssetBackups] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
-            [IconAssetUpdater] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
-            [IconAssetInfo] = "/YacaPluginSwitcher;component/Assets/info-notepad-icon.svg",
-            [IconAssetExit] = "/YacaPluginSwitcher;component/Assets/power-off-icon.svg"
-        };
+    private static readonly Dictionary<string, string> AssetPaths = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [IconAssetDashboard] = "/YacaPluginSwitcher;component/Assets/dashboard-home-icon.svg",
+        [IconAssetRefresh] = "/YacaPluginSwitcher;component/Assets/refresh-update-icon.svg",
+        [IconAssetSync] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
+        [IconAssetBackup] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
+        [IconAssetBackups] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
+        [IconAssetUpdater] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
+        [IconAssetInfo] = "/YacaPluginSwitcher;component/Assets/info-notepad-icon.svg",
+        [IconAssetExit] = "/YacaPluginSwitcher;component/Assets/power-off-icon.svg",
+        [IconAssetTeamSpeak] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakActive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakInactive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
+        [IconAssetSort] = "/YacaPluginSwitcher;component/Assets/sort-toggle-icon.svg"
+    };
 
-    public static bool TryGetAssetPath(string assetKey, out string path) =>
-        AssetPaths.TryGetValue(assetKey, out path!);
+    internal static bool TryGetAssetPath(string assetKey, out string path) => AssetPaths.TryGetValue(assetKey, out path!);
 
-    public static ImageSource? Load(string assetKey)
+    internal static Image CreateIcon(string assetKey, Brush fill, double width, double height)
     {
         if (!TryGetAssetPath(assetKey, out var path))
-            return null;
+            throw new InvalidOperationException($"Unknown dashboard icon asset '{assetKey}'.");
 
-        return new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute));
+        var icon = new SvgIcon
+        {
+            UriSource = new Uri(path, UriKind.RelativeOrAbsolute),
+            AppName = "YacaPluginSwitcher",
+            Fill = fill,
+            Width = width,
+            Height = height,
+            Stretch = Stretch.Uniform,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            SnapsToDevicePixels = true,
+            UseLayoutRounding = true,
+            Tag = assetKey
+        };
+
+        return icon;
+    }
+
+    internal static void SetFill(Image icon, Brush fill)
+    {
+        if (icon is SvgIcon svgIcon)
+            svgIcon.Fill = fill;
     }
 }
