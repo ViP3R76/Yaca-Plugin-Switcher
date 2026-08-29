@@ -86,15 +86,16 @@ public partial class MainWindow
 
             if (string.Equals(button.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase))
             {
-                button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+                button.PreviewMouseLeftButtonDown += (_, e) =>
                 {
                     if (!TeamSpeakDetector.IsRunning()) return;
+                    e.Handled = true;
                     GlobalFooterStatusText.Text = IsGerman
                         ? "TeamSpeak 3 ist aktiv – Backup/Änderungen erst nach dem Schließen durchführen."
                         : "TeamSpeak 3 is running – close TeamSpeak before continuing.";
                     GlobalFooterStatusText.Foreground = (Brush)FindResource("ErrorBrush");
                     GlobalFooterStatusText.FontWeight = FontWeights.Bold;
-                }));
+                };
             }
         }
     }
@@ -177,24 +178,27 @@ public partial class MainWindow
 
         if (_tsStatus.Parent is StackPanel textPanel)
         {
-            textPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            textPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             textPanel.VerticalAlignment = VerticalAlignment.Center;
-            _tsStatus.HorizontalAlignment = HorizontalAlignment.Center;
+            _tsStatus.HorizontalAlignment = HorizontalAlignment.Stretch;
             _tsStatus.TextAlignment = TextAlignment.Center;
             if (textPanel.Children.OfType<TextBlock>().FirstOrDefault(t => !ReferenceEquals(t, _tsStatus)) is { } description)
             {
-                description.HorizontalAlignment = HorizontalAlignment.Center;
+                description.HorizontalAlignment = HorizontalAlignment.Stretch;
                 description.TextAlignment = TextAlignment.Center;
             }
 
             if (textPanel.Parent is Grid content)
             {
-                content.HorizontalAlignment = HorizontalAlignment.Center;
+                content.HorizontalAlignment = HorizontalAlignment.Stretch;
                 content.VerticalAlignment = VerticalAlignment.Center;
                 if (content.ColumnDefinitions.Count >= 2)
                 {
-                    content.ColumnDefinitions[0].Width = GridLength.Auto;
-                    content.ColumnDefinitions[1].Width = GridLength.Auto;
+                    // Keep the icon in a fixed left-side column while the text
+                    // remains centered in the available space. This prevents the
+                    // red TeamSpeak icon from being clipped at the panel edge.
+                    content.ColumnDefinitions[0].Width = new GridLength(72);
+                    content.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
                 }
             }
         }
@@ -225,6 +229,7 @@ public partial class MainWindow
         EnsureUpdaterStepPanel();
         ApplyUpdaterStatusVisibility();
         SuppressUpdaterFooterWhenAlreadyOnUpdaterPage();
+        Dispatcher.BeginInvoke(new Action(SuppressUpdaterFooterWhenAlreadyOnUpdaterPage), System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void UpdateUpdaterCopy()
