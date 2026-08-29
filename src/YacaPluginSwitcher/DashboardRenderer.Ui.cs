@@ -203,8 +203,6 @@ public partial class MainWindow
                 content.HorizontalAlignment = HorizontalAlignment.Stretch;
                 content.VerticalAlignment = VerticalAlignment.Center;
 
-                // Center the status text against the complete panel width. The
-                // icon is overlaid in the same cell so it never shifts the text.
                 if (content.ColumnDefinitions.Count != 1)
                 {
                     content.ColumnDefinitions.Clear();
@@ -218,7 +216,7 @@ public partial class MainWindow
 
         _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
         _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
-        _teamSpeakStatusIcon.Margin = new Thickness(22, 0, 0, 0);
+        _teamSpeakStatusIcon.Margin = new Thickness(17, 0, 0, 0);
 
         var desiredAsset = running
             ? DashboardIconRegistry.IconAssetTeamSpeakStarted
@@ -229,7 +227,7 @@ public partial class MainWindow
             var natural = DashboardIconRegistry.CreateNaturalIcon(desiredAsset, 44, 44);
             natural.HorizontalAlignment = HorizontalAlignment.Left;
             natural.VerticalAlignment = VerticalAlignment.Center;
-            natural.Margin = new Thickness(22, 0, 0, 0);
+            natural.Margin = new Thickness(17, 0, 0, 0);
 
             if (_teamSpeakStatusIcon.Parent is Panel parent && parent.Children.IndexOf(_teamSpeakStatusIcon) >= 0)
             {
