@@ -307,7 +307,7 @@ public partial class MainWindow
             Foreground = (Brush)FindResource("GoldBrush")
         });
         _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{backup.DisplayName} - {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}")
+        _backupSummary.Inlines.Add(new Run($"{backup.DisplayName} - Backup-Status: {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}")
         {
             FontSize = 16,
             FontWeight = FontWeights.SemiBold,
