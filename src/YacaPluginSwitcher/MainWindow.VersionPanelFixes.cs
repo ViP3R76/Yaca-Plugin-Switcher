@@ -11,14 +11,19 @@ public partial class MainWindow
 
     private void EnsureVersionPanelLayout()
     {
-        if (_versionList is null || _versionPanelGrid is not null)
+        if (_versionPanelGrid is not null && _versionPanelGrid is System.Windows.Media.Visual visual && visual.IsDescendantOf(PageHost))
             return;
 
-        if (_versionList.Parent is not Grid host)
+        // ShowHome() recreates PageHost. Discard references to the old dashboard tree.
+        _versionPanelGrid = null;
+        _versionFooter = null;
+        _versionHeaderStyled = false;
+        _versionPanelSignature = string.Empty;
+        _versionList = FindCurrentVersionList();
+
+        if (_versionList is null || _versionList.Parent is not Grid host)
             return;
 
-        // The original dashboard already has a header row and a content row.
-        // Replace only the content row with a two-part layout: versions + fixed footer.
         host.Children.Remove(_versionList);
 
         var content = new Grid();
@@ -52,7 +57,39 @@ public partial class MainWindow
         _versionPanelGrid = content;
 
         StyleVersionPanelHeader(host);
-        _versionPanelSignature = string.Empty;
+    }
+
+    private StackPanel? FindCurrentVersionList()
+    {
+        foreach (var text in FindVisualTextBlocks(PageHost))
+        {
+            if (!text.Text.Contains("VERFÜGBARE YACA-VERSIONEN", StringComparison.OrdinalIgnoreCase)
+                && !text.Text.Contains("AVAILABLE YACA VERSIONS", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (text.Parent is StackPanel headerPanel && headerPanel.Parent is Grid host)
+            {
+                var content = host.Children
+                    .OfType<Grid>()
+                    .FirstOrDefault(child => Grid.GetRow(child) == 1);
+                var list = content?.Children
+                    .OfType<StackPanel>()
+                    .FirstOrDefault(child => Grid.GetRow(child) == 0);
+                if (list is not null)
+                    return list;
+            }
+
+            if (text.Parent is Grid directHost)
+            {
+                var list = directHost.Children
+                    .OfType<StackPanel>()
+                    .FirstOrDefault(child => Grid.GetRow(child) == 1);
+                if (list is not null)
+                    return list;
+            }
+        }
+
+        return null;
     }
 
     private void StyleVersionPanelHeader(Grid host)
@@ -102,10 +139,14 @@ public partial class MainWindow
 
     private void RefreshVersionPanelLayout()
     {
+        EnsureVersionPanelLayout();
+
         if (_versionList is null || _versionPanelGrid is null || _versionFooter is null)
             return;
 
-        StyleVersionPanelHeader(_versionPanelGrid.Parent as Grid ?? _versionPanelGrid);
+        var host = _versionPanelGrid.Parent as Grid;
+        if (host is not null)
+            StyleVersionPanelHeader(host);
 
         var plugins = _plugins
             .OrderByDescending(plugin => plugin.Version)
