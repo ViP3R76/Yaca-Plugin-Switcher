@@ -90,7 +90,7 @@ public partial class MainWindow
     private void ApplyTeamSpeakStatusIcon()
     {
         if (_tsStatus is null || _tsStatus.Parent is not StackPanel parent) return;
-        _teamSpeakStatusIcon ??= DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetTeamSpeakInactive, (Brush)FindResource("GoldBrush"), 52, 52);
+        _teamSpeakStatusIcon ??= DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetTeamSpeakStopped, (Brush)FindResource("GoldBrush"), 52, 52);
         if (!parent.Children.Contains(_teamSpeakStatusIcon)) parent.Children.Insert(0, _teamSpeakStatusIcon);
         if (!_teamSpeakStatusHooked)
         {
@@ -105,7 +105,7 @@ public partial class MainWindow
     {
         if (_teamSpeakStatusIcon is null || _tsStatus is null) return;
         var running = _tsStatus.Text.Equals("GESTARTET", StringComparison.OrdinalIgnoreCase) || _tsStatus.Text.Equals("RUNNING", StringComparison.OrdinalIgnoreCase);
-        _teamSpeakStatusIcon.Tag = running ? DashboardIconRegistry.IconAssetTeamSpeakActive : DashboardIconRegistry.IconAssetTeamSpeakInactive;
+        _teamSpeakStatusIcon.Tag = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
         DashboardIconRegistry.SetFill(_teamSpeakStatusIcon, running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"));
     }
 
