@@ -26,6 +26,7 @@ internal static class DashboardIconRegistry
     internal const string IconAssetTeamSpeak = "icon_asset_teamspeak";
     internal const string IconAssetTeamSpeakActive = "icon_asset_teamspeak_active";
     internal const string IconAssetTeamSpeakInactive = "icon_asset_teamspeak_inactive";
+    internal const string IconAssetTeamSpeakStatus = "icon_asset_teamspeak_status";
     internal const string IconAssetSort = "icon_asset_sort";
 
     private static readonly Dictionary<string, string> AssetPaths = new(StringComparer.OrdinalIgnoreCase)
@@ -39,9 +40,10 @@ internal static class DashboardIconRegistry
         [IconAssetInfo] = "/Assets/info-notepad-icon.svg",
         [IconAssetExit] = "/Assets/power-off-icon.svg",
         [IconAssetInstalled] = "/Assets/checked-shield-icon.svg",
-        [IconAssetTeamSpeak] = "/Assets/TS_InLine_Light.svg",
-        [IconAssetTeamSpeakActive] = "/Assets/TS_InLine_Light.svg",
-        [IconAssetTeamSpeakInactive] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeak] = "/Assets/ts_stacked_light.svg",
+        [IconAssetTeamSpeakActive] = "/Assets/ts_stacked_light.svg",
+        [IconAssetTeamSpeakInactive] = "/Assets/ts_stacked_light.svg",
+        [IconAssetTeamSpeakStatus] = "/Assets/ts_stacked_light.svg",
         [IconAssetSort] = "/Assets/sort-toggle-icon.svg"
     };
 
