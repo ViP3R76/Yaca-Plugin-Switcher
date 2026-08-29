@@ -23,7 +23,7 @@ public partial class MainWindow
         _navButtons.Clear();
         AddNav("home", "⌂", "Dashboard", ShowHome);
         AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
-        AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
+        AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
         AddNav("updater", "☁", "YACA Updater", () => ShowComingSoon());
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
         AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
