@@ -19,22 +19,16 @@ public partial class MainWindow
     {
         if (NavPanel.Children.Count > 0 && NavPanel.Children.OfType<Button>().Any(b => b.Tag is string tag && tag.Equals("updater", StringComparison.OrdinalIgnoreCase)))
             return;
-
         NavPanel.Children.Clear();
         _navButtons.Clear();
-
         AddNav("home", "⌂", "Dashboard", ShowHome);
         AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
         AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
         AddNav("updater", "☁", "YACA Updater", () => ShowComingSoon());
-
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
-
         AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
         AddNav("backups", "▣", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
-
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
-
         AddNav("info", "ⓘ", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
     }
 
@@ -50,33 +44,26 @@ public partial class MainWindow
             ["backups"] = "M 4,5 C 4,2 20,2 20,5 L 20,19 C 20,22 4,22 4,19 Z M 4,5 C 4,8 20,8 20,5 M 4,12 C 4,15 20,15 20,12",
             ["info"] = "M 12,2 A 10,10 0 1 0 12,22 A 10,10 0 1 0 12,2 M 12,10 L 12,17 M 12,6 L 12,7"
         };
-
         foreach (var child in NavPanel.Children)
         {
-            if (child is not Button button || button.Tag is not string key || !icons.TryGetValue(key, out var data))
-                continue;
-            if (button.Content is not StackPanel panel || panel.Children.Count == 0)
-                continue;
-
-            var accent = key.Equals("home", StringComparison.OrdinalIgnoreCase)
-                ? (Brush)FindResource("GoldBrush")
-                : (Brush)FindResource("ForegroundBrush");
+            if (child is not Button button || button.Tag is not string key || !icons.TryGetValue(key, out var data)) continue;
+            if (button.Content is not StackPanel panel || panel.Children.Count == 0) continue;
+            var accent = key.Equals("home", StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
             var icon = CreateIcon(data, accent, 30, 30, 2.35);
             icon.Margin = new Thickness(0, 0, 12, 0);
             panel.Children.RemoveAt(0);
             panel.Children.Insert(0, icon);
-
             button.MouseEnter -= NavButton_MouseEnter;
             button.MouseLeave -= NavButton_MouseLeave;
             button.MouseEnter += NavButton_MouseEnter;
             button.MouseLeave += NavButton_MouseLeave;
         }
+        ApplyReferenceDashboardGeometry();
     }
 
     private void NavButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
     {
-        if (sender is not Button button)
-            return;
+        if (sender is not Button button) return;
         button.Background = (Brush)FindResource("NavSelectedBrush");
         button.Foreground = (Brush)FindResource("GoldBrush");
         button.BorderBrush = (Brush)FindResource("GoldBrush");
@@ -85,8 +72,7 @@ public partial class MainWindow
 
     private void NavButton_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
     {
-        if (sender is not Button button)
-            return;
+        if (sender is not Button button) return;
         var selected = button.Tag is string key && _navButtons.Any(x => x.Button == button && x.Key.Equals(_activePage, StringComparison.OrdinalIgnoreCase));
         button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
         button.Foreground = selected ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
@@ -102,14 +88,10 @@ public partial class MainWindow
             ["BACKUP ERSTELLEN"] = "M 4,4 L 20,4 L 20,20 L 4,20 Z M 12,7 L 12,17 M 7,12 L 17,12",
             ["YACA UPDATER"] = "M 7,17 L 17,17 A 5,5 0 0 0 18,8 A 7,7 0 0 0 5,9 A 4,4 0 0 0 7,17 M 12,11 L 12,20 M 8,16 L 12,20 L 16,16"
         };
-
         foreach (var text in FindVisualTextBlocks(PageHost).ToList())
         {
-            if (!iconMap.TryGetValue(text.Text.Trim(), out var data) || text.Parent is not Panel parent || parent.Children.Count == 0)
-                continue;
-            var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase)
-                ? (Brush)FindResource("GoldBrush")
-                : (Brush)FindResource("AccentBrush");
+            if (!iconMap.TryGetValue(text.Text.Trim(), out var data) || text.Parent is not Panel parent || parent.Children.Count == 0) continue;
+            var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("AccentBrush");
             var icon = CreateIcon(data, accent, 72, 72, 3.6);
             parent.Children.RemoveAt(0);
             parent.Children.Insert(0, icon);
@@ -123,45 +105,23 @@ public partial class MainWindow
         var referenceTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "YACA WECHSELN", "BACKUP ERSTELLEN", "YACA UPDATER" };
         foreach (var button in FindVisualButtons(PageHost).ToList())
         {
-            var isReferenceTile = button.Tag is string tag && tag.Equals("reference-dashboard-tile", StringComparison.OrdinalIgnoreCase)
-                || FindVisualTextBlocks(button).Any(t => referenceTitles.Contains(t.Text.Trim()));
-            if (isReferenceTile)
-                button.Style = referenceStyle;
+            var isReferenceTile = button.Tag is string tag && tag.Equals("reference-dashboard-tile", StringComparison.OrdinalIgnoreCase) || FindVisualTextBlocks(button).Any(t => referenceTitles.Contains(t.Text.Trim()));
+            if (isReferenceTile) button.Style = referenceStyle;
         }
     }
 
     private void ApplyReferenceDashboardGeometry()
     {
-        if (PageHost.Content is not Grid root || root.RowDefinitions.Count < 3)
-            return;
-
+        if (PageHost.Content is not Grid root || root.RowDefinitions.Count < 3) return;
         root.RowDefinitions[0].Height = new GridLength(286);
         root.RowDefinitions[1].Height = new GridLength(286);
-
         var top = root.Children.OfType<Grid>().FirstOrDefault(child => Grid.GetRow(child) == 0);
-        if (top is null)
-            return;
-
-        var logo = top.Children.OfType<Border>()
-            .Select(border => new { Border = border, Image = border.Child as Image })
-            .FirstOrDefault(x => x.Image is not null);
-
-        if (logo is null)
-            return;
-
+        if (top is null) return;
+        var logo = top.Children.OfType<Border>().Select(border => new { Border = border, Image = border.Child as Image }).FirstOrDefault(x => x.Image is not null);
+        if (logo is null) return;
         var column = Grid.GetColumn(logo.Border);
         top.Children.Remove(logo.Border);
-
-        var freeLogo = new Image
-        {
-            Source = LoadLogo(),
-            Width = 260,
-            Height = 260,
-            Stretch = Stretch.Uniform,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            IsHitTestVisible = false
-        };
+        var freeLogo = new Image { Source = LoadLogo(), Width = 260, Height = 260, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
         Grid.SetColumn(freeLogo, column);
         top.Children.Add(freeLogo);
     }
@@ -177,8 +137,7 @@ public partial class MainWindow
         foreach (var child in LogicalTreeHelper.GetChildren(root))
         {
             if (child is TextBlock text) yield return text;
-            if (child is DependencyObject dependency)
-                foreach (var nested in FindVisualTextBlocks(dependency)) yield return nested;
+            if (child is DependencyObject dependency) foreach (var nested in FindVisualTextBlocks(dependency)) yield return nested;
         }
     }
 
@@ -187,8 +146,7 @@ public partial class MainWindow
         foreach (var child in LogicalTreeHelper.GetChildren(root))
         {
             if (child is Button button) yield return button;
-            if (child is DependencyObject dependency)
-                foreach (var nested in FindVisualButtons(dependency)) yield return nested;
+            if (child is DependencyObject dependency) foreach (var nested in FindVisualButtons(dependency)) yield return nested;
         }
     }
 }
