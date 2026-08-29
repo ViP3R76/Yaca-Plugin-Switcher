@@ -21,28 +21,23 @@ try {
     $graphics.DrawImage($sourceBitmap, 0, 0, 256, 256)
 
     $hIcon = $bitmap.GetHicon()
+    $icon = [System.Drawing.Icon]::FromHandle($hIcon)
     try {
-        $icon = [System.Drawing.Icon]::FromHandle($hIcon)
-        try {
-            $directory = Split-Path -Parent $Output
-            if (-not (Test-Path $directory)) {
-                New-Item -ItemType Directory -Path $directory -Force | Out-Null
-            }
+        $directory = Split-Path -Parent $Output
+        if (-not (Test-Path $directory)) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
 
-            $stream = [System.IO.File]::Create($Output)
-            try {
-                $icon.Save($stream)
-            }
-            finally {
-                $stream.Dispose()
-            }
+        $stream = [System.IO.File]::Create($Output)
+        try {
+            $icon.Save($stream)
         }
         finally {
-            $icon.Dispose()
+            $stream.Dispose()
         }
     }
     finally {
-        [System.Runtime.InteropServices.Marshal]::DestroyIcon($hIcon)
+        $icon.Dispose()
     }
 }
 finally {
