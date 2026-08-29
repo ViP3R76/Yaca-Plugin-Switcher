@@ -38,10 +38,10 @@ public partial class MainWindow : Window
         NavPanel.Children.Clear(); _navButtons.Clear();
         AddNav("home", "home", "Dashboard", ShowHome);
         AddNav("refresh", "refresh", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
-        AddNav("switch", "switch", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
-        AddNav("updater", "updater", "YACA Updater", () => ShowError(IsGerman ? "Der YACA Updater wird in einer späteren Version verfügbar sein." : "The YACA Updater will be available in a future version."));
+        AddNav("switch", "switch", IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
+        AddNav("updater", "updater", "YACA Updater", () => ShowComingSoon());
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
-        AddNav("backup-create", "backup", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
+        AddNav("backup-create", "backup", IsGerman ? "Backup erstellen" : "Create Backup", () => CreateBackupFromDashboard());
         AddNav("backups", "backups", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
         AddNav("info", "info", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
