@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace YacaPluginSwitcher;
 
@@ -17,7 +15,7 @@ internal static class DashboardIconRegistry
             ["refresh"] = "/YacaPluginSwitcher;component/Assets/refresh-update-icon.svg",
             ["updater"] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
             ["info"] = "/YacaPluginSwitcher;component/Assets/info-notepad-icon.svg",
-            ["backups"] = "/YacaPluginSwitcher;component/Assets/backup-database-icon.svg",
+            ["backups"] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
             ["backup"] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
             ["switch"] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
             ["exit"] = "/YacaPluginSwitcher;component/Assets/power-off-icon.svg"
