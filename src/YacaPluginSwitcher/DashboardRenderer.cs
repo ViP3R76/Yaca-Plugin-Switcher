@@ -69,7 +69,19 @@ public partial class MainWindow
     {
         var gold = (Brush)FindResource("GoldBrush"); var card = CreatePanelCard(gold); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetTeamSpeakStatus, "TEAMSPEAK STATUS", gold); Grid.SetRow(header, 0); panel.Children.Add(header);
-        var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Foreground = gold }; _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.NoWrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 420 }; center.Children.Add(_tsStatus); center.Children.Add(_tsDescription); Grid.SetRow(center, 1); panel.Children.Add(center);
+        var content = new Grid { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0) };
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        _teamSpeakStatusIcon = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetTeamSpeakStopped, (Brush)FindResource("GoldBrush"), 44, 44);
+        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
+        _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
+        Grid.SetColumn(_teamSpeakStatusIcon, 0);
+        content.Children.Add(_teamSpeakStatusIcon);
+        var textPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left };
+        _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Left, Foreground = gold };
+        _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.NoWrap, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 420 };
+        textPanel.Children.Add(_tsStatus); textPanel.Children.Add(_tsDescription); Grid.SetColumn(textPanel, 1); content.Children.Add(textPanel);
+        Grid.SetRow(content, 1); panel.Children.Add(content);
         _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Background = (Brush)FindResource("ErrorBrush"), Foreground = Brushes.White, BorderBrush = (Brush)FindResource("ErrorBrush"), BorderThickness = new Thickness(0), Padding = new Thickness(18, 8, 18, 8), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0), Cursor = System.Windows.Input.Cursors.Hand, FontSize = 17, FontWeight = FontWeights.Bold }; _tsClose.Template = CreateSquareButtonTemplate(); _tsClose.Click += (_, _) => CloseTeamSpeak(); Grid.SetRow(_tsClose, 2); panel.Children.Add(_tsClose); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
