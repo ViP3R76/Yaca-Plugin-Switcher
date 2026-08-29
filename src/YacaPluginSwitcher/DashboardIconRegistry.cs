@@ -8,9 +8,9 @@ using SharpVectors.Converters;
 namespace YacaPluginSwitcher;
 
 /// <summary>
-/// Single source of truth for all dashboard/navigation icon assets.
-/// The registry owns asset names and SVG resource locations. The central
-/// renderer remains responsible for size, placement and context.
+/// Single source of truth for all dashboard/navigation and branded link icon assets.
+/// The registry owns asset names and resource locations. The central renderer remains
+/// responsible for size, placement, color and context.
 /// </summary>
 internal static class DashboardIconRegistry
 {
@@ -28,6 +28,9 @@ internal static class DashboardIconRegistry
     internal const string IconAssetTeamSpeakStarted = "icon_asset_teamspeak_started";
     internal const string IconAssetTeamSpeakStopped = "icon_asset_teamspeak_stopped";
     internal const string IconAssetSort = "icon_asset_sort";
+    internal const string IconAssetDiscord = "icon_asset_discord";
+    internal const string IconAssetGitHub = "icon_asset_github";
+    internal const string IconAssetTwitch = "icon_asset_twitch";
 
     private static readonly Dictionary<string, string> AssetPaths = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -44,7 +47,10 @@ internal static class DashboardIconRegistry
         [IconAssetTeamSpeakStatus] = "/Assets/ts_stacked_light.svg",
         [IconAssetTeamSpeakStarted] = "/Assets/checkmark-red-icon.svg",
         [IconAssetTeamSpeakStopped] = "/Assets/checkmark-green-icon.svg",
-        [IconAssetSort] = "/Assets/sort-toggle-icon.svg"
+        [IconAssetSort] = "/Assets/sort-toggle-icon.svg",
+        [IconAssetDiscord] = "/Assets/discord_icon.png",
+        [IconAssetGitHub] = "/Assets/github_icon.png",
+        [IconAssetTwitch] = "/Assets/twitch_icon.svg"
     };
 
     internal static bool TryGetAssetPath(string assetKey, out string path) => AssetPaths.TryGetValue(assetKey, out path!);
