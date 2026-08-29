@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace YacaPluginSwitcher;
 
@@ -126,26 +125,17 @@ public partial class MainWindow
                 button.Content = label;
             }
 
-            // LayoutUpdated fires continuously. Never blindly restore the normal
-            // state while the mouse is over the button; doing so previously won
-            // against the MouseEnter handler and made the hover state ineffective.
-            var hoverBackground = (Brush)FindResource("ControlHoverBrush");
-            var gold = (Brush)FindResource("GoldBrush");
-            var normalBackground = gold;
-            var normalForeground = Brushes.Black;
-
-            button.Background = button.IsMouseOver ? hoverBackground : normalBackground;
-            button.Foreground = button.IsMouseOver ? gold : normalForeground;
-            button.BorderBrush = gold;
-            button.BorderThickness = new Thickness(1);
-            label.Foreground = button.IsMouseOver ? gold : normalForeground;
-
+            // Use the application's own dark TileButton template so the Windows
+            // theme cannot replace the hover appearance with a light system style.
             if (!Equals(button.Tag, "ui-corrected-updater-button"))
             {
+                button.Style = (Style)FindResource("TileButtonStyle");
                 button.Tag = "ui-corrected-updater-button";
                 button.MouseEnter += (_, _) => ApplyUpdaterButtonVisualState(button, label, true);
                 button.MouseLeave += (_, _) => ApplyUpdaterButtonVisualState(button, label, false);
             }
+
+            ApplyUpdaterButtonVisualState(button, label, button.IsMouseOver);
         }
     }
 
