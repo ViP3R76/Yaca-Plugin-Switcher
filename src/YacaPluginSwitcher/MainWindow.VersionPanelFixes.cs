@@ -27,7 +27,7 @@ public partial class MainWindow
 
         var content = new Grid();
         content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
+        content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
 
         _versionList = new StackPanel
         {
@@ -40,9 +40,9 @@ public partial class MainWindow
         _versionFooter = new TextBlock
         {
             Foreground = (Brush)FindResource("AccentBrush"),
-            FontSize = 13,
+            FontSize = 18,
             FontWeight = FontWeights.Medium,
-            VerticalAlignment = VerticalAlignment.Bottom,
+            VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             Margin = new Thickness(0, 2, 0, 0),
             Cursor = System.Windows.Input.Cursors.Hand
@@ -105,6 +105,8 @@ public partial class MainWindow
             return;
 
         host.Children.Remove(header);
+        if (host.RowDefinitions.Count > 0)
+            host.RowDefinitions[0].Height = new GridLength(48);
 
         var headerPanel = new StackPanel
         {
@@ -115,10 +117,10 @@ public partial class MainWindow
         headerPanel.Children.Add(new Image
         {
             Source = LoadLogo(),
-            Width = 18,
-            Height = 18,
+            Width = 28,
+            Height = 28,
             Stretch = Stretch.Uniform,
-            Margin = new Thickness(0, 0, 8, 0),
+            Margin = new Thickness(0, 0, 10, 0),
             VerticalAlignment = VerticalAlignment.Center
         });
 
@@ -126,7 +128,7 @@ public partial class MainWindow
         {
             Text = IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS",
             Foreground = (Brush)FindResource("AccentBrush"),
-            FontSize = 14,
+            FontSize = 28,
             FontWeight = FontWeights.SemiBold,
             VerticalAlignment = VerticalAlignment.Center
         });
@@ -155,7 +157,7 @@ public partial class MainWindow
 
         var current = _service.DetectCurrent();
         var availableHeight = _versionPanelGrid.ActualHeight > 0
-            ? Math.Max(20, _versionPanelGrid.ActualHeight - 30)
+            ? Math.Max(20, _versionPanelGrid.ActualHeight - 36)
             : 210;
         var rowHeight = plugins.Count == 0
             ? 0
