@@ -24,10 +24,7 @@ public static class TeamSpeakDetector
         }
     }
 
-    /// <summary>
-    /// Requests a graceful shutdown of all detected TeamSpeak 3 client processes.
-    /// The method never force-kills TeamSpeak.
-    /// </summary>
+    /// <summary>Requests a graceful shutdown of all detected TeamSpeak 3 client processes.</summary>
     public static bool TryClose(TimeSpan waitTimeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(waitTimeout, TimeSpan.Zero);
@@ -58,6 +55,50 @@ public static class TeamSpeakDetector
         }
     }
 
+    /// <summary>
+    /// Retries the graceful close through an elevated copy of the application when
+    /// the current process cannot message an elevated TeamSpeak process because of UIPI.
+    /// </summary>
+    public static bool TryCloseWithElevation(TimeSpan waitTimeout)
+    {
+        if (!IsRunning())
+            return true;
+
+        if (TryClose(TimeSpan.FromMilliseconds(Math.Min(waitTimeout.TotalMilliseconds, 1500))))
+            return true;
+
+        var executable = Environment.ProcessPath;
+        if (string.IsNullOrWhiteSpace(executable))
+            return false;
+
+        try
+        {
+            using var elevated = Process.Start(new ProcessStartInfo
+            {
+                FileName = executable,
+                Arguments = "--close-teamspeak",
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+
+            if (elevated is null)
+                return false;
+
+            elevated.WaitForExit((int)Math.Clamp(waitTimeout.TotalMilliseconds, 1000, 15000));
+            return !IsRunning() && elevated.ExitCode == 0;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // UAC was cancelled or elevation was unavailable.
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
     private static void RequestGracefulClose(Process process)
     {
         try
@@ -66,25 +107,16 @@ public static class TeamSpeakDetector
                 return;
 
             process.Refresh();
-
-            // Prefer the normal .NET graceful-close request when a main window exists.
             if (process.MainWindowHandle != IntPtr.Zero)
-            {
                 _ = SendCloseMessage(process.MainWindowHandle);
-            }
 
-            // TeamSpeak can expose helper/Qt top-level windows rather than a conventional
-            // MainWindowHandle. Enumerate every top-level window owned by the process,
-            // including currently hidden windows, and request WM_CLOSE gracefully.
             PostCloseToProcessWindows(process.Id);
         }
         catch (InvalidOperationException)
         {
-            // Process exited between enumeration and the close request.
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            // The process may have exited or no longer allow inspection.
         }
     }
 
@@ -129,8 +161,6 @@ public static class TeamSpeakDetector
         if (windowProcessId != (uint)state.ProcessId)
             return true;
 
-        // Do not require visibility: TS3 may keep its actual application window hidden
-        // while exposing the tray UI. WM_CLOSE is still a graceful shutdown request.
         _ = SendCloseMessage(hWnd);
         return true;
     }
@@ -196,7 +226,6 @@ public static class TeamSpeakDetector
     private sealed class WindowSearchState
     {
         public WindowSearchState(int processId) => ProcessId = processId;
-
         public int ProcessId { get; }
     }
 }
