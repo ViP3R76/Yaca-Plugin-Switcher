@@ -53,7 +53,7 @@ public partial class MainWindow
         // must have identical outer dimensions.
         var actions = new Grid();
         AddStarColumns(actions, 3);
-        AddDashboardTile(actions, 0, "switch", IsGerman ? "YACA WECHSELN" : "SWITCH YACA", IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch", (Brush)FindResource("AccentBrush"), ShowSwitchPage);
+        AddDashboardTile(actions, 0, "switch", IsGerman ? "YACA WECHSELN" : "SWITCH YACA", IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch", (Brush)FindResource("AccentBrush"), () => ShowSwitchPage());
         AddDashboardTile(actions, 1, "backup", IsGerman ? "BACKUP ERSTELLEN" : "CREATE BACKUP", IsGerman ? "Aktuelle Version\nsichern" : "Save current version", (Brush)FindResource("GoldBrush"), CreateBackupFromDashboard);
         AddDashboardTile(actions, 2, "updater", "YACA UPDATER", IsGerman ? "Neueste DLL prüfen\nund herunterladen" : "Check and download\nlatest DLL", (Brush)FindResource("AccentBrush"), ShowComingSoon);
         Grid.SetRow(actions, 1);
