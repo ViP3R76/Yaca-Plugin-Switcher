@@ -20,8 +20,8 @@ public partial class MainWindow
         var branding = new Image
         {
             Source = new BitmapImage(new Uri("/YacaPluginSwitcher;component/Assets/vip3r_76_logo.png", UriKind.RelativeOrAbsolute)),
-            Width = 150,
-            Height = 150,
+            Width = 200,
+            Height = 200,
             Stretch = System.Windows.Media.Stretch.Uniform,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
