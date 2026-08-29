@@ -40,6 +40,22 @@ jobs:
           dotnet build YacaPluginSwitcher.sln -c Release --no-restore --no-incremental *> build.log
           Get-Content build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Create UI test package
+        shell: pwsh
+        run: |
+          $publishDir = Join-Path $PWD 'src/YacaPluginSwitcher/bin/x64/Release/net10.0-windows/win-x64/publish'
+          if (-not (Test-Path $publishDir -PathType Container)) { throw "Publish directory missing: $publishDir" }
+          $exe = Get-ChildItem $publishDir -Filter '*.exe' -File | Select-Object -First 1
+          if ($null -eq $exe) { throw 'No published EXE found.' }
+          $releaseDir = Join-Path $PWD 'releases'
+          New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
+          $packageDir = Join-Path $env:RUNNER_TEMP 'YacaPluginSwitcher-ui-package'
+          if (Test-Path $packageDir) { Remove-Item $packageDir -Recurse -Force }
+          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+          Copy-Item $exe.FullName (Join-Path $packageDir $exe.Name)
+          $zipPath = Join-Path $releaseDir 'YacaPluginSwitcher-v1.0.0-win-x64.zip'
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+          Compress-Archive -Path (Join-Path $packageDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
       - name: Validate UI test package
         shell: pwsh
         run: |
