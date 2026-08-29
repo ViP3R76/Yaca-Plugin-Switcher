@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace YacaPluginSwitcher;
 
@@ -56,7 +55,7 @@ public partial class MainWindow
         }
     }
 
-    private static Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new()
+    private static System.Windows.Shapes.Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new()
     {
         Data = Geometry.Parse(data),
         Stroke = stroke,
