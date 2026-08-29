@@ -137,7 +137,7 @@
                       RowHeight="44"
                       ColumnHeaderHeight="38"
                       ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
@@ -160,6 +160,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding Selected, Mode=TwoWay}"
+                                          IsEnabled="{Binding CanSelect}"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
                             </DataTemplate>
