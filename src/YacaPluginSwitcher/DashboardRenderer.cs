@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using YacaPluginSwitcher.Models;
@@ -22,17 +24,22 @@ public partial class MainWindow
 
     private static readonly Dictionary<string, string> DashboardIconData = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["home"] = "M 3,11 L 12,3 L 21,11 V 21 H 15 V 14 H 9 V 21 H 3 Z",
-        ["refresh"] = "M 20,11 A 8,8 0 1 0 20,16 M 20,4 V 11 H 13",
-        ["switch"] = "M 19.5 7.5 A 8.5 8.5 0 0 0 5.2 5.2 L 3.4 7 M 3.4 7 V 2.8 M 3.4 7 H 7.6 M 4.5 16.5 A 8.5 8.5 0 0 0 18.8 18.8 L 20.6 17 M 20.6 17 V 21.2 M 20.6 17 H 16.4",
-        ["backup"] = "M 5 6 C 5 3.8 19 3.8 19 6 C 19 8.2 5 8.2 5 6 Z M 5 6 V 11 C 5 13.2 19 13.2 19 11 V 6 M 5 11 V 16 C 5 18.2 19 18.2 19 16 V 11 M 4 15 A 8.5 8.5 0 0 0 9 21 M 9 21 H 4 M 9 21 L 7 19 M 20 9 A 8.5 8.5 0 0 0 15 3 M 15 3 H 20 M 15 3 L 17 5",
+        ["home"] = "M61.44,0c33.93,0,61.44,27.51,61.44,61.44c0,33.93-27.51,61.44-61.44,61.44C27.51,122.88,0,95.37,0,61.44C0,27.51,27.51,0,61.44,0L61.44,0z M61.44,29L30.06,59.74l7.65,4.02l23.52-24.69l23.92,24.7l7.66-4.02L61.44,29L61.44,29L61.44,29z M39.39,67.13L39.39,67.13l22.08-22.09l22.02,22.09l0,0l0,0v21.67H67.4v-15.3H55.34v15.3H39.39V67.13L39.39,67.13L39.39,67.13 L39.39,67.13z M61.44,9.09c28.91,0,52.35,23.44,52.35,52.35c0,28.91-23.44,52.35-52.35,52.35S9.09,90.35,9.09,61.44C9.09,32.53,32.53,9.09,61.44,9.09L61.44,9.09z",
+        ["refresh"] = "M289.17 183.15 286.3 182c-9.31-3.54-19.46-5.49-30.11-5.49-23.34 0-44.49 9.47-59.78 24.76l-.79.73c-14.83 15.19-23.97 36.04-23.97 59.05 0 23.35 9.47 44.5 24.76 59.79 15.29 15.29 36.44 24.76 59.78 24.76 22.05 0 42.11-8.4 57.11-22.15l.89-.76c14.66-13.8 24.41-32.87 26.24-54.21.73-9.03 8.67-15.76 17.7-15.02 9.04.74 15.76 8.67 15.03 17.71-2.55 29.64-16.19 56.2-36.73 75.47l-.93.92c-20.91 19.18-48.78 30.89-79.31 30.89-32.4 0-61.76-13.15-83-34.39-21.23-21.24-34.39-50.6-34.39-83.01 0-31.89 12.79-60.87 33.52-82.06l.87-.94c21.24-21.24 50.6-34.39 83-34.39 14.68 0 28.77 2.73 41.78 7.68 1.78.68 3.54 1.39 5.28 2.16L298 138.95c-3.04-8.5 1.39-17.88 9.88-20.92 8.5-3.05 17.88 1.38 20.92 9.87l18.63 51.66c3.05 8.5-1.38 17.88-9.88 20.92l-54.21 19.56c-8.49 3.04-17.87-1.39-20.92-9.88-3.04-8.5 1.38-17.88 9.88-20.92l16.87-6.09zM256 0c70.67 0 134.68 28.66 181.01 74.98C483.33 121.31 512 185.32 512 256c0 70.61-28.68 134.62-75.02 180.98C390.68 483.33 326.68 512 256 512c-70.68 0-134.69-28.67-181.02-74.99C28.66 390.68 0 326.67 0 256c0-70.68 28.67-134.69 74.99-181.02C121.32 28.66 185.32 0 256 0z",
+        ["switch"] = "M64.89 32.65 59.81 58.5l-5.16-7.77C43.54 55.19 37.3 62.54 36.38 73.86c-9.13-16-3.59-30.25 8-38.63L39.09 27.3l25.8 5.35ZM61.44 0A61.46 61.46 0 1 1 18 18 61.21 61.21 0 0 1 61.44 0ZM97.56 25.32a51.08 51.08 0 1 0 15 36.12 51 51 0 0 0-15-36.12ZM56.64 91.8 61.72 66l5.16 7.77C78 69.26 84.23 61.91 85.15 50.59c9.13 16 3.59 30.25-8 38.63l5.26 7.93-25.77-5.35Z",
+        ["backup"] = "M16.83 25.39C24.55 28 35.28 29.55 47.2 29.55S69.86 28 77.57 25.39c6.77-2.26 11-5 11-7.68s-4.19-5.41-11-7.67C69.86 7.47 59.13 5.88 47.2 5.88S24.55 7.47 16.83 10c-14.36 4.8-14.75 10.42 0 15.35Zm70.1 31.17a33.09 33.09 0 0 1 23.44 9.71v0a33.12 33.12 0 0 1 0 46.86l0 0a33.12 33.12 0 0 1-46.86 0l0 0a33.12 33.12 0 0 1 0-46.86l0 0a33.06 33.06 0 0 1 23.43-9.71Zm1.88 17.52L86 88.12l-2.8-4.22c-6 2.42-9.42 6.42-9.92 12.56-5-8.66-1.95-16.43 4.33-21l-2.86-4.3 14 2.9Zm-4.49 32.13 2.76-14 2.81 4.22c6-2.42 9.42-6.42 9.92-12.56 5 8.66 2 16.43-4.33 21l2.86 4.3-14-2.9ZM106.7 70a28 28 0 1 0 8.19 19.77A27.84 27.84 0 0 0 106.7 70ZM43.92 91C32.69 90.77 22.55 89.12 15 86.6a37.06 37.06 0 0 1-9-4.26v19.18c.53 2.49 4.59 5 10.89 7.11 7.72 2.58 18.45 4.17 30.37 4.17 1.15 0 2.29 0 3.42 0a43.68 43.68 0 0 0 4.32 5.69q-3.78.22-7.74.22c-12.52 0-23.92-1.71-32.23-4.48-4.38-1.47-14.91-6.27-14.91-12V100.3C.06 74.09 0 43.92 0 17.71 0 12.23 5.72 7.58 15 4.49 23.28 1.71 34.68 0 47.2 0S71.12 1.71 79.43 4.49s13.92 6.92 14.84 11.77a2.93 2.93 0 0 1 .17 1V47.35a42.18 42.18 0 0 0-6.08-.64 2.77 2.77 0 0 0 .17-.93h0V26.62a37 37 0 0 1-9.13 4.32c-8.31 2.77-19.71 4.49-32.23 4.49S23.28 33.71 15 30.94a37.44 37.44 0 0 1-9-4.25v19.65c.53 2.49 4.59 5 10.89 7.11 7.66 2.55 18.39 4.17 30.31 4.17 4.08 0 8-.19 11.74-.54-.62.53-1.22 1.08-1.8 1.64-.22.18-.42.37-.62.56l0 0 0 0 0 0a43.9 43.9 0 0 0-3.55 4c-1.89.08-3.8.12-5.75.12-12.52 0-23.92-1.71-32.23-4.48a37.06 37.06 0 0 1-9-4.25v19.18c.53 2.49 4.59 5 10.89 7.11 7.05 2.35 16.61 3.88 27.31 4.13a42.92 42.92 0 0 0-.24 4.55c0 .44 0 .88 0 1.32Z",
         ["updater"] = "M 192,395 H 139 A 96,96 0 0 1 139,203 A 123,123 0 0 1 385,204 A 100,100 0 0 1 385,404 H 331 M 256,214 V 358 M 198,300 L 256,358 L 314,300",
         ["backups"] = "M 4,5 C 4,2 20,2 20,5 V 19 C 20,22 4,22 4,19 Z M 4,5 C 4,8 20,8 20,5 M 4,12 C 4,15 20,15 20,12",
         ["shield"] = "M 12,2 L 20,5 V 11 C 20,16 16.8,20 12,22 C 7.2,20 4,16 4,11 V 5 Z",
-        ["info"] = "M 12,21 A 9,9 0 1 0 12,3 A 9,9 0 0 0 12,21 M 12,10 V 16 M 12,7 V 7"
+        ["info"] = "M93 39.4h46.13C141.84 17.18 159.77 0 181.52 0c21.61 0 39.45 16.95 42.33 38.94l46.77.46c2.61 0 4.7 2.1 4.7 4.71v51.84a4.69 4.69 0 0 1-4.7 4.71H93.05c-2.56 0-4.71-2.1-4.71-4.71V44.11A4.644 4.644 0 0 1 93 39.4z",
+        ["exit"] = "M256 0c70.68 0 134.7 28.66 181.02 74.98C483.34 121.3 512 185.32 512 256s-28.66 134.69-74.98 181.01C390.7 483.33 326.68 511.99 256 511.99s-134.7-28.66-181.02-74.98C28.66 390.69 0 326.68 0 256c0-70.68 28.66-134.7 74.98-181.02C121.3 28.66 185.32 0 256 0zm-19.16 136.45c0-10.57 8.59-19.16 19.16-19.16s19.16 8.59 19.16 19.16V199c0 10.57-8.59 19.16-19.16 19.16s-19.16-8.59-19.16-19.16v-62.55z"
     };
 
-    private const string TeamSpeakLogoData = "M 3 12 C 3 7 7 3 12 3 C 17 3 21 7 21 12 V 17 C 21 19 19 20 17 20 H 16 V 13 H 19 V 17 M 3 17 C 3 19 5 20 7 20 H 8 V 13 H 5 V 17";
+    private static readonly string[] TeamSpeakIconPaths =
+    [
+        "M0.123421 42.6798C0.260552 41.4132 -0.0137098 39.9333 0.260552 38.4001C0.671945 35.9202 2.11182 33.987 4.38819 32.9204C4.93672 32.6537 5.21098 32.3871 5.34811 31.6538C6.30803 26.3075 8.58439 21.3611 11.8892 16.9347C12.3006 16.4014 12.5749 16.1348 12.0264 15.4015C11.4779 14.6015 11.8892 13.7349 12.4378 13.0549C17.1139 7.97525 22.6129 4.22882 29.154 2.14894C44.8418 -2.66409 58.5961 0.615706 70.4991 11.9083C71.5961 12.9749 73.0497 13.9749 71.5961 15.7881C71.3218 16.0548 71.7332 16.3214 72.0075 16.5881C75.3809 21.1344 77.6436 26.2141 78.6858 31.7071C78.8229 32.2404 79.2343 32.5071 79.6457 32.7737C82.4706 34.1736 83.9104 36.5202 83.9104 39.6666C83.9104 42.8131 84.1847 45.1463 83.7733 47.8928C83.0877 51.9059 78.96 54.6524 74.9695 53.7724C73.8725 53.5058 73.3925 52.7058 73.3925 51.5592C73.3925 47.0129 73.5296 42.4665 73.3925 37.9201C72.9811 25.6808 67.4822 16.4547 56.5391 10.5618C38.5201 0.935687 15.1255 11.8283 11.2036 31.7605C10.5179 35.1736 10.6551 38.7867 10.6551 42.1998C10.6551 45.6129 10.6551 48.6928 10.5179 51.9592C10.5179 53.0258 9.83228 53.7591 8.52954 53.7591C3.37342 54.0258 0 50.8793 0 45.7996C0.137131 44.9996 0.137131 43.9997 0.137131 42.6531",
+        "M35.8243 58.7355C37.6756 58.0689 39.0606 56.8023 39.472 54.7224C39.8834 52.6425 37.4836 49.7761 34.2473 46.7629C30.8739 43.6164 26.472 40.27 24.0722 39.07C20.5616 37.0035 17.2568 38.8034 16.5711 42.8165C15.7483 47.2295 16.5711 51.376 18.9846 55.0557C20.6988 57.6689 23.1123 58.8022 26.0743 59.0688C27.7199 59.0022 34.3982 59.3355 35.838 58.7355M50.9499 60.0021C53.0754 60.2687 55.0775 60.6687 57.203 60.802C60.0279 60.9354 62.1535 60.1354 63.7442 58.4555C65.7326 56.389 66.7062 53.7758 66.5691 51.0293C66.4319 48.1495 64.0184 46.4829 60.7959 47.0162C57.8338 47.4162 55.2969 48.6828 52.6091 49.6294C50.1956 50.5627 48.0701 51.6959 46.356 53.1758C43.9425 55.389 45.2589 58.3889 49.0437 59.5355C49.5237 59.7354 50.2093 59.8688 50.9636 60.0021M73.4531 57.5356C73.0417 57.1356 72.356 57.4023 72.0132 57.9356C70.7104 61.9486 64.6492 75.3878 44.011 76.8011C19.6566 78.4676 57.011 83.5606 67.6798 75.8678C71.3275 73.1213 75.4552 70.3881 75.318 62.4953C75.318 60.962 74.5638 58.3489 73.4668 57.5489"
+    ];
 
     private Grid RenderDashboard()
     {
@@ -67,7 +74,7 @@ public partial class MainWindow
         var gold = (Brush)FindResource("GoldBrush"); var card = CreatePanelCard(gold); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var header = CreateDashboardHeader("teamspeak", "STATUS", gold); Grid.SetRow(header, 0); panel.Children.Add(header);
         var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Foreground = gold }; _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.NoWrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 420 }; center.Children.Add(_tsStatus); center.Children.Add(_tsDescription); Grid.SetRow(center, 1); panel.Children.Add(center);
-        _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Background = (Brush)FindResource("ErrorBrush"), Foreground = Brushes.White, BorderBrush = (Brush)FindResource("ErrorBrush"), BorderThickness = new Thickness(0), Padding = new Thickness(18, 8, 18, 8), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0), Cursor = System.Windows.Input.Cursors.Hand };
+        _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Background = (Brush)FindResource("ErrorBrush"), Foreground = Brushes.White, BorderBrush = (Brush)FindResource("ErrorBrush"), BorderThickness = new Thickness(0), Padding = new Thickness(18, 8, 18, 8), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0), Cursor = System.Windows.Input.Cursors.Hand, FontSize = 17, FontWeight = FontWeights.Bold };
         _tsClose.Template = CreateSquareButtonTemplate(); _tsClose.Click += (_, _) => CloseTeamSpeak(); Grid.SetRow(_tsClose, 2); panel.Children.Add(_tsClose); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
@@ -85,18 +92,70 @@ public partial class MainWindow
     {
         var brush = headerBrush ?? (Brush)FindResource("AccentBrush"); var header = new Grid { VerticalAlignment = VerticalAlignment.Center }; header.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); header.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        if (iconKey.Equals("teamspeak", StringComparison.OrdinalIgnoreCase)) { var tsGroup = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; tsGroup.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse(TeamSpeakLogoData), Stroke = brush, StrokeThickness = 2.1, Fill = Brushes.Transparent, Width = DashboardHeaderIconSize, Height = DashboardHeaderIconSize, Stretch = Stretch.Uniform }); tsGroup.Children.Add(new TextBlock { Text = "TEAMSPEAK", FontSize = 10.5, FontWeight = FontWeights.Bold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) }); content.Children.Add(tsGroup); }
-        else if (DashboardIconData.TryGetValue(iconKey, out var data)) content.Children.Add(CreateIcon(data, brush, DashboardHeaderIconSize, DashboardHeaderIconSize, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 3.0 : 2.15));
+        if (iconKey.Equals("teamspeak", StringComparison.OrdinalIgnoreCase))
+        {
+            var tsGroup = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; var tsGeometry = new GeometryGroup { FillRule = FillRule.EvenOdd }; foreach (var pathData in TeamSpeakIconPaths) tsGeometry.Children.Add(Geometry.Parse(pathData));
+            tsGroup.Children.Add(new System.Windows.Shapes.Path { Data = tsGeometry, Fill = brush, Width = DashboardHeaderIconSize, Height = DashboardHeaderIconSize, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center });
+            tsGroup.Children.Add(new TextBlock { Text = "TEAMSPEAK", FontSize = 10.5, FontWeight = FontWeights.Bold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) }); content.Children.Add(tsGroup);
+        }
+        else if (DashboardIconData.TryGetValue(iconKey, out var data)) content.Children.Add(CreateIcon(data, brush, DashboardHeaderIconSize, DashboardHeaderIconSize, 0));
         content.Children.Add(new TextBlock { Text = text, FontSize = DashboardHeaderFontSize, FontWeight = FontWeights.SemiBold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) }); Grid.SetRow(content, 0); header.Children.Add(content);
         var separator = new Border { Height = 1, Background = brush, Opacity = 0.65, Margin = new Thickness(0, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Stretch }; Grid.SetRow(separator, 1); header.Children.Add(separator); return header;
     }
 
     private void AddDashboardTile(Grid host, int column, string iconKey, string title, string subtitle, Brush accent, Action action)
     {
-        var button = new Button { Style = (Style)FindResource("TileButtonStyle"), BorderBrush = accent, Margin = new Thickness(6) }; var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; if (DashboardIconData.TryGetValue(iconKey, out var data)) panel.Children.Add(CreateIcon(data, accent, DashboardTileIconSize, DashboardTileIconSize, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 6.0 : 3.6)); panel.Children.Add(new TextBlock { Text = title, FontSize = DashboardTileTitleFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 4) }); panel.Children.Add(new TextBlock { Text = subtitle, FontSize = DashboardTileSubtitleFontSize, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.NoWrap }); button.Content = panel; button.Click += (_, _) => action(); Grid.SetColumn(button, column); host.Children.Add(button);
+        var button = new Button { Style = (Style)FindResource("TileButtonStyle"), BorderBrush = accent, Margin = new Thickness(6) }; var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; if (DashboardIconData.TryGetValue(iconKey, out var data)) panel.Children.Add(CreateIcon(data, accent, DashboardTileIconSize, DashboardTileIconSize, 0)); panel.Children.Add(new TextBlock { Text = title, FontSize = DashboardTileTitleFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 4) }); panel.Children.Add(new TextBlock { Text = subtitle, FontSize = DashboardTileSubtitleFontSize, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.NoWrap }); button.Content = panel; button.Click += (_, _) => action(); Grid.SetColumn(button, column); host.Children.Add(button);
+    }
+
+    private void BuildLatestBackupPanel(Grid host, int column)
+    {
+        var card = CreatePanelCard((Brush)FindResource("BorderBrush")); _backupCard = card; var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        var header = CreateDashboardHeader("backup", IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header);
+        var content = new Grid { Margin = new Thickness(6, 16, 6, 0) }; content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(160) });
+        _backupSummary = new TextBlock { FontSize = 15, LineHeight = 22, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 10, 0) }; Grid.SetColumn(_backupSummary, 0); content.Children.Add(_backupSummary);
+        var backupIcon = CreateIcon(DashboardIconData["backup"], (Brush)FindResource("AccentBrush"), 132, 132, 0); Grid.SetColumn(backupIcon, 1); content.Children.Add(backupIcon); Grid.SetRow(content, 1); panel.Children.Add(content); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+    }
+
+    private SolidColorBrush GetVersionRowBackground(int index)
+    {
+        if (index % 2 == 0) return Brushes.Transparent;
+        if (FindResource("AccentBrush") is SolidColorBrush accent) return new SolidColorBrush(Color.FromArgb(18, accent.Color.R, accent.Color.G, accent.Color.B));
+        return Brushes.Transparent;
+    }
+
+    private void RenderVersionList(YacaPluginInfo? current)
+    {
+        if (_versionList is null) return; _versionList.Children.Clear(); var ordered = _plugins.OrderByDescending(p => p.Version).ThenByDescending(p => p.Build).ToList();
+        for (var index = 0; index < ordered.Count; index++)
+        {
+            var plugin = ordered[index]; var row = new Border { Background = GetVersionRowBackground(index), CornerRadius = new CornerRadius(3), Padding = new Thickness(7, 2, 7, 2), Margin = new Thickness(0, 1, 0, 1) };
+            var grid = new Grid { MinHeight = 34 }; grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.Children.Add(new TextBlock { Text = $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})", FontSize = DashboardVersionListFontSize, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+            if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true)
+            { var badge = new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(7, 2, 7, 2), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Child = new TextBlock { Text = IsGerman ? "INSTALLIERT" : "INSTALLED", Foreground = Brushes.Black, FontSize = 10, FontWeight = FontWeights.Bold } }; Grid.SetColumn(badge, 1); grid.Children.Add(badge); }
+            row.Child = grid; _versionList.Children.Add(row);
+        }
+        if (_versionsFooterText is not null) _versionsFooterText.Text = IsGerman ? $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} Version(en) verfügbar" : $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} version(s) available";
+    }
+
+    private void UpdateBackupSummary(BackupInfo? backup)
+    {
+        if (_backupSummary is null) return; _backupSummary.Inlines.Clear(); if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
+        var versionText = backup.DisplayName.Split(" - ", 2, StringSplitOptions.None)[0]; var statusText = backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"); var buildText = backup.SourceBuild?.ToString(CultureInfo.InvariantCulture) ?? "—";
+        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 }); _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run(versionText) { FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run("────────────────────────") { FontSize = 7, Foreground = (Brush)FindResource("BorderBrush") }); _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"Build: {buildText}  •  {statusText}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")}  -  {backup.FileName}") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Größe" : "Size")}  -  {backup.FileSize / 1024d / 1024d:0.00} MB") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") });
+    }
+
+    private static ControlTemplate CreateSquareButtonTemplate()
+    {
+        var template = new ControlTemplate(typeof(Button)); var border = new FrameworkElementFactory(typeof(Border)); border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty)); border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty)); border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty)); border.SetValue(Border.CornerRadiusProperty, new CornerRadius(0)); var presenter = new FrameworkElementFactory(typeof(ContentPresenter)); presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center); presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center); presenter.SetValue(ContentPresenter.MarginProperty, new TemplateBindingExtension(Button.PaddingProperty)); border.AppendChild(presenter); template.VisualTree = border; return template;
     }
 
     private static void AddStarColumns(Grid grid, int count) { for (var i = 0; i < count; i++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); }
-    private static System.Windows.Shapes.Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new() { Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = thickness, Fill = Brushes.Transparent, Width = width, Height = height, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+    private static System.Windows.Shapes.Path CreateIcon(string data, Brush fill, double width, double height, double _) => new() { Data = Geometry.Parse(data), Fill = fill, Stroke = null, Width = width, Height = height, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
     private static BitmapImage LoadLogo() => new(new Uri("pack://application:,,,/YacaPluginSwitcher;component/Assets/yaca_logo.png"));
 }
