@@ -14,7 +14,7 @@ public partial class BackupView : UserControl
     private readonly ObservableCollection<BackupRow> _rows = [];
     private readonly ObservableCollection<PluginDownloadRow> _pluginDownloadRows = [];
     private UiText Texts => Localization.Get(_service.Settings.Language);
-    private string PluginDownloadDirectory => Path.Combine(AppContext.BaseDirectory, "plugins_download");
+    private static string PluginDownloadDirectory => Path.Combine(AppContext.BaseDirectory, "plugins_download");
 
     public BackupView(YacaService service, MainWindow owner)
     {
@@ -37,12 +37,7 @@ public partial class BackupView : UserControl
             _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
 
         Grid.ItemsSource = _rows;
-        BackupCapacityText.Text = IsGerman()
-            ? $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}"
-            : $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
-
-        // Reserve the complete configured backup capacity so the upper panel does
-        // not jump in size as backups are created or removed.
+        BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
         BackupCard.Height = 54 + Math.Max(1, _service.Settings.MaxBackups) * 44;
 
         DeleteButton.Visibility = Visibility.Visible;
@@ -61,12 +56,9 @@ public partial class BackupView : UserControl
         PluginDownloadsTitle.Text = IsGerman() ? "YACA Plugin Downloads" : "YACA Plugin Downloads";
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
-
         foreach (var file in Directory.EnumerateFiles(PluginDownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
                      .OrderByDescending(File.GetLastWriteTime))
-        {
             _pluginDownloadRows.Add(new PluginDownloadRow(file));
-        }
 
         PluginDownloadsGrid.ItemsSource = _pluginDownloadRows;
     }
@@ -76,10 +68,6 @@ public partial class BackupView : UserControl
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
 
-        // Plugin downloads are independently selectable regardless of the
-        // selective-backup setting. The delete action follows an either/or rule
-        // when only one type is selected, but explicitly handles both selections
-        // when the user selected both types.
         if (selectedDownloads.Count > 0 && selectedBackups.Count == 0)
         {
             DeletePluginDownloads(selectedDownloads);
@@ -94,8 +82,8 @@ public partial class BackupView : UserControl
 
         if (selectedDownloads.Count > 0 && selectedBackups.Count > 0)
         {
-            var deletedDownloads = DeletePluginDownloads(selectedDownloads, updateFooter: false);
-            var deletedBackups = DeleteBackups(selectedBackups, updateFooter: false);
+            var deletedDownloads = DeletePluginDownloads(selectedDownloads, false);
+            var deletedBackups = DeleteBackups(selectedBackups, false);
             SetFooter(IsGerman()
                 ? $"{deletedBackups} Backup(s) und {deletedDownloads} Plugin-Download(s) wurden gelöscht."
                 : $"{deletedBackups} backup(s) and {deletedDownloads} plugin download(s) deleted.",
@@ -118,7 +106,7 @@ public partial class BackupView : UserControl
         SetFooter(IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.", false);
     }
 
-    private int DeleteBackups(IReadOnlyList<BackupInfo> backups, bool updateFooter = true)
+    private int DeleteBackups(List<BackupInfo> backups, bool updateFooter = true)
     {
         try
         {
