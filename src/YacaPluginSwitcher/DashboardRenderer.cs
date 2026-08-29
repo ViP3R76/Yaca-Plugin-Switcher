@@ -36,7 +36,6 @@ public partial class MainWindow
     };
 
     private const string TeamSpeakLogoData = "M 3 12 C 3 7 7 3 12 3 C 17 3 21 7 21 12 V 17 C 21 19 19 20 17 20 H 16 V 13 H 19 V 17 M 3 17 C 3 19 5 20 7 20 H 8 V 13 H 5 V 17";
-    private static readonly string LatestBackupFolderIconData = "M 5 5 H 11 L 14 8 H 22 C 23.1 8 24 8.9 24 10 V 19 C 24 20.1 23.1 21 22 21 H 4 C 2.9 21 2 20.1 2 19 V 7 C 2 5.9 2.9 5 4 5 Z M 18.5 13.5 A 5.5 5.5 0 1 0 19.5 19 M 18.5 11.5 V 15 H 22";
 
     private Grid RenderDashboard()
     {
@@ -70,8 +69,9 @@ public partial class MainWindow
     {
         var gold = (Brush)FindResource("GoldBrush"); var card = CreatePanelCard(gold); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var header = CreateDashboardHeader("teamspeak", "STATUS", gold); Grid.SetRow(header, 0); panel.Children.Add(header);
-        var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Foreground = gold }; _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 360 }; center.Children.Add(_tsStatus); center.Children.Add(_tsDescription); Grid.SetRow(center, 1); panel.Children.Add(center);
-        _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Style = (Style)FindResource("TileButtonStyle"), Foreground = gold, BorderBrush = gold, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 0) }; _tsClose.Click += (_, _) => CloseTeamSpeak(); Grid.SetRow(_tsClose, 2); panel.Children.Add(_tsClose); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Foreground = gold }; _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.NoWrap, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 420 }; center.Children.Add(_tsStatus); center.Children.Add(_tsDescription); Grid.SetRow(center, 1); panel.Children.Add(center);
+        _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Background = (Brush)FindResource("ErrorBrush"), Foreground = Brushes.White, BorderBrush = (Brush)FindResource("ErrorBrush"), BorderThickness = new Thickness(0), Padding = new Thickness(18, 8, 18, 8), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0), Cursor = System.Windows.Input.Cursors.Hand };
+        _tsClose.Template = CreateSquareButtonTemplate(); _tsClose.Click += (_, _) => CloseTeamSpeak(); Grid.SetRow(_tsClose, 2); panel.Children.Add(_tsClose); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private void BuildLatestBackupPanel(Grid host, int column)
@@ -79,13 +79,12 @@ public partial class MainWindow
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); _backupCard = card;
         var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         var header = CreateDashboardHeader("backups", IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header);
-        var content = new Grid { Margin = new Thickness(6, 2, 6, 0) };
+        var content = new Grid { Margin = new Thickness(6, 16, 6, 0) };
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(160) });
         _backupSummary = new TextBlock { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 10, 0) };
         Grid.SetColumn(_backupSummary, 0); content.Children.Add(_backupSummary);
-        var folderIcon = new System.Windows.Shapes.Path { Data = Geometry.Parse(LatestBackupFolderIconData), Stroke = (Brush)FindResource("AccentBrush"), StrokeThickness = 3.1, Fill = Brushes.Transparent, Width = 142, Height = 142, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false, Opacity = 0.98 };
-        Grid.SetColumn(folderIcon, 1); content.Children.Add(folderIcon);
+        var folderIcon = CreateBackupFolderIcon((Brush)FindResource("AccentBrush")); Grid.SetColumn(folderIcon, 1); content.Children.Add(folderIcon);
         Grid.SetRow(content, 1); panel.Children.Add(content); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
@@ -94,10 +93,10 @@ public partial class MainWindow
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); var header = CreateDashboardHeader("backups", IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS"); Grid.SetRow(header, 0); panel.Children.Add(header);
         _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList);
 
-        var footer = new Grid { Margin = new Thickness(6, 0, 6, 2), Cursor = System.Windows.Input.Cursors.Hand, Tag = "versions-footer" };
+        var footer = new Grid { Margin = new Thickness(6, 0, 6, 2), Cursor = System.Windows.Input.Cursors.Hand, Background = Brushes.Transparent, Tag = "versions-footer", HorizontalAlignment = HorizontalAlignment.Stretch };
         footer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var footerText = new TextBlock { Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Left, Padding = new Thickness(8, 4, 8, 4), TextWrapping = TextWrapping.NoWrap };
+        var footerText = new TextBlock { Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Left, Padding = new Thickness(8, 4, 8, 4), TextWrapping = TextWrapping.NoWrap, IsHitTestVisible = false };
         Grid.SetColumn(footerText, 0); footer.Children.Add(footerText);
         var footerArrow = new System.Windows.Shapes.Path { Data = Geometry.Parse("M 2 2 L 8 8 L 2 14"), Stroke = (Brush)FindResource("AccentBrush"), StrokeThickness = 2.2, Fill = Brushes.Transparent, Width = 18, Height = 18, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0), IsHitTestVisible = false };
         Grid.SetColumn(footerArrow, 1); footer.Children.Add(footerArrow);
@@ -118,7 +117,7 @@ public partial class MainWindow
         {
             var tsGroup = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             tsGroup.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse(TeamSpeakLogoData), Stroke = brush, StrokeThickness = 2.1, Fill = Brushes.Transparent, Width = DashboardHeaderIconSize, Height = DashboardHeaderIconSize, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
-            tsGroup.Children.Add(new TextBlock { Text = "TEAMSPEAK", FontSize = 9.5, FontWeight = FontWeights.Bold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0), TextWrapping = TextWrapping.NoWrap });
+            tsGroup.Children.Add(new TextBlock { Text = "TEAMSPEAK", FontSize = 10.5, FontWeight = FontWeights.Bold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0), TextWrapping = TextWrapping.NoWrap });
             content.Children.Add(tsGroup);
         }
         else if (DashboardIconData.TryGetValue(iconKey, out var data))
@@ -164,11 +163,42 @@ public partial class MainWindow
 
     private void UpdateBackupSummary(BackupInfo? backup)
     {
-        if (_backupSummary is null) return; _backupSummary.Inlines.Clear(); if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
-        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{backup.DisplayName}  •  {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}") { FontSize = 18, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")}    {backup.FileName}") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Größe" : "Size")}    {backup.FileSize / 1024d / 1024d:0.00} MB") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") });
+        if (_backupSummary is null) return;
+        _backupSummary.Inlines.Clear();
+        if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
+        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{backup.DisplayName}  -  Build: {backup.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"}  •  {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")}  -  {backup.FileName}") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Größe" : "Size")}  -  {backup.FileSize / 1024d / 1024d:0.00} MB") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") });
+    }
+
+    private static Grid CreateBackupFolderIcon(Brush brush)
+    {
+        var canvas = new Grid { Width = 150, Height = 150, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+        canvas.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse("M 13 31 L 13 24 C 13 20 16 18 20 18 H 36 L 45 27 H 82 C 87 27 90 30 90 35 V 69 C 90 74 87 77 82 77 H 18 C 13 77 10 74 10 69 V 31 C 10 26 13 24 18 24"), Stroke = brush, StrokeThickness = 3.4, Fill = Brushes.Transparent, Stretch = Stretch.Uniform, Width = 126, Height = 104, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(8, 10, 0, 0) });
+        canvas.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse("M 83 70 A 25 25 0 1 1 76 42"), Stroke = brush, StrokeThickness = 3.4, Fill = Brushes.Transparent, Stretch = Stretch.Uniform, Width = 70, Height = 70, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 6, 8) });
+        canvas.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse("M 73 39 L 78 49 L 88 44"), Stroke = brush, StrokeThickness = 3.4, Fill = Brushes.Transparent, Stretch = Stretch.Uniform, Width = 34, Height = 34, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 44) });
+        return canvas;
+    }
+
+    private static ControlTemplate CreateSquareButtonTemplate()
+    {
+        var template = new ControlTemplate(typeof(Button));
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+        border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+        border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(0));
+        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
+        presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        presenter.SetValue(ContentPresenter.MarginProperty, new TemplateBindingExtension(Button.PaddingProperty));
+        border.AppendChild(presenter);
+        template.VisualTree = border;
+        return template;
     }
 
     private static void AddStarColumns(Grid grid, int count) { for (var i = 0; i < count; i++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); }
