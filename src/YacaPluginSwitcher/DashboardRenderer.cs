@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,6 +48,7 @@ public partial class MainWindow
         _currentValue = new TextBlock { Text = "—", FontSize = DashboardVersionFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Foreground = (Brush)FindResource("ForegroundBrush") }; center.Children.Add(_currentValue);
         center.Children.Add(new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), MinHeight = 30, Padding = new Thickness(16, 4, 16, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = IsGerman ? "AKTIV" : "ACTIVE", Foreground = Brushes.Black, FontSize = DashboardBadgeFontSize, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center } }); Grid.SetRow(center, 1); panel.Children.Add(center);
 
+        _currentDetails = new DashboardDetailsTextBlock(UpdateCurrentInstalledDetailsFromText) { Visibility = Visibility.Collapsed };
         _currentDetailsPanel = new Grid { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 8, 0, 0) };
         _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         _currentMetaText = new TextBlock { FontSize = 13, LineHeight = 20, Foreground = (Brush)FindResource("ForegroundBrush"), TextAlignment = TextAlignment.Left, HorizontalAlignment = HorizontalAlignment.Left, TextWrapping = TextWrapping.NoWrap };
@@ -56,6 +58,17 @@ public partial class MainWindow
         Grid.SetRow(_currentMetaText, 0); Grid.SetRow(_currentShaLabel, 1); Grid.SetRow(shaSeparator, 2); Grid.SetRow(_currentShaValue, 3); _currentDetailsPanel.Children.Add(_currentMetaText); _currentDetailsPanel.Children.Add(_currentShaLabel); _currentDetailsPanel.Children.Add(shaSeparator); _currentDetailsPanel.Children.Add(_currentShaValue);
         Grid.SetRow(_currentDetailsPanel, 2); panel.Children.Add(_currentDetailsPanel);
         card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+    }
+
+    private void UpdateCurrentInstalledDetailsFromText(string text)
+    {
+        if (_currentDetailsPanel is null || _currentMetaText is null || _currentShaLabel is null || _currentShaValue is null) return;
+        var lines = text.Split('\n', StringSplitOptions.None);
+        if (lines.Length < 5 || string.IsNullOrWhiteSpace(lines[0])) { _currentDetailsPanel.Visibility = Visibility.Collapsed; return; }
+        _currentDetailsPanel.Visibility = Visibility.Visible;
+        _currentMetaText.Text = string.Join(Environment.NewLine, lines.Take(2));
+        _currentShaLabel.Text = lines[2].Trim();
+        _currentShaValue.Text = lines[4].Trim();
     }
 
     private void BuildTeamSpeakPanel(Grid host, int column)
@@ -96,16 +109,6 @@ public partial class MainWindow
         if (_versionsFooterText is not null) _versionsFooterText.Text = IsGerman ? $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} Version(en) verfügbar" : $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} version(s) available";
     }
 
-    private void UpdateCurrentInstalledDetails(YacaPluginInfo? current)
-    {
-        if (_currentDetailsPanel is null || _currentMetaText is null || _currentShaLabel is null || _currentShaValue is null) return;
-        if (current is null) { _currentDetailsPanel.Visibility = Visibility.Collapsed; return; }
-        _currentDetailsPanel.Visibility = Visibility.Visible;
-        _currentMetaText.Text = $"Build: YACA {current.Version} - {current.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"}\nGröße: {current.FileSize.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} Bytes";
-        _currentShaLabel.Text = "SHA-256";
-        _currentShaValue.Text = current.Sha256;
-    }
-
     private void UpdateBackupSummary(BackupInfo? backup)
     {
         if (_backupSummary is null) return; _backupSummary.Inlines.Clear(); if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; } var versionText = backup.DisplayName.Split(" - ", 2, StringSplitOptions.None)[0]; var statusText = backup.IsAutomatic ? (IsGerman ? "Automatisches Backup" : "Automatic Backup") : (IsGerman ? "Manuelles Backup" : "Manual Backup"); var buildText = backup.SourceBuild?.ToString(CultureInfo.InvariantCulture) ?? "—"; var sizeBytes = backup.FileSize; var sizeMb = sizeBytes / 1024d / 1024d; _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run($"{versionText} • (Build: {buildText})") { FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run($"Status: {statusText}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run($"Größe: {sizeMb:0.00} MB ({sizeBytes.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} Bytes)") { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush") });
@@ -113,4 +116,15 @@ public partial class MainWindow
 
     private static ControlTemplate CreateSquareButtonTemplate() { var template = new ControlTemplate(typeof(Button)); var border = new FrameworkElementFactory(typeof(Border)); border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty)); border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty)); border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty)); border.SetValue(Border.CornerRadiusProperty, new CornerRadius(0)); var presenter = new FrameworkElementFactory(typeof(ContentPresenter)); presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center); presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center); presenter.SetValue(ContentPresenter.MarginProperty, new TemplateBindingExtension(Button.PaddingProperty)); border.AppendChild(presenter); template.VisualTree = border; return template; }
     private static void AddStarColumns(Grid grid, int count) { for (var i = 0; i < count; i++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); }
+}
+
+internal sealed class DashboardDetailsTextBlock : TextBlock
+{
+    private readonly Action<string> _onTextChanged;
+
+    internal DashboardDetailsTextBlock(Action<string> onTextChanged)
+    {
+        _onTextChanged = onTextChanged ?? throw new ArgumentNullException(nameof(onTextChanged));
+        DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock))?.AddValueChanged(this, (_, _) => _onTextChanged(Text));
+    }
 }
