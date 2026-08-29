@@ -7,8 +7,6 @@ namespace YacaPluginSwitcher;
 
 /// <summary>
 /// Final-pass UI corrections for controls whose visual state is assembled dynamically.
-/// These corrections intentionally run after the normal renderer so later page refreshes
-/// cannot reintroduce the old positioning, hover or navigation state.
 /// </summary>
 public partial class MainWindow
 {
@@ -46,7 +44,6 @@ public partial class MainWindow
     }
 
     private void PageHost_LayoutUpdated(object? sender, EventArgs e) => ApplyUiCorrections();
-
     private void NavPanel_LayoutUpdated(object? sender, EventArgs e) => ApplyRefreshIconCorrection();
 
     private void ApplyUiCorrections()
@@ -63,12 +60,9 @@ public partial class MainWindow
     {
         if (_activePage != "home" || PageHost.Content is not Grid root)
             return;
-
         var top = root.Children.OfType<Grid>().FirstOrDefault();
         var branding = top?.Children.OfType<Image>().FirstOrDefault(i => string.Equals(i.Tag as string, "vip3r-dashboard-branding", StringComparison.OrdinalIgnoreCase));
-        if (branding is null)
-            return;
-
+        if (branding is null) return;
         branding.Width = 230;
         branding.Height = 230;
         branding.HorizontalAlignment = HorizontalAlignment.Center;
@@ -90,43 +84,22 @@ public partial class MainWindow
 
         _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
         _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
-        _teamSpeakStatusIcon.Margin = new Thickness(10, 0, 0, 0);
+        _teamSpeakStatusIcon.Margin = new Thickness(5, 0, 0, 0);
     }
 
     private void ApplyUpdaterButtonCorrection()
     {
-        if (_activePage != "switch" || PageHost.Content is not Grid root)
-            return;
-
+        if (_activePage != "switch" || PageHost.Content is not Grid root) return;
         foreach (var button in FindVisualChildren<Button>(root))
         {
-            var text = button.Content switch
-            {
-                string value => value,
-                TextBlock block => block.Text,
-                _ => string.Empty
-            };
-
-            if (!text.Contains("YACA UPDATES", StringComparison.OrdinalIgnoreCase) &&
-                !text.Contains("CHECK FOR YACA", StringComparison.OrdinalIgnoreCase))
-                continue;
-
+            var text = button.Content switch { string value => value, TextBlock block => block.Text, _ => string.Empty };
+            if (!text.Contains("YACA UPDATES", StringComparison.OrdinalIgnoreCase) && !text.Contains("CHECK FOR YACA", StringComparison.OrdinalIgnoreCase)) continue;
             var label = button.Content as TextBlock;
             if (label is null)
             {
-                label = new TextBlock
-                {
-                    Text = text,
-                    FontWeight = FontWeights.Bold,
-                    TextAlignment = TextAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
+                label = new TextBlock { Text = text, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
                 button.Content = label;
             }
-
-            // Use the application's own dark TileButton template so the Windows
-            // theme cannot replace the hover appearance with a light system style.
             if (!Equals(button.Tag, "ui-corrected-updater-button"))
             {
                 button.Style = (Style)FindResource("TileButtonStyle");
@@ -134,7 +107,6 @@ public partial class MainWindow
                 button.MouseEnter += (_, _) => ApplyUpdaterButtonVisualState(button, label, true);
                 button.MouseLeave += (_, _) => ApplyUpdaterButtonVisualState(button, label, false);
             }
-
             ApplyUpdaterButtonVisualState(button, label, button.IsMouseOver);
         }
     }
@@ -153,9 +125,7 @@ public partial class MainWindow
     {
         foreach (var button in NavPanel.Children.OfType<Button>())
         {
-            if (!string.Equals(button.Tag?.ToString(), "updater", StringComparison.OrdinalIgnoreCase))
-                continue;
-
+            if (!string.Equals(button.Tag?.ToString(), "updater", StringComparison.OrdinalIgnoreCase)) continue;
             if (!button.Resources.Contains("UpdaterCorrectionHooked"))
             {
                 button.Resources["UpdaterCorrectionHooked"] = true;
@@ -171,71 +141,42 @@ public partial class MainWindow
 
     private void ApplyBackupCreateCorrection()
     {
-        var button = NavPanel.Children.OfType<Button>().FirstOrDefault(b =>
-            string.Equals(b.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase));
-        if (button is null || button.Resources.Contains("BackupCreateCorrectionHooked"))
-            return;
-
+        var button = NavPanel.Children.OfType<Button>().FirstOrDefault(b => string.Equals(b.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase));
+        if (button is null || button.Resources.Contains("BackupCreateCorrectionHooked")) return;
         button.Resources["BackupCreateCorrectionHooked"] = true;
         HashSet<string>? beforeNames = null;
-
         button.PreviewMouseDown += (_, _) =>
         {
-            try
-            {
-                beforeNames = _service.Backups.ListBackups()
-                    .Select(b => b.DisplayName)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            }
-            catch
-            {
-                beforeNames = null;
-            }
+            try { beforeNames = _service.Backups.ListBackups().Select(b => b.DisplayName).ToHashSet(StringComparer.OrdinalIgnoreCase); }
+            catch { beforeNames = null; }
         };
-
         button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
         {
             try
             {
                 var after = _service.Backups.ListBackups();
-                var created = beforeNames is not null && after.Any(b => !beforeNames.Contains(b.DisplayName));
-                if (!created)
-                    return;
-
-                GlobalFooterStatusText.Text = IsGerman
-                    ? "Backup wurde erfolgreich erstellt."
-                    : "Backup was created successfully.";
-                GlobalFooterStatusText.Foreground = (Brush)FindResource("SuccessBrush");
-                GlobalFooterStatusText.FontWeight = FontWeights.Bold;
+                if (beforeNames is not null && after.Any(b => !beforeNames.Contains(b.DisplayName)))
+                {
+                    GlobalFooterStatusText.Text = IsGerman ? "Backup wurde erfolgreich erstellt." : "Backup was created successfully.";
+                    GlobalFooterStatusText.Foreground = (Brush)FindResource("SuccessBrush");
+                    GlobalFooterStatusText.FontWeight = FontWeights.Bold;
+                }
             }
-            catch
-            {
-                // The original backup handler owns error reporting. Do not replace it here.
-            }
-            finally
-            {
-                beforeNames = null;
-            }
+            catch { }
+            finally { beforeNames = null; }
         }), System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     private void ApplyRefreshIconCorrection()
     {
-        var refreshButton = NavPanel.Children.OfType<Button>().FirstOrDefault(b =>
-            string.Equals(b.Tag?.ToString(), "refresh", StringComparison.OrdinalIgnoreCase));
-        if (refreshButton?.Content is not StackPanel panel)
-            return;
-
+        var refreshButton = NavPanel.Children.OfType<Button>().FirstOrDefault(b => string.Equals(b.Tag?.ToString(), "refresh", StringComparison.OrdinalIgnoreCase));
+        if (refreshButton?.Content is not StackPanel panel) return;
         var icon = panel.Children.OfType<Image>().FirstOrDefault();
-        if (icon is null)
-            return;
-
+        if (icon is null) return;
         icon.Width = 26;
         icon.Height = 26;
         icon.Margin = new Thickness(0);
         icon.VerticalAlignment = VerticalAlignment.Center;
-        DashboardIconRegistry.SetFill(icon, string.Equals(refreshButton.Tag?.ToString(), _activePage, StringComparison.OrdinalIgnoreCase)
-            ? (Brush)FindResource("GoldBrush")
-            : (Brush)FindResource("ForegroundBrush"));
+        DashboardIconRegistry.SetFill(icon, string.Equals(refreshButton.Tag?.ToString(), _activePage, StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush"));
     }
 }
