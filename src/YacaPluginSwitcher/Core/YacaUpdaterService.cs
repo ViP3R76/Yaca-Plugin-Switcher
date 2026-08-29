@@ -62,9 +62,6 @@ public sealed class YacaUpdaterService
     public async Task DownloadMissingAsync(IProgress<YacaUpdaterProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
-
-        // A kept archive or an archive left behind by an interrupted run must never
-        // become a dead-end. Process it before asking the remote API for new versions.
         await ProcessExistingDownloadsAsync(progress, cancellationToken);
 
         var missing = await GetMissingVersionsAsync(cancellationToken);
@@ -123,7 +120,7 @@ public sealed class YacaUpdaterService
             if (File.Exists(target))
             {
                 var validation = YacaValidator.Validate(target);
-                if (validation.IsValid && validation.Version == ParseVersion(version))
+                if (validation.IsValid && validation.Version is not null && validation.Version.Equals(ParseVersion(version)))
                     continue;
             }
 
