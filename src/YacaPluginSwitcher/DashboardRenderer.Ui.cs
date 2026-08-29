@@ -9,8 +9,6 @@ namespace YacaPluginSwitcher;
 
 /// <summary>
 /// Central renderer-side interaction and visual synchronization.
-/// This is intentionally part of MainWindow's renderer partial; there is no
-/// second UI-fix/behavior layer competing with the renderer state.
 /// </summary>
 public partial class MainWindow
 {
@@ -77,6 +75,27 @@ public partial class MainWindow
             if (!_rendererHoverHooks.Add(button)) continue;
             button.MouseEnter += (_, _) => SetNavigationHover(button, true);
             button.MouseLeave += (_, _) => SetNavigationHover(button, false);
+
+            if (string.Equals(button.Tag?.ToString(), "updater", StringComparison.OrdinalIgnoreCase))
+            {
+                button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (_activePage == "switch") SetGlobalStatus(IsGerman ? "Bereit." : "Ready.");
+                }));
+            }
+
+            if (string.Equals(button.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase))
+            {
+                button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (!TeamSpeakDetector.IsRunning()) return;
+                    GlobalFooterStatusText.Text = IsGerman
+                        ? "TeamSpeak 3 ist aktiv – Backup/Änderungen erst nach dem Schließen durchführen."
+                        : "TeamSpeak 3 is running – close TeamSpeak before continuing.";
+                    GlobalFooterStatusText.Foreground = (Brush)FindResource("ErrorBrush");
+                    GlobalFooterStatusText.FontWeight = FontWeights.Bold;
+                }));
+            }
         }
     }
 
@@ -139,6 +158,8 @@ public partial class MainWindow
     private void SetComboToggleHover(ToggleButton toggle, bool hovered)
     {
         toggle.Background = (Brush)FindResource(hovered ? "ControlHoverBrush" : "ControlBrush");
+        toggle.Foreground = (Brush)FindResource(hovered ? "GoldBrush" : "ForegroundBrush");
+        toggle.BorderBrush = Brushes.Transparent;
     }
 
     private void ApplyTeamSpeakVisualState()
@@ -157,6 +178,7 @@ public partial class MainWindow
         if (_tsStatus.Parent is StackPanel textPanel)
         {
             textPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            textPanel.VerticalAlignment = VerticalAlignment.Center;
             _tsStatus.HorizontalAlignment = HorizontalAlignment.Center;
             _tsStatus.TextAlignment = TextAlignment.Center;
             if (textPanel.Children.OfType<TextBlock>().FirstOrDefault(t => !ReferenceEquals(t, _tsStatus)) is { } description)
@@ -164,16 +186,27 @@ public partial class MainWindow
                 description.HorizontalAlignment = HorizontalAlignment.Center;
                 description.TextAlignment = TextAlignment.Center;
             }
+
+            if (textPanel.Parent is Grid content)
+            {
+                content.HorizontalAlignment = HorizontalAlignment.Center;
+                content.VerticalAlignment = VerticalAlignment.Center;
+                if (content.ColumnDefinitions.Count >= 2)
+                {
+                    content.ColumnDefinitions[0].Width = GridLength.Auto;
+                    content.ColumnDefinitions[1].Width = GridLength.Auto;
+                }
+            }
         }
 
-        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
+        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Center;
         _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
         var desiredAsset = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
 
         if (!string.Equals(_teamSpeakStatusIcon.Tag as string, desiredAsset, StringComparison.OrdinalIgnoreCase))
         {
             var natural = DashboardIconRegistry.CreateNaturalIcon(desiredAsset, 44, 44);
-            natural.HorizontalAlignment = HorizontalAlignment.Left;
+            natural.HorizontalAlignment = HorizontalAlignment.Center;
             natural.VerticalAlignment = VerticalAlignment.Center;
             if (_teamSpeakStatusIcon.Parent is Panel parent && parent.Children.IndexOf(_teamSpeakStatusIcon) >= 0)
             {

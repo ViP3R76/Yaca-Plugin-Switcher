@@ -56,17 +56,25 @@ public static class YacaValidator
             return new(false, "Keine ausreichende YACA-Signatur erkannt.", FileSize: size);
 
         var text = Encoding.ASCII.GetString(data);
-        var match = VersionRegex.Match(text);
-        if (!match.Success || !Version.TryParse(
-                $"{match.Groups[1].Value}.{match.Groups[2].Value}.{match.Groups[3].Value}",
-                out var version))
-        {
+        var candidates = VersionRegex.Matches(text)
+            .Select(match =>
+            {
+                if (!Version.TryParse($"{match.Groups[1].Value}.{match.Groups[2].Value}.{match.Groups[3].Value}", out var version))
+                    return null;
+                return long.TryParse(match.Groups[4].Value, out var build)
+                    ? new { Version = version, Build = build }
+                    : null;
+            })
+            .Where(x => x is not null)
+            .Select(x => x!)
+            .OrderByDescending(x => x.Version)
+            .ThenByDescending(x => x.Build)
+            .ToList();
+
+        if (candidates.Count == 0)
             return new(false, "YACA-Signatur erkannt, aber Version/Build konnte nicht bestimmt werden.", FileSize: size);
-        }
 
-        if (!long.TryParse(match.Groups[4].Value, out var build))
-            return new(false, "YACA-Version erkannt, aber Build konnte nicht gelesen werden.", version, FileSize: size);
-
+        var selected = candidates[0];
         string hash;
         try
         {
@@ -74,10 +82,10 @@ public static class YacaValidator
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            return new(false, $"SHA-256 konnte nicht berechnet werden: {ex.Message}", version, build, size);
+            return new(false, $"SHA-256 konnte nicht berechnet werden: {ex.Message}", selected.Version, selected.Build, size);
         }
 
-        return new(true, "Gültige YACA x64-DLL erkannt.", version, build, size, hash);
+        return new(true, "Gültige YACA x64-DLL erkannt.", selected.Version, selected.Build, size, hash);
     }
 
     private static bool Contains(byte[] data, byte[] needle)

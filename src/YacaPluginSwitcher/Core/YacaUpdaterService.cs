@@ -91,12 +91,10 @@ public sealed class YacaUpdaterService
             }
             catch (OperationCanceledException)
             {
-                if (!_service.Settings.KeepYacaPluginDownloads) TryDelete(archivePath);
                 throw;
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
             {
-                if (!_service.Settings.KeepYacaPluginDownloads) TryDelete(archivePath);
                 progress?.Report(new(version, 0, null, "Fehlgeschlagen", true, false, ex.Message));
             }
         }
@@ -135,8 +133,6 @@ public sealed class YacaUpdaterService
             catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
             {
                 progress?.Report(new(version, 0, null, "Fehlgeschlagen", true, false, ex.Message));
-                if (!_service.Settings.KeepYacaPluginDownloads)
-                    TryDelete(archive.Path);
             }
         }
     }
@@ -148,6 +144,7 @@ public sealed class YacaUpdaterService
         var target = Path.Combine(_service.Paths.PluginDirectory, $"yaca_{tag}_win64.dll");
         var extractionDirectory = Path.Combine(Path.GetTempPath(), "yaca_validate_" + Guid.NewGuid().ToString("N"));
         var tempDll = Path.Combine(extractionDirectory, ExpectedDllName);
+        var completedSuccessfully = false;
         try
         {
             Report(progress, version, "Extraktion", false, false, null);
@@ -158,26 +155,40 @@ public sealed class YacaUpdaterService
                 if (entry is null) throw new InvalidDataException($"{ExpectedDllName} fehlt im TS3-Plugin-Archiv.");
                 entry.ExtractToFile(tempDll, true);
             }
+
             Report(progress, version, "Prüfung", false, false, null);
-            if (!File.Exists(tempDll) || new FileInfo(tempDll).Length == 0) throw new InvalidDataException("Die extrahierte DLL ist leer oder wurde nicht erstellt.");
-            var validation = YacaValidator.Validate(tempDll);
+            if (!File.Exists(tempDll) || new FileInfo(tempDll).Length == 0)
+                throw new InvalidDataException("Die extrahierte DLL ist leer oder wurde nicht erstellt.");
+
             Report(progress, version, "Validierung", false, false, null);
-            if (!validation.IsValid || validation.Version is null || string.IsNullOrWhiteSpace(validation.Sha256)) throw new InvalidDataException($"Die extrahierte DLL ist ungültig: {validation.Message}");
-            if (!Version.TryParse(version, out var expectedVersion) || validation.Version != expectedVersion) throw new InvalidDataException($"Versionsprüfung fehlgeschlagen: erwartet {version}, erkannt {validation.Version}.");
+            var validation = YacaValidator.Validate(tempDll);
+            if (!validation.IsValid || validation.Version is null || string.IsNullOrWhiteSpace(validation.Sha256))
+                throw new InvalidDataException($"Die extrahierte DLL ist ungültig: {validation.Message}");
+            if (!Version.TryParse(version, out var expectedVersion) || validation.Version != expectedVersion)
+                throw new InvalidDataException($"Versionsprüfung fehlgeschlagen: erwartet {version}, erkannt {validation.Version}.");
+
             Directory.CreateDirectory(_service.Paths.PluginDirectory);
             Report(progress, version, "Verschieben", false, false, null);
             File.Move(tempDll, target, true);
+
             var installedValidation = YacaValidator.Validate(target);
-            if (!installedValidation.IsValid || !string.Equals(installedValidation.Sha256, validation.Sha256, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Die verschobene DLL konnte nicht erfolgreich verifiziert werden.");
-            if (_service.Settings.KeepYacaPluginDownloads) Report(progress, version, "Download behalten", false, false, null);
-            else { Report(progress, version, "Download löschen", false, false, null); TryDelete(archivePath); }
+            if (!installedValidation.IsValid || !string.Equals(installedValidation.Sha256, validation.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Die verschobene DLL konnte nicht erfolgreich verifiziert werden.");
+
+            if (_service.Settings.KeepYacaPluginDownloads)
+                Report(progress, version, "Download behalten", false, false, null);
+            else
+                Report(progress, version, "Download löschen", false, false, null);
+
             Report(progress, version, "Abgeschlossen", true, true, null);
+            completedSuccessfully = true;
         }
         finally
         {
             TryDelete(tempDll);
             try { if (Directory.Exists(extractionDirectory)) Directory.Delete(extractionDirectory, true); } catch { }
-            if (!_service.Settings.KeepYacaPluginDownloads && File.Exists(archivePath)) TryDelete(archivePath);
+            if (completedSuccessfully && !_service.Settings.KeepYacaPluginDownloads)
+                TryDelete(archivePath);
         }
         await Task.CompletedTask;
     }
