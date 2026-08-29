@@ -5,8 +5,7 @@ using System.Windows.Media;
 namespace YacaPluginSwitcher;
 
 /// <summary>
-/// UI-only corrections that are intentionally kept outside the main window
-/// logic so navigation rendering remains centralized and consistent.
+/// UI-only corrections kept separate from the main window logic.
 /// </summary>
 public partial class MainWindow
 {
@@ -14,8 +13,9 @@ public partial class MainWindow
     private Image? _teamSpeakStatusIcon;
     private bool _uiFixesHooked;
 
-    private void InitializeUiFixes()
+    protected override void OnInitialized(EventArgs e)
     {
+        base.OnInitialized(e);
         if (_uiFixesHooked)
             return;
 
@@ -30,8 +30,6 @@ public partial class MainWindow
 
     private void UiFixes_LanguageChanged(object sender, SelectionChangedEventArgs e)
     {
-        // MainWindow's existing handler rebuilds the navigation first. The
-        // second handler then restores the renderer-level UI rules.
         Dispatcher.BeginInvoke(new Action(() =>
         {
             ApplyNavigationUiFixes();
@@ -41,8 +39,6 @@ public partial class MainWindow
 
     private void ApplyNavigationUiFixes()
     {
-        // BuildNavigation is the single source of truth. We only add the
-        // missing Settings entry immediately before Info & Links.
         var infoButton = NavPanel.Children.OfType<Button>().FirstOrDefault(b =>
             string.Equals(b.Tag?.ToString(), "info", StringComparison.OrdinalIgnoreCase));
 
@@ -63,9 +59,8 @@ public partial class MainWindow
             }
         }
 
-        // Exit follows exactly the same visual/content rules as all other
-        // navigation buttons. The XAML already uses NavButtonStyle; keep its
-        // content renderer aligned with AddNav's implementation here too.
+        // Exit uses the exact same content renderer and dimensions as the
+        // normal navigation buttons.
         ConfigureNavContent(ExitNavContent, DashboardIconRegistry.IconAssetExit,
             IsGerman ? "Beenden" : "Exit");
     }
@@ -133,29 +128,19 @@ public partial class MainWindow
         if (parent is null)
             return;
 
-        _teamSpeakStatusIcon ??= DashboardIconRegistry.CreateIcon(
-            TeamSpeakDetector.IsRunning()
-                ? DashboardIconRegistry.IconAssetTeamSpeakActive
-                : DashboardIconRegistry.IconAssetTeamSpeakInactive,
-            TeamSpeakDetector.IsRunning()
-                ? (Brush)FindResource("ErrorBrush")
-                : (Brush)FindResource("GoldBrush"),
-            54, 54);
-
         var running = TeamSpeakDetector.IsRunning();
-        _teamSpeakStatusIcon.Tag = running ? DashboardIconRegistry.IconAssetTeamSpeakActive : DashboardIconRegistry.IconAssetTeamSpeakInactive;
-        DashboardIconRegistry.SetFill(_teamSpeakStatusIcon,
-            running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"));
-
-        if (!parent.Children.Contains(_teamSpeakStatusIcon))
-            parent.Children.Insert(0, _teamSpeakStatusIcon);
-    }
-
-    private void UpdateTeamSpeakStatusIcon(bool running)
-    {
         if (_teamSpeakStatusIcon is null)
-            return;
+        {
+            _teamSpeakStatusIcon = DashboardIconRegistry.CreateIcon(
+                running ? DashboardIconRegistry.IconAssetTeamSpeakActive : DashboardIconRegistry.IconAssetTeamSpeakInactive,
+                running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"),
+                54, 54);
+            parent.Children.Insert(0, _teamSpeakStatusIcon);
+        }
 
+        _teamSpeakStatusIcon.Tag = running
+            ? DashboardIconRegistry.IconAssetTeamSpeakActive
+            : DashboardIconRegistry.IconAssetTeamSpeakInactive;
         DashboardIconRegistry.SetFill(_teamSpeakStatusIcon,
             running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"));
     }
