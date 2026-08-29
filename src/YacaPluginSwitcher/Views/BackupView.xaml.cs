@@ -44,20 +44,22 @@ public partial class BackupView : UserControl
 
     private void BackupSelection_Changed(object sender, RoutedEventArgs e)
     {
-        if (sender is CheckBox checkBox && checkBox.IsChecked == true)
-        {
-            foreach (var row in _pluginDownloadRows) row.Selected = false;
-            PluginDownloadsGrid.Items.Refresh();
-        }
+        if (sender is not CheckBox checkBox || checkBox.DataContext is not BackupRow row) return;
+        row.Selected = checkBox.IsChecked == true;
+        if (!row.Selected) return;
+        foreach (var pluginRow in _pluginDownloadRows) pluginRow.Selected = false;
+        PluginDownloadsGrid.Items.Refresh();
+        Grid.Items.Refresh();
     }
 
     private void PluginDownloadSelection_Changed(object sender, RoutedEventArgs e)
     {
-        if (sender is CheckBox checkBox && checkBox.IsChecked == true)
-        {
-            foreach (var row in _rows) row.Selected = false;
-            Grid.Items.Refresh();
-        }
+        if (sender is not CheckBox checkBox || checkBox.DataContext is not PluginDownloadRow row) return;
+        row.Selected = checkBox.IsChecked == true;
+        if (!row.Selected) return;
+        foreach (var backupRow in _rows) backupRow.Selected = false;
+        Grid.Items.Refresh();
+        PluginDownloadsGrid.Items.Refresh();
     }
 
     private void Delete_Click(object sender, RoutedEventArgs e)
@@ -65,9 +67,6 @@ public partial class BackupView : UserControl
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
 
-        // Selection is isolated by category. If both categories are deliberately selected,
-        // the documented exception permits deleting both. A plugin-only selection can never
-        // fall through into the backup deletion path.
         if (selectedDownloads.Count > 0 && selectedBackups.Count == 0)
         {
             DeletePluginDownloads(selectedDownloads);
