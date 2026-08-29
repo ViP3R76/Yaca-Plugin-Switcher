@@ -14,7 +14,6 @@ public partial class MainWindow
         if (_versionPanelGrid is not null && _versionPanelGrid is System.Windows.Media.Visual visual && visual.IsDescendantOf(PageHost))
             return;
 
-        // ShowHome() recreates PageHost. Discard references to the old dashboard tree.
         _versionPanelGrid = null;
         _versionFooter = null;
         _versionHeaderStyled = false;
@@ -155,9 +154,17 @@ public partial class MainWindow
             .ToList();
 
         var current = _service.DetectCurrent();
+        var availableHeight = _versionPanelGrid.ActualHeight > 0
+            ? Math.Max(20, _versionPanelGrid.ActualHeight - 30)
+            : 210;
+        var rowHeight = plugins.Count == 0
+            ? 0
+            : Math.Clamp(availableHeight / plugins.Count, 20, 36);
+
         var signature = string.Join("|", plugins.Select(plugin => $"{plugin.FilePath}:{plugin.Sha256}:{plugin.Version}:{plugin.Build}"));
         signature += $"|current:{current?.Sha256}";
         signature += $"|lang:{Localization.Normalize(_service.Settings.Language)}";
+        signature += $"|height:{Math.Round(availableHeight)}";
 
         if (string.Equals(signature, _versionPanelSignature, StringComparison.Ordinal))
             return;
@@ -177,11 +184,6 @@ public partial class MainWindow
         }
         else
         {
-            var availableHeight = _versionPanelGrid.ActualHeight > 0
-                ? Math.Max(20, _versionPanelGrid.ActualHeight - 30)
-                : 210;
-            var rowHeight = Math.Clamp(availableHeight / plugins.Count, 20, 36);
-
             foreach (var plugin in plugins)
             {
                 var active = current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true;
