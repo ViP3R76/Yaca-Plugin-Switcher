@@ -27,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>None</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <IncludeSymbolsInSingleFile>false</IncludeSymbols>
+    <IncludeSymbolsInSingleFile>false</IncludeSymbolsInSingleFile>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
