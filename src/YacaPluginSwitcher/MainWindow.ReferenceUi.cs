@@ -23,9 +23,9 @@ public partial class MainWindow
         AddNav("home", "⌂", "Dashboard", ShowHome);
         AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
         AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
-        AddNav("updater", "☁", "YACA Updater", () => ShowComingSoon());
+        AddNav("updater", "☁", "YACA Updater", () => ShowError(IsGerman ? "Der YACA Updater wird in einer späteren Version verfügbar sein." : "The YACA Updater will be available in a future version."));
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
-        AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", () => CreateBackupFromDashboard(null));
+        AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
         AddNav("backups", "▣", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
         AddNav("info", "ⓘ", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
@@ -117,33 +117,16 @@ public partial class MainWindow
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(46) });
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(96) });
-
         var header = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         header.Children.Add(CreateIcon("M 12,2 L 20,5 L 20,11 C 20,16 16.8,20 12,22 C 7.2,20 4,16 4,11 L 4,5 Z", (Brush)FindResource("AccentBrush"), 28, 28, 2.25));
         header.Children.Add(new TextBlock { Text = IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED", Foreground = (Brush)FindResource("AccentBrush"), FontSize = 20, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) });
         Grid.SetRow(header, 0); grid.Children.Add(header);
-
         var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         _currentValue = new TextBlock { Text = current?.Version?.ToString() ?? oldValue, FontSize = 34, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center };
-        _currentValue.TextChanged += (_, _) =>
-        {
-            var detected = _service.DetectCurrent();
-            if (detected is null) return;
-            var desired = detected.Version?.ToString() ?? "—";
-            if (!string.Equals(_currentValue.Text, desired, StringComparison.Ordinal)) _currentValue.Text = desired;
-        };
         center.Children.Add(_currentValue);
         center.Children.Add(new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 3, 12, 3), Margin = new Thickness(0, 12, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Child = new TextBlock { Text = IsGerman ? "AKTIV" : "ACTIVE", Foreground = Brushes.Black, FontSize = 11, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center } });
         Grid.SetRow(center, 1); grid.Children.Add(center);
-
-        _currentDetails = new TextBlock { Text = FormatCurrentInstalledDetails(current), FontSize = 13, LineHeight = 20, Foreground = (Brush)FindResource("SecondaryBrush"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
-        _currentDetails.TextChanged += (_, _) =>
-        {
-            var detected = _service.DetectCurrent();
-            if (detected is null) return;
-            var desired = FormatCurrentInstalledDetails(detected);
-            if (!string.Equals(_currentDetails.Text, desired, StringComparison.Ordinal)) _currentDetails.Text = desired;
-        };
+        _currentDetails = new TextBlock { Text = FormatCurrentInstalledDetails(current), FontSize = 13, LineHeight = 20, Foreground = (Brush)FindResource("SecondaryBrush"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Left, TextWrapping = TextWrapping.Wrap };
         Grid.SetRow(_currentDetails, 2); grid.Children.Add(_currentDetails);
         _currentCard.Child = grid;
     }
@@ -154,18 +137,10 @@ public partial class MainWindow
         var build = current.Build?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "—";
         var size = $"{current.FileSize / 1024d / 1024d:0.00} MB";
         var sha = current.Sha256.Length > 12 ? current.Sha256[..12] + "…" : current.Sha256;
-        return IsGerman ? $"Build-Version  {build}\nGröße  {size}   •   SHA-256  {sha}\nDatei  {Path.GetFileName(current.FilePath)}" : $"Build  {build}\nSize  {size}   •   SHA-256  {sha}\nFile  {Path.GetFileName(current.FilePath)}";
+        return IsGerman ? $"Build-Version  {build}\nGröße  {size}   •   SHA-256  {sha}\nDatei  {System.IO.Path.GetFileName(current.FilePath)}" : $"Build  {build}\nSize  {size}   •   SHA-256  {sha}\nFile  {System.IO.Path.GetFileName(current.FilePath)}";
     }
 
     private static System.Windows.Shapes.Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new() { Data = Geometry.Parse(data), Stroke = stroke, StrokeThickness = thickness, Fill = Brushes.Transparent, Width = width, Height = height, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-
-    private static IEnumerable<TextBlock> FindVisualTextBlocks(DependencyObject root)
-    {
-        foreach (var child in LogicalTreeHelper.GetChildren(root)) { if (child is TextBlock text) yield return text; if (child is DependencyObject dependency) foreach (var nested in FindVisualTextBlocks(dependency)) yield return nested; }
-    }
-
-    private static IEnumerable<Button> FindVisualButtons(DependencyObject root)
-    {
-        foreach (var child in LogicalTreeHelper.GetChildren(root)) { if (child is Button button) yield return button; if (child is DependencyObject dependency) foreach (var nested in FindVisualButtons(dependency)) yield return nested; }
-    }
+    private static IEnumerable<TextBlock> FindVisualTextBlocks(DependencyObject root) { foreach (var child in LogicalTreeHelper.GetChildren(root)) { if (child is TextBlock text) yield return text; if (child is DependencyObject dependency) foreach (var nested in FindVisualTextBlocks(dependency)) yield return nested; } }
+    private static IEnumerable<Button> FindVisualButtons(DependencyObject root) { foreach (var child in LogicalTreeHelper.GetChildren(root)) { if (child is Button button) yield return button; if (child is DependencyObject dependency) foreach (var nested in FindVisualButtons(dependency)) yield return nested; } }
 }
