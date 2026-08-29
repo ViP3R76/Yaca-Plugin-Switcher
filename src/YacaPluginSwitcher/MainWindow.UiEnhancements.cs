@@ -138,7 +138,7 @@ public partial class MainWindow
         if (_teamSpeakStatusIcon is null || _tsStatus is null)
             return;
 
-        var running = _tsStatus.Text.Contains("GESTARTET", StringComparison.OrdinalIgnoreCase) ||
+        var running = _tsStatus.Text.Equals("GESTARTET", StringComparison.OrdinalIgnoreCase) ||
                       _tsStatus.Text.Equals("RUNNING", StringComparison.OrdinalIgnoreCase);
         _teamSpeakStatusIcon.Tag = running
             ? DashboardIconRegistry.IconAssetTeamSpeakActive
