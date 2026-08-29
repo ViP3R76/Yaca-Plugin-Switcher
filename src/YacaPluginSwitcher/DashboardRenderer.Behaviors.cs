@@ -98,14 +98,6 @@ public partial class MainWindow
         UpdateTeamSpeakStatusIcon();
     }
 
-    private void UpdateTeamSpeakStatusIcon()
-    {
-        if (_teamSpeakStatusIcon is null || _tsStatus is null) return;
-        var running = _tsStatus.Text.Equals("GESTARTET", StringComparison.OrdinalIgnoreCase) || _tsStatus.Text.Equals("RUNNING", StringComparison.OrdinalIgnoreCase);
-        DashboardIconRegistry.SetAsset(_teamSpeakStatusIcon, running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped);
-        DashboardIconRegistry.SetFill(_teamSpeakStatusIcon, running ? (Brush)FindResource("ErrorBrush") : (Brush)FindResource("GoldBrush"));
-    }
-
     private void ApplySwitchHeaderLine()
     {
         if (_activePage != "switch" || PageHost.Content is not Grid root) return;
