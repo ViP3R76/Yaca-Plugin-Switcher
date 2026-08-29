@@ -10,6 +10,7 @@
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\vip3r_76.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -19,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\YacaPluginSwitcher.Core\YacaPluginSwitcher.Core.csproj" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
+    <Resource Include="Assets\vip3r_76.ico" />
     <Resource Include="Assets\vip3r_76_logo.png" />
     <Resource Include="Assets\discord_icon.png" />
     <Resource Include="Assets\github_icon.png" />

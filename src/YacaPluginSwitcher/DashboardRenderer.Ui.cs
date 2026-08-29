@@ -37,7 +37,10 @@ public partial class MainWindow
         ApplyComboAndChromeHoverRules();
 
         if (_activePage == "home")
+        {
             ApplyTeamSpeakVisualState();
+            ApplyDashboardBranding();
+        }
 
         if (_activePage == "switch")
             ApplySwitchPageRenderer();
@@ -78,10 +81,15 @@ public partial class MainWindow
 
             if (string.Equals(button.Tag?.ToString(), "updater", StringComparison.OrdinalIgnoreCase))
             {
-                button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+                button.Click += (_, _) =>
                 {
-                    if (_activePage == "switch") SetGlobalStatus(IsGerman ? "Bereit." : "Ready.");
-                }));
+                    var alreadyOnUpdaterPage = _activePage == "switch";
+                    ShowSwitchPage(
+                        alreadyOnUpdaterPage
+                            ? null
+                            : (IsGerman ? "YACA Updater: Download-Bereich geöffnet." : "YACA Updater: download area opened."),
+                        "updater");
+                };
             }
 
             if (string.Equals(button.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase))
@@ -182,6 +190,7 @@ public partial class MainWindow
             textPanel.VerticalAlignment = VerticalAlignment.Center;
             _tsStatus.HorizontalAlignment = HorizontalAlignment.Stretch;
             _tsStatus.TextAlignment = TextAlignment.Center;
+
             if (textPanel.Children.OfType<TextBlock>().FirstOrDefault(t => !ReferenceEquals(t, _tsStatus)) is { } description)
             {
                 description.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -192,26 +201,24 @@ public partial class MainWindow
             {
                 content.HorizontalAlignment = HorizontalAlignment.Stretch;
                 content.VerticalAlignment = VerticalAlignment.Center;
-                if (content.ColumnDefinitions.Count >= 2)
-                {
-                    // Keep the icon in a fixed left-side column while the text
-                    // remains centered in the available space. This prevents the
-                    // red TeamSpeak icon from being clipped at the panel edge.
-                    content.ColumnDefinitions[0].Width = new GridLength(72);
-                    content.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
-                }
             }
         }
 
-        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Center;
+        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
         _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
-        var desiredAsset = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
+        _teamSpeakStatusIcon.Margin = new Thickness(22, 0, 0, 0);
+
+        var desiredAsset = running
+            ? DashboardIconRegistry.IconAssetTeamSpeakStarted
+            : DashboardIconRegistry.IconAssetTeamSpeakStopped;
 
         if (!string.Equals(_teamSpeakStatusIcon.Tag as string, desiredAsset, StringComparison.OrdinalIgnoreCase))
         {
             var natural = DashboardIconRegistry.CreateNaturalIcon(desiredAsset, 44, 44);
-            natural.HorizontalAlignment = HorizontalAlignment.Center;
+            natural.HorizontalAlignment = HorizontalAlignment.Left;
             natural.VerticalAlignment = VerticalAlignment.Center;
+            natural.Margin = new Thickness(22, 0, 0, 0);
+
             if (_teamSpeakStatusIcon.Parent is Panel parent && parent.Children.IndexOf(_teamSpeakStatusIcon) >= 0)
             {
                 var index = parent.Children.IndexOf(_teamSpeakStatusIcon);
