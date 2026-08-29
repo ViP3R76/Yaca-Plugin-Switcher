@@ -32,8 +32,9 @@ public partial class MainWindow
             if (button.Content is not StackPanel panel || panel.Children.Count == 0)
                 continue;
 
-            var icon = CreateIcon(data, (Brush)FindResource(key == "home" ? "GoldBrush" : "ForegroundBrush"), 25, 25, 2.1);
-            panel.Children[0] = icon;
+            var icon = CreateIcon(data, (Brush)FindResource(key == "home" ? "GoldBrush" : "ForegroundBrush"), 28, 28, 2.35);
+            panel.Children.RemoveAt(0);
+            panel.Children.Insert(0, icon);
         }
     }
 
@@ -46,12 +47,14 @@ public partial class MainWindow
             ["YACA UPDATER"] = "M 7,17 L 17,17 A 5,5 0 0 0 18,8 A 7,7 0 0 0 5,9 A 4,4 0 0 0 7,17 M 12,11 L 12,20 M 8,16 L 12,20 L 16,16"
         };
 
-        foreach (var text in FindVisualTextBlocks(PageHost))
+        foreach (var text in FindVisualTextBlocks(PageHost).ToList())
         {
             if (!iconMap.TryGetValue(text.Text.Trim(), out var data) || text.Parent is not Panel parent || parent.Children.Count == 0)
                 continue;
             var accent = text.Text.Contains("BACKUP", StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("AccentBrush");
-            parent.Children[0] = CreateIcon(data, accent, 82, 82, 4.0);
+            var icon = CreateIcon(data, accent, 82, 82, 4.0);
+            parent.Children.RemoveAt(0);
+            parent.Children.Insert(0, icon);
         }
     }
 
