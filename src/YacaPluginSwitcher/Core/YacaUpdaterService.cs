@@ -13,13 +13,14 @@ public sealed class YacaUpdaterService
 {
     private const string CdnBase = "https://cdn.yaca.systems/yaca_{0}_3.6.x.ts3_plugin";
     private const string DllInZip = "plugins/yaca_win64.dll";
+    private static readonly CompositeFormat CdnFormat = CompositeFormat.Parse(CdnBase);
     private static readonly Version MinExclusiveVersion = new(1, 7, 5);
     private readonly YacaService _service;
 
     public YacaUpdaterService(YacaService service) => _service = service;
     public static string DownloadDirectory => Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory, "plugins_download");
 
-    public static Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
         IReadOnlyList<(string Version, string FileName, long Size)> result = Directory.EnumerateFiles(DownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
@@ -62,7 +63,7 @@ public sealed class YacaUpdaterService
             try
             {
                 progress?.Report(new(version, 0, null, "Download wird vorbereitet", false, false, null));
-                using var response = await http.GetAsync(string.Format(CultureInfo.InvariantCulture, CdnBase, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var response = await http.GetAsync(string.Format(CdnFormat, CultureInfo.InvariantCulture, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var total = response.Content.Headers.ContentLength;
                 await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
