@@ -8,9 +8,41 @@ public partial class MainWindow
 {
     private void ApplyReferenceVisuals(object sender, RoutedEventArgs e)
     {
+        ApplyReferenceNavigationLayout();
         ApplyReferenceNavigationIcons();
         ApplyReferencePanelIcons();
         ApplyReferenceTileStyles();
+    }
+
+    private void ApplyReferenceNavigationLayout()
+    {
+        if (NavPanel.Children.Count > 0 && NavPanel.Children.OfType<Button>().Any(b => b.Tag is string tag && tag.Equals("updater", StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        NavPanel.Children.Clear();
+        _navButtons.Clear();
+
+        AddNav("home", "⌂", IsGerman ? "Dashboard" : "Dashboard", ShowHome);
+        AddNav("refresh", "↻", IsGerman ? "Aktualisieren" : "Refresh", () => RefreshActivePage(true));
+        AddNav("switch", "⇄", IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
+        AddNav("updater", "☁", IsGerman ? "YACA Updater" : "YACA Updater", () => ShowComingSoon());
+
+        NavPanel.Children.Add(new Separator
+        {
+            Margin = new Thickness(10, 12, 0, 12),
+            Background = (Brush)FindResource("AccentSoftBrush")
+        });
+
+        AddNav("backup-create", "＋", IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
+        AddNav("backups", "▣", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
+
+        NavPanel.Children.Add(new Separator
+        {
+            Margin = new Thickness(10, 12, 0, 12),
+            Background = (Brush)FindResource("AccentSoftBrush")
+        });
+
+        AddNav("info", "ⓘ", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
     }
 
     private void ApplyReferenceNavigationIcons()
@@ -20,9 +52,9 @@ public partial class MainWindow
             ["home"] = "M 3,10 L 12,3 L 21,10 L 21,21 L 15,21 L 15,14 L 9,14 L 9,21 L 3,21 Z",
             ["refresh"] = "M 20,11 A 8,8 0 1 0 18,16 M 20,5 L 20,11 L 14,11",
             ["switch"] = "M 3,8 L 21,8 M 16,3 L 21,8 L 16,13 M 21,16 L 3,16 M 8,11 L 3,16 L 8,21",
+            ["updater"] = "M 7,17 L 17,17 A 5,5 0 0 0 18,8 A 7,7 0 0 0 5,9 A 4,4 0 0 0 7,17 M 12,11 L 12,20 M 8,16 L 12,20 L 16,16",
             ["backup-create"] = "M 4,4 L 20,4 L 20,20 L 4,20 Z M 12,8 L 12,16 M 8,12 L 16,12",
             ["backups"] = "M 4,5 C 4,2 20,2 20,5 L 20,19 C 20,22 4,22 4,19 Z M 4,5 C 4,8 20,8 20,5 M 4,12 C 4,15 20,15 20,12",
-            ["config"] = "M 12,3 L 13.5,5.5 L 16.5,5 L 18,7.5 L 21,8 L 20.5,11 L 22,13 L 20.5,15 L 21,18 L 18,18.5 L 16.5,21 L 13.5,20.5 L 12,23 L 10.5,20.5 L 7.5,21 L 6,18.5 L 3,18 L 3.5,15 L 2,13 L 3.5,11 L 3,8 L 6,7.5 L 7.5,5 L 10.5,5.5 Z M 12,9 A 4,4 0 1 0 12,17 A 4,4 0 1 0 12,9",
             ["info"] = "M 12,2 A 10,10 0 1 0 12,22 A 10,10 0 1 0 12,2 M 12,10 L 12,17 M 12,6 L 12,7"
         };
 
