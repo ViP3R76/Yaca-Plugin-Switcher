@@ -202,6 +202,17 @@ public partial class MainWindow
             {
                 content.HorizontalAlignment = HorizontalAlignment.Stretch;
                 content.VerticalAlignment = VerticalAlignment.Center;
+
+                // Center the status text against the complete panel width. The
+                // icon is overlaid in the same cell so it never shifts the text.
+                if (content.ColumnDefinitions.Count != 1)
+                {
+                    content.ColumnDefinitions.Clear();
+                    content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                }
+
+                Grid.SetColumn(textPanel, 0);
+                Grid.SetColumn(_teamSpeakStatusIcon, 0);
             }
         }
 
