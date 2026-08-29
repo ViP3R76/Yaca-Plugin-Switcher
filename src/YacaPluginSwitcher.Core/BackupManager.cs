@@ -43,6 +43,7 @@ public sealed class BackupManager
             fileInfo.Length,
             hash)
         {
+            SourceBuild = current?.Build,
             IsAutomatic = automatic
         };
 
