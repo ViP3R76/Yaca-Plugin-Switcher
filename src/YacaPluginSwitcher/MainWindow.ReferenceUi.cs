@@ -125,11 +125,25 @@ public partial class MainWindow
 
         var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         _currentValue = new TextBlock { Text = current?.Version?.ToString() ?? oldValue, FontSize = 34, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center };
+        _currentValue.TextChanged += (_, _) =>
+        {
+            var detected = _service.DetectCurrent();
+            if (detected is null) return;
+            var desired = detected.Version?.ToString() ?? "—";
+            if (!string.Equals(_currentValue.Text, desired, StringComparison.Ordinal)) _currentValue.Text = desired;
+        };
         center.Children.Add(_currentValue);
         center.Children.Add(new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 3, 12, 3), Margin = new Thickness(0, 12, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Child = new TextBlock { Text = IsGerman ? "AKTIV" : "ACTIVE", Foreground = Brushes.Black, FontSize = 11, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center } });
         Grid.SetRow(center, 1); grid.Children.Add(center);
 
         _currentDetails = new TextBlock { Text = FormatCurrentInstalledDetails(current), FontSize = 13, LineHeight = 20, Foreground = (Brush)FindResource("SecondaryBrush"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap };
+        _currentDetails.TextChanged += (_, _) =>
+        {
+            var detected = _service.DetectCurrent();
+            if (detected is null) return;
+            var desired = FormatCurrentInstalledDetails(detected);
+            if (!string.Equals(_currentDetails.Text, desired, StringComparison.Ordinal)) _currentDetails.Text = desired;
+        };
         Grid.SetRow(_currentDetails, 2); grid.Children.Add(_currentDetails);
         _currentCard.Child = grid;
     }
