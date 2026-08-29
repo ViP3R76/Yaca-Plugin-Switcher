@@ -47,7 +47,6 @@ public partial class MainWindow
         var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         _currentValue = new TextBlock { Text = "—", FontSize = DashboardVersionFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Foreground = (Brush)FindResource("ForegroundBrush") }; center.Children.Add(_currentValue);
         center.Children.Add(new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), MinHeight = 30, Padding = new Thickness(16, 4, 16, 4), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = IsGerman ? "AKTIV" : "ACTIVE", Foreground = Brushes.Black, FontSize = DashboardBadgeFontSize, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center } }); Grid.SetRow(center, 1); panel.Children.Add(center);
-
         _currentDetails = new DashboardDetailsTextBlock(UpdateCurrentInstalledDetailsFromText) { Visibility = Visibility.Collapsed };
         _currentDetailsPanel = new Grid { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 8, 0, 0) };
         _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); _currentDetailsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -56,19 +55,14 @@ public partial class MainWindow
         var shaSeparator = new Border { Height = 1, Background = (Brush)FindResource("ForegroundBrush"), Opacity = 0.65, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 0, 5) };
         _currentShaValue = new TextBlock { FontSize = 11, Foreground = (Brush)FindResource("ForegroundBrush"), TextAlignment = TextAlignment.Left, HorizontalAlignment = HorizontalAlignment.Left, TextWrapping = TextWrapping.NoWrap };
         Grid.SetRow(_currentMetaText, 0); Grid.SetRow(_currentShaLabel, 1); Grid.SetRow(shaSeparator, 2); Grid.SetRow(_currentShaValue, 3); _currentDetailsPanel.Children.Add(_currentMetaText); _currentDetailsPanel.Children.Add(_currentShaLabel); _currentDetailsPanel.Children.Add(shaSeparator); _currentDetailsPanel.Children.Add(_currentShaValue);
-        Grid.SetRow(_currentDetailsPanel, 2); panel.Children.Add(_currentDetailsPanel);
-        card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        Grid.SetRow(_currentDetailsPanel, 2); panel.Children.Add(_currentDetailsPanel); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private void UpdateCurrentInstalledDetailsFromText(string text)
     {
         if (_currentDetailsPanel is null || _currentMetaText is null || _currentShaLabel is null || _currentShaValue is null) return;
-        var lines = text.Split('\n', StringSplitOptions.None);
-        if (lines.Length < 5 || string.IsNullOrWhiteSpace(lines[0])) { _currentDetailsPanel.Visibility = Visibility.Collapsed; return; }
-        _currentDetailsPanel.Visibility = Visibility.Visible;
-        _currentMetaText.Text = string.Join(Environment.NewLine, lines.Take(2));
-        _currentShaLabel.Text = lines[2].Trim();
-        _currentShaValue.Text = lines[4].Trim();
+        var lines = text.Split('\n', StringSplitOptions.None); if (lines.Length < 5 || string.IsNullOrWhiteSpace(lines[0])) { _currentDetailsPanel.Visibility = Visibility.Collapsed; return; }
+        _currentDetailsPanel.Visibility = Visibility.Visible; _currentMetaText.Text = string.Join(Environment.NewLine, lines.Take(2)); _currentShaLabel.Text = lines[2].Trim(); _currentShaValue.Text = lines[4].Trim();
     }
 
     private void BuildTeamSpeakPanel(Grid host, int column)
@@ -92,12 +86,21 @@ public partial class MainWindow
 
     private void AddDashboardTile(Grid host, int column, string iconAssetKey, string title, string subtitle, Brush accent, Action action)
     {
-        var button = new Button { Style = (Style)FindResource("TileButtonStyle"), BorderBrush = accent, Margin = new Thickness(6) }; var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; panel.Children.Add(DashboardIconRegistry.CreateIcon(iconAssetKey, accent, DashboardTileIconSize, DashboardTileIconSize)); panel.Children.Add(new TextBlock { Text = title, FontSize = DashboardTileTitleFontSize, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 4) }); panel.Children.Add(new TextBlock { Text = subtitle, FontSize = DashboardTileSubtitleFontSize, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.NoWrap }); button.Content = panel; button.Click += (_, _) => action(); Grid.SetColumn(button, column); host.Children.Add(button);
+        var surface = (Brush)FindResource("SurfaceBrush");
+        var button = new Button { Style = (Style)FindResource("TileButtonStyle"), Background = surface, Foreground = accent, BorderBrush = accent, BorderThickness = new Thickness(1), Margin = new Thickness(6) };
+        var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        panel.Children.Add(DashboardIconRegistry.CreateIcon(iconAssetKey, accent, DashboardTileIconSize, DashboardTileIconSize));
+        panel.Children.Add(new TextBlock { Text = title, FontSize = DashboardTileTitleFontSize, FontWeight = FontWeights.Bold, Foreground = accent, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 4) });
+        panel.Children.Add(new TextBlock { Text = subtitle, FontSize = DashboardTileSubtitleFontSize, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.NoWrap });
+        button.Content = panel; button.Click += (_, _) => action(); Grid.SetColumn(button, column); host.Children.Add(button);
     }
 
     private void BuildLatestBackupPanel(Grid host, int column)
     {
-        var purple = (Brush)FindResource("AccentBrush"); var card = CreatePanelCard(purple); _backupCard = card; var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup, IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header); var content = new Grid { Margin = new Thickness(6, 16, 6, 0) }; content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(160) }); _backupSummary = new TextBlock { FontSize = 15, LineHeight = 22, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 10, 0) }; Grid.SetColumn(_backupSummary, 0); content.Children.Add(_backupSummary); var backupIcon = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetBackup, purple, 132, 132); Grid.SetColumn(backupIcon, 1); content.Children.Add(backupIcon); Grid.SetRow(content, 1); panel.Children.Add(content); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        var purple = (Brush)FindResource("AccentBrush"); var card = CreatePanelCard(purple); _backupCard = card; var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup, IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header);
+        var content = new Grid { Margin = new Thickness(6, 16, 6, 0), VerticalAlignment = VerticalAlignment.Center }; content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(160) });
+        _backupSummary = new TextBlock { FontSize = 15, LineHeight = 22, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 10, 0) }; Grid.SetColumn(_backupSummary, 0); content.Children.Add(_backupSummary);
+        var backupIcon = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetBackup, purple, 132, 132); backupIcon.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(backupIcon, 1); content.Children.Add(backupIcon); Grid.SetRow(content, 1); panel.Children.Add(content); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private SolidColorBrush GetVersionRowBackground(int index) { if (index % 2 == 0) return Brushes.Transparent; if (FindResource("AccentBrush") is SolidColorBrush accent) return new SolidColorBrush(Color.FromArgb(18, accent.Color.R, accent.Color.G, accent.Color.B)); return Brushes.Transparent; }
@@ -121,7 +124,6 @@ public partial class MainWindow
 internal sealed class DashboardDetailsTextBlock : TextBlock
 {
     private readonly Action<string> _onTextChanged;
-
     internal DashboardDetailsTextBlock(Action<string> onTextChanged)
     {
         _onTextChanged = onTextChanged ?? throw new ArgumentNullException(nameof(onTextChanged));
