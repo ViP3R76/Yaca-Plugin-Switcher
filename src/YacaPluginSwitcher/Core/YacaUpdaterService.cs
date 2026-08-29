@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
@@ -11,9 +10,7 @@ public sealed record YacaUpdaterProgress(string Version, long BytesReceived, lon
 
 public sealed class YacaUpdaterService
 {
-    private const string CdnBase = "https://cdn.yaca.systems/yaca_{0}_3.6.x.ts3_plugin";
     private const string DllInZip = "plugins/yaca_win64.dll";
-    private static readonly CompositeFormat CdnFormat = CompositeFormat.Parse(CdnBase);
     private static readonly Version MinExclusiveVersion = new(1, 7, 5);
     private readonly YacaService _service;
 
@@ -63,7 +60,7 @@ public sealed class YacaUpdaterService
             try
             {
                 progress?.Report(new(version, 0, null, "Download wird vorbereitet", false, false, null));
-                using var response = await http.GetAsync(string.Format(CdnFormat, CultureInfo.InvariantCulture, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var response = await http.GetAsync($"https://cdn.yaca.systems/yaca_{version}_3.6.x.ts3_plugin", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var total = response.Content.Headers.ContentLength;
                 await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -85,6 +82,7 @@ public sealed class YacaUpdaterService
 
     private async Task ValidateAndInstallAsync(string version, string archivePath, IProgress<YacaUpdaterProgress>? progress, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var archiveSize = new FileInfo(archivePath).Length;
         progress?.Report(new(version, archiveSize, archiveSize, "Archiv wird geprüft", false, false, null));
         var tag = version.Replace(".", "");
@@ -106,7 +104,6 @@ public sealed class YacaUpdaterService
             progress?.Report(new(version, archiveSize, archiveSize, "Erfolgreich hinzugefügt", true, true, null));
         }
         finally { try { Directory.Delete(extraction, true); } catch { } }
-        await Task.CompletedTask;
     }
 
     private static async Task LoadVersionsAsync(HttpClient http, string url, SortedDictionary<long, string> versions, CancellationToken cancellationToken)
