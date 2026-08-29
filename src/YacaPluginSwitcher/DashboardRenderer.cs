@@ -37,7 +37,6 @@ public partial class MainWindow
 
     private const string TeamSpeakLogoData = "M 0.123421 42.6798 C 0.260552 41.4132 -0.0137098 39.9333 0.260552 38.4001 C 0.671945 35.9202 2.11182 33.987 4.38819 32.9204 C 4.93672 32.6537 5.21098 32.3871 5.34811 31.6538 C 6.30803 26.3075 8.58439 21.3611 11.8892 16.9347 C 12.3006 16.4014 12.5749 16.1348 12.0264 15.4015 C 11.4779 14.6015 11.8892 13.7349 12.4378 13.0549 C 17.1139 7.97525 22.6129 4.22882 29.154 2.14894 C 44.8418 -2.66409 58.5961 0.615706 70.4991 11.9083 C 71.5961 12.9749 73.0497 13.9749 71.5961 15.7881 C 71.3218 16.0548 71.7332 16.3214 72.0075 16.5881 C 75.3809 21.1344 77.6436 26.2141 78.6858 31.7071 C 78.8229 32.2404 79.2343 32.5071 79.6457 32.7737 C 82.4706 34.1736 83.9104 36.5202 83.9104 39.6666 C 83.9104 42.8131 84.1847 45.1463 83.7733 47.8928 C 83.0877 51.9059 78.96 54.6524 74.9695 53.7724 C 73.8725 53.5058 73.3925 52.7058 73.3925 51.5592 C 73.3925 47.0129 73.5296 42.4665 73.3925 37.9201 C 72.9811 25.6808 67.4822 16.4547 56.5391 10.5618 C 38.5201 0.935687 15.1255 11.8283 11.2036 31.7605 C 10.5179 35.1736 10.6551 38.7867 10.6551 42.1998 C 10.6551 45.6129 10.6551 48.6928 10.5179 51.9592 C 10.5179 53.0258 9.83228 53.7591 8.52954 53.7591 C 3.37342 54.0258 0 50.8793 0 45.7996 C 0.137131 44.9996 0.137131 43.9997 0.137131 42.6531 M 35.8243 58.7355 C 37.6756 58.0689 39.0606 56.8023 39.472 54.7224 C 39.8834 52.6425 37.4836 49.7761 34.2473 46.7629 C 30.8739 43.6164 26.472 40.27 24.0722 39.07 C 20.5616 37.0035 17.2568 38.8034 16.5711 42.8165 C 15.7483 47.2295 16.5711 51.376 18.9846 55.0557 C 20.6988 57.6689 23.1123 58.8022 26.0743 59.0688 C 27.7199 59.0022 34.3982 59.3355 35.838 58.7355 M 50.9499 60.0021 C 53.0756 60.2687 55.0775 60.6687 57.203 60.802 C 60.0279 60.9354 62.1535 60.1354 63.7442 58.4555 C 65.7326 56.389 66.7062 53.7758 66.5691 51.0293 C 66.4319 48.1495 64.0184 46.4829 60.7959 47.0162 C 57.8338 47.4162 55.2969 48.6828 52.6091 49.6294 C 50.1956 50.5625 48.0701 51.6959 46.356 53.1758 C 43.9425 55.389 45.2589 58.3889 49.0437 59.5355 C 49.5237 59.7354 50.2099 59.8688 50.9636 60.0021 M 73.4531 57.5356 C 73.0417 57.1356 72.356 57.4023 72.0132 57.9356 C 70.7104 61.9486 64.6492 75.3878 44.011 76.8011 C 19.6566 78.4676 57.011 83.5606 67.6798 75.8678 C 71.3275 73.1213 75.4552 70.3881 75.318 62.4953 C 75.318 60.962 74.5638 58.3489 73.4668 57.5489 M 108.875 23.9691 H 113 V 29.6667 H 111.011 C 110.135 29.7066 109.565 29.8663 109.313 30.1725 C 109.061 30.4654 108.915 31.1177 108.889 32.1161 V 63 C 107.231 63 105.467 62.7204 104.393 61.5224 C 103.318 60.3243 103 57.9414 103 56.6368 V 13 H 108.889 V 23.9691 H 108.875 Z";
 
-    // Folder + sync mark from the supplied reference, redrawn as a WPF vector so it remains crisp at any DPI.
     private static readonly string LatestBackupFolderIconData = "M 5 6 H 10 L 13 9 H 20 C 21.1 9 22 9.9 22 11 V 18 C 22 19.1 21.1 20 20 20 H 4 C 2.9 20 2 19.1 2 18 V 8 C 2 6.9 2.9 6 4 6 Z M 16.2 12.4 A 4.7 4.7 0 1 0 17.2 17.8 M 16.2 10.2 V 13.7 H 19.7";
 
     private Grid RenderDashboard()
@@ -97,12 +96,34 @@ public partial class MainWindow
         _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList); _versionsFooter = new Button { Content = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), HorizontalAlignment = HorizontalAlignment.Center, Tag = "versions-footer" }; _versionsFooter.Click += (_, _) => ShowSwitchPage(); Grid.SetRow(_versionsFooter, 2); panel.Children.Add(_versionsFooter); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
-    private StackPanel CreateDashboardHeader(string iconKey, string text, Brush? headerBrush = null)
+    private Grid CreateDashboardHeader(string iconKey, string text, Brush? headerBrush = null)
     {
-        var brush = headerBrush ?? (Brush)FindResource("AccentBrush"); var header = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        if (iconKey.Equals("teamspeak", StringComparison.OrdinalIgnoreCase)) header.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse(TeamSpeakLogoData), Fill = brush, Stroke = null, Width = 104, Height = DashboardHeaderIconSize, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
-        else if (DashboardIconData.TryGetValue(iconKey, out var data)) header.Children.Add(CreateIcon(data, brush, DashboardHeaderIconSize, DashboardHeaderIconSize, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 3.0 : 2.15));
-        header.Children.Add(new TextBlock { Text = text, FontSize = DashboardHeaderFontSize, FontWeight = FontWeights.SemiBold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), TextWrapping = TextWrapping.NoWrap }); return header;
+        var brush = headerBrush ?? (Brush)FindResource("AccentBrush");
+        var header = new Grid { VerticalAlignment = VerticalAlignment.Center };
+        header.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1) });
+
+        var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        if (iconKey.Equals("teamspeak", StringComparison.OrdinalIgnoreCase))
+            content.Children.Add(new System.Windows.Shapes.Path { Data = Geometry.Parse(TeamSpeakLogoData), Fill = brush, Stroke = null, Width = 104, Height = DashboardHeaderIconSize, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
+        else if (DashboardIconData.TryGetValue(iconKey, out var data))
+            content.Children.Add(CreateIcon(data, brush, DashboardHeaderIconSize, DashboardHeaderIconSize, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 3.0 : 2.15));
+
+        content.Children.Add(new TextBlock { Text = text, FontSize = DashboardHeaderFontSize, FontWeight = FontWeights.SemiBold, Foreground = brush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), TextWrapping = TextWrapping.NoWrap });
+        Grid.SetRow(content, 0);
+        header.Children.Add(content);
+
+        header.Children.Add(new Border
+        {
+            Grid.Row = 1,
+            Height = 1,
+            Background = brush,
+            Opacity = 0.65,
+            Margin = new Thickness(0, 7, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        });
+
+        return header;
     }
 
     private void AddDashboardTile(Grid host, int column, string iconKey, string title, string subtitle, Brush accent, Action action)
@@ -110,7 +131,7 @@ public partial class MainWindow
         var button = new Button { Style = (Style)FindResource("TileButtonStyle"), BorderBrush = accent, Margin = new Thickness(6), Tag = "reference-dashboard-tile" }; var panel = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; if (DashboardIconData.TryGetValue(iconKey, out var data)) panel.Children.Add(CreateIcon(data, accent, DashboardTileIconSize, DashboardTileIconSize, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 6.0 : 3.6)); panel.Children.Add(new TextBlock { Text = title, FontSize = DashboardTileTitleFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 4), TextWrapping = TextWrapping.NoWrap }); panel.Children.Add(new TextBlock { Text = subtitle, FontSize = DashboardTileSubtitleFontSize, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.NoWrap }); button.Content = panel; button.Click += (_, _) => action(); Grid.SetColumn(button, column); host.Children.Add(button);
     }
 
-    private Brush GetVersionRowBackground(int index)
+    private SolidColorBrush GetVersionRowBackground(int index)
     {
         if (index % 2 == 0) return Brushes.Transparent;
         if (FindResource("SurfaceBrush") is SolidColorBrush surface) return new SolidColorBrush(Color.FromArgb(24, surface.Color.R, surface.Color.G, surface.Color.B));
