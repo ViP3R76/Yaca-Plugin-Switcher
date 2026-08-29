@@ -101,6 +101,12 @@ public partial class MainWindow
         BuildNavigation();
         LoadLanguageSelector();
         ShowCurrentPageAfterLanguageChange();
+
+        // BuildNavigation/ShowHome recreate the visual tree. Reapply the reference layer
+        // after localization so the vector icons are never replaced by the placeholder glyphs.
+        ApplyReferenceNavigationIcons();
+        if (_activePage == "home")
+            ApplyReferencePanelIcons();
     }
 
     private void ShowCurrentPageAfterLanguageChange()
