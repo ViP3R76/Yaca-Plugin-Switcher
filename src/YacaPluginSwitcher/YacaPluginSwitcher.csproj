@@ -26,6 +26,9 @@
     <Resource Include="Assets\github_icon.png" />
     <Resource Include="Assets\*.svg" />
   </ItemGroup>
+  <Target Name="GenerateVip3rBrandingIcon" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\GenerateBrandingIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76_logo.png&quot; -Output &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76.ico&quot;" />
+  </Target>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>None</DebugType>
     <DebugSymbols>false</DebugSymbols>
