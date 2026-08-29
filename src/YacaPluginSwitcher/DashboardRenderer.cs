@@ -24,8 +24,8 @@ public partial class MainWindow
     {
         ["home"] = "M 3,11 L 12,3 L 21,11 V 21 H 15 V 14 H 9 V 21 H 3 Z",
         ["refresh"] = "M 20,11 A 8,8 0 1 0 20,16 M 20,4 V 11 H 13",
-        ["switch"] = "M 19.5,7.5 A 8.5,8.5 0 0 0 5.2,5.2 L 3.4,7 M 3.4,7 V 2.8 M 3.4,7 H 7.6 M 4.5,16.5 A 8.5,8.5 0 0 0 18.8,18.8 L 20.6,17 M 20.6,17 V 21.2 M 20.6,17 H 16.4",
-        ["backup"] = "M 4,4 H 20 V 20 H 4 Z M 12,7 V 17 M 7,12 H 17",
+        ["switch"] = "M 19.5 7.5 A 8.5 8.5 0 0 0 5.2 5.2 L 3.4 7 M 3.4 7 V 2.8 M 3.4 7 H 7.6 M 4.5 16.5 A 8.5 8.5 0 0 0 18.8 18.8 L 20.6 17 M 20.6 17 V 21.2 M 20.6 17 H 16.4",
+        ["backup"] = "M 5 6 C 5 3.8 19 3.8 19 6 C 19 8.2 5 8.2 5 6 Z M 5 6 V 11 C 5 13.2 19 13.2 19 11 V 6 M 5 11 V 16 C 5 18.2 19 18.2 19 16 V 11 M 4 15 A 8.5 8.5 0 0 0 9 21 M 9 21 H 4 M 9 21 L 7 19 M 20 9 A 8.5 8.5 0 0 0 15 3 M 15 3 H 20 M 15 3 L 17 5",
         ["updater"] = "M 192,395 H 139 A 96,96 0 0 1 139,203 A 123,123 0 0 1 385,204 A 100,100 0 0 1 385,404 H 331 M 256,214 V 358 M 198,300 L 256,358 L 314,300",
         ["backups"] = "M 4,5 C 4,2 20,2 20,5 V 19 C 20,22 4,22 4,19 Z M 4,5 C 4,8 20,8 20,5 M 4,12 C 4,15 20,15 20,12",
         ["shield"] = "M 12,2 L 20,5 V 11 C 20,16 16.8,20 12,22 C 7.2,20 4,16 4,11 V 5 Z",
@@ -42,7 +42,7 @@ public partial class MainWindow
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         var top = new Grid(); AddStarColumns(top, 3); BuildCurrentInstalledPanel(top, 0); BuildFreeBrandLogo(top, 1); BuildTeamSpeakPanel(top, 2); Grid.SetRow(top, 0); root.Children.Add(top);
         var actions = new Grid(); AddStarColumns(actions, 3);
-        AddDashboardTile(actions, 0, "switch", IsGerman ? "YACA WECHSELN" : "SWITCH YACA", IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch", (Brush)FindResource("AccentBrush"), ShowSwitchPage);
+        AddDashboardTile(actions, 0, "switch", IsGerman ? "YACA WECHSELN" : "SWITCH YACA", IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch", (Brush)FindResource("AccentBrush"), () => ShowSwitchPage());
         AddDashboardTile(actions, 1, "backup", IsGerman ? "BACKUP ERSTELLEN" : "CREATE BACKUP", IsGerman ? "Aktuelle Version sichern" : "Save current version", (Brush)FindResource("GoldBrush"), CreateBackupFromDashboard);
         AddDashboardTile(actions, 2, "updater", "YACA UPDATER", IsGerman ? "Neueste DLL prüfen\nund herunterladen" : "Check and download\nlatest DLL", (Brush)FindResource("AccentBrush"), ShowComingSoon); Grid.SetRow(actions, 1); root.Children.Add(actions);
         var lower = new Grid(); AddStarColumns(lower, 2); BuildLatestBackupPanel(lower, 0); BuildAvailableVersionsPanel(lower, 1); Grid.SetRow(lower, 2); root.Children.Add(lower); return root;
