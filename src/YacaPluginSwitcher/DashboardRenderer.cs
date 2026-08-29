@@ -35,11 +35,7 @@ public partial class MainWindow
         ["info"] = "M 12,21 A 9,9 0 1 0 12,3 A 9,9 0 0 0 12,21 M 12,10 V 16 M 12,7 V 7"
     };
 
-    // TeamSpeak headset mark. The official inline logo also contains the TEAMSPEAK wordmark;
-    // the wordmark is rendered beside this vector so the complete branding remains visible at header scale.
     private const string TeamSpeakLogoData = "M 3 12 C 3 7 7 3 12 3 C 17 3 21 7 21 12 V 17 C 21 19 19 20 17 20 H 16 V 13 H 19 V 17 M 3 17 C 3 19 5 20 7 20 H 8 V 13 H 5 V 17";
-
-    // Folder + circular restore/sync mark, sized and proportioned for the reference backup panel.
     private static readonly string LatestBackupFolderIconData = "M 5 5 H 11 L 14 8 H 22 C 23.1 8 24 8.9 24 10 V 19 C 24 20.1 23.1 21 22 21 H 4 C 2.9 21 2 20.1 2 19 V 7 C 2 5.9 2.9 5 4 5 Z M 18.5 13.5 A 5.5 5.5 0 1 0 19.5 19 M 18.5 11.5 V 15 H 22";
 
     private Grid RenderDashboard()
@@ -97,9 +93,8 @@ public partial class MainWindow
     {
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); var header = CreateDashboardHeader("backups", IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS"); Grid.SetRow(header, 0); panel.Children.Add(header);
         _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList);
-        var footer = new TextBlock { Content = null, Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), Tag = "versions-footer" };
+        var footer = new TextBlock { Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), Tag = "versions-footer" };
         footer.MouseLeftButtonUp += (_, _) => ShowSwitchPage();
-        _versionsFooter = null;
         Grid.SetRow(footer, 2); panel.Children.Add(footer); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
         _versionsFooterText = footer;
     }
