@@ -32,7 +32,6 @@ public partial class MainWindow
         ["updater"] = "M 192,395 H 139 A 96,96 0 0 1 139,203 A 123,123 0 0 1 385,204 A 100,100 0 0 1 385,404 H 331 M 256,214 V 358 M 198,300 L 256,358 L 314,300",
         ["backups"] = "M 4,5 C 4,2 20,2 20,5 V 19 C 20,22 4,22 4,19 Z M 4,5 C 4,8 20,8 20,5 M 4,12 C 4,15 20,15 20,12",
         ["shield"] = "M 12,2 L 20,5 V 11 C 20,16 16.8,20 12,22 C 7.2,20 4,16 4,11 V 5 Z",
-        // TeamSpeak inline-light mark supplied by the user; the first two SVG paths are the icon mark.
         ["teamspeak"] = "M 0.123421 42.6798 C 0.260552 41.4132 -0.0137098 39.9333 0.260552 38.4001 C 0.671945 35.9202 2.11182 33.987 4.38819 32.9204 C 4.93672 32.6537 5.21098 32.3871 5.34811 31.6538 C 6.30803 26.3075 8.58439 21.3611 11.8892 16.9347 C 12.3006 16.4014 12.5749 16.1348 12.0264 15.4015 C 11.4779 14.6015 11.8892 13.7349 12.4378 13.0549 C 17.1139 7.97525 22.6129 4.22882 29.154 2.14894 C 44.8418 -2.66409 58.5961 0.615706 70.4991 11.9083 C 71.5961 12.9749 73.0497 13.9749 71.5961 15.7881 C 71.3218 16.0548 71.7332 16.3214 72.0075 16.5881 C 75.3809 21.1344 77.6436 26.2141 78.6858 31.7071 C 78.8229 32.2404 79.2343 32.5071 79.6457 32.7737 C 82.4706 34.1736 83.9104 36.5202 83.9104 39.6666 C 83.9104 42.8131 84.1847 45.1463 83.7733 47.8928 C 83.0877 51.9059 78.96 54.6524 74.9695 53.7724 C 73.8725 53.5058 73.3925 52.7058 73.3925 51.5592 C 73.3925 47.0129 73.5296 42.4665 73.3925 37.9201 C 72.9811 25.6808 67.4822 16.4547 56.5391 10.5618 C 38.5201 0.935687 15.1255 11.8283 11.2036 31.7605 C 10.5179 35.1736 10.6551 38.7867 10.6551 42.1998 C 10.6551 45.6129 10.6551 48.6928 10.5179 51.9592 C 10.5179 53.0258 9.83228 53.7591 8.52954 53.7591 C 3.37342 54.0258 0 50.8793 0 45.7996 C 0.137131 44.9996 0.137131 43.9997 0.137131 42.6531 M 35.8243 58.7355 C 37.6756 58.0689 39.0606 56.8023 39.472 54.7224 C 39.8834 52.6425 37.4836 49.7761 34.2473 46.7629 C 30.8739 43.6164 26.472 40.27 24.0722 39.07 C 20.5616 37.0035 17.2568 38.8034 16.5711 42.8165 C 15.7483 47.2295 16.5711 51.376 18.9846 55.0557 C 20.6988 57.6689 23.1123 58.8022 26.0743 59.0688 C 27.7199 59.0022 34.3982 59.3355 35.838 58.7355 M 50.9499 60.0021 C 53.0754 60.2687 55.0775 60.6687 57.203 60.802 C 60.0279 60.9354 62.1535 60.1354 63.7442 58.4555 C 65.7326 56.389 66.7062 53.7758 66.5691 51.0293 C 66.4319 48.1495 64.0184 46.4829 60.7959 47.0162 C 57.8338 47.4162 55.2969 48.6828 52.6091 49.6294 C 50.1956 50.5627 48.0701 51.6959 46.356 53.1758 C 43.9425 55.389 45.2589 58.3889 49.0437 59.5355 C 49.5237 59.7354 50.2093 59.8688 50.9636 60.0021 M 73.4531 57.5356 C 73.0417 57.1356 72.356 57.4023 72.0132 57.9356 C 70.7104 61.9486 64.6492 75.3878 44.011 76.8011 C 19.6566 78.4676 57.011 83.5606 67.6798 75.8678 C 71.3275 73.1213 75.4552 70.3881 75.318 62.4953 C 75.318 60.962 74.5638 58.3489 73.4668 57.5489",
         ["info"] = "M 12,21 A 9,9 0 1 0 12,3 A 9,9 0 0 0 12,21 M 12,10 V 16 M 12,7 V 7"
     };
@@ -55,9 +54,10 @@ public partial class MainWindow
 
     private void BuildCurrentInstalledPanel(Grid host, int column)
     {
-        var card = CreatePanelCard((Brush)FindResource("AccentBrush")); _currentCard = card; var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        var header = CreateDashboardHeader("shield", IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED"); Grid.SetRow(header, 0); panel.Children.Add(header);
-        var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _currentValue = new TextBlock { Text = "—", FontSize = DashboardVersionFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center }; center.Children.Add(_currentValue);
+        var card = CreatePanelCard((Brush)FindResource("GoldBrush")); _currentCard = card;
+        var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        var header = CreateDashboardHeader("shield", IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED", (Brush)FindResource("GoldBrush")); Grid.SetRow(header, 0); panel.Children.Add(header);
+        var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }; _currentValue = new TextBlock { Text = "—", FontSize = DashboardVersionFontSize, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Foreground = (Brush)FindResource("GoldBrush") }; center.Children.Add(_currentValue);
         center.Children.Add(new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(16, 5, 16, 5), Margin = new Thickness(0, 8, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Child = new TextBlock { Text = IsGerman ? "AKTIV" : "ACTIVE", Foreground = Brushes.Black, FontSize = DashboardBadgeFontSize, FontWeight = FontWeights.Bold, TextAlignment = TextAlignment.Center } }); Grid.SetRow(center, 1); panel.Children.Add(center);
         _currentDetails = new TextBlock { FontSize = 13, LineHeight = 20, Foreground = (Brush)FindResource("SecondaryBrush"), TextAlignment = TextAlignment.Left, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 8, 0, 0), TextWrapping = TextWrapping.NoWrap }; Grid.SetRow(_currentDetails, 2); panel.Children.Add(_currentDetails); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
@@ -75,13 +75,15 @@ public partial class MainWindow
     private void BuildLatestBackupPanel(Grid host, int column)
     {
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); _backupCard = card; var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); var header = CreateDashboardHeader("backups", IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header);
-        _backupSummary = new TextBlock { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Left, Margin = new Thickness(6, 10, 6, 6) }; Grid.SetRow(_backupSummary, 1); panel.Children.Add(_backupSummary); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        _backupSummary = new TextBlock { FontSize = 15, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Top, TextAlignment = TextAlignment.Left, Margin = new Thickness(6, 4, 6, 6) }; Grid.SetRow(_backupSummary, 1); panel.Children.Add(_backupSummary); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private void BuildAvailableVersionsPanel(Grid host, int column)
     {
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); var header = CreateDashboardHeader("backups", IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS"); Grid.SetRow(header, 0); panel.Children.Add(header);
-        _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList); _versionsFooter = new Button { Content = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), HorizontalAlignment = HorizontalAlignment.Center, Tag = "versions-footer" }; _versionsFooter.Click += (_, _) => ShowSwitchPage(); Grid.SetRow(_versionsFooter, 2); panel.Children.Add(_versionsFooter); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList);
+        _versionsFooter = new Button { Content = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), HorizontalAlignment = HorizontalAlignment.Center, Tag = "versions-footer" };
+        _versionsFooter.Click += (_, _) => ShowSwitchPage(); Grid.SetRow(_versionsFooter, 2); panel.Children.Add(_versionsFooter); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private StackPanel CreateDashboardHeader(string iconKey, string text, Brush? headerBrush = null)
@@ -97,17 +99,19 @@ public partial class MainWindow
     private void RenderVersionList(YacaPluginInfo? current)
     {
         if (_versionList is null) return; _versionList.Children.Clear(); var ordered = _plugins.OrderByDescending(p => p.Version).ThenByDescending(p => p.Build).ToList();
-        var rowIndex = 0;
+        var alternate = false;
         foreach (var plugin in ordered)
         {
-            var row = new Grid { MinHeight = 38, Margin = new Thickness(0, 1, 0, 1) }; row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); row.Children.Add(new TextBlock { Text = plugin.DisplayName, FontSize = DashboardVersionListFontSize, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
-            if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true) { var badge = new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(7, 2, 7, 2), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Child = new TextBlock { Text = IsGerman ? "INSTALLIERT" : "INSTALLED", Foreground = Brushes.Black, FontSize = 10, FontWeight = FontWeights.Bold } }; Grid.SetColumn(badge, 1); row.Children.Add(badge); }
-            var rowBackground = rowIndex % 2 == 0
-                ? new SolidColorBrush(Color.FromArgb(12, 255, 255, 255))
-                : new SolidColorBrush(Color.FromArgb(5, 255, 255, 255));
-            var rowContainer = new Border { Background = rowBackground, CornerRadius = new CornerRadius(4), Padding = new Thickness(6, 0, 6, 0), Child = row };
-            _versionList.Children.Add(rowContainer);
-            rowIndex++;
+            alternate = !alternate;
+            var row = new Border { MinHeight = 38, Margin = new Thickness(0, 1, 0, 1), Padding = new Thickness(8, 2, 8, 2), CornerRadius = new CornerRadius(3), Background = alternate ? (Brush)FindResource("SurfaceBrush") : (Brush)FindResource("BackgroundBrush") };
+            var grid = new Grid(); grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var versionText = $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})";
+            grid.Children.Add(new TextBlock { Text = versionText, FontSize = DashboardVersionListFontSize, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
+            if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true)
+            {
+                var badge = new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(7, 2, 7, 2), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Child = new TextBlock { Text = IsGerman ? "INSTALLIERT" : "INSTALLED", Foreground = Brushes.Black, FontSize = 10, FontWeight = FontWeights.Bold } }; Grid.SetColumn(badge, 1); grid.Children.Add(badge);
+            }
+            row.Child = grid; _versionList.Children.Add(row);
         }
         if (_versionsFooter is not null) _versionsFooter.Content = $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} {(IsGerman ? "Versionen verfügbar – YACA wechseln" : "versions available – switch YACA")}";
     }
@@ -115,9 +119,13 @@ public partial class MainWindow
     private void UpdateBackupSummary(BackupInfo? backup)
     {
         if (_backupSummary is null) return; _backupSummary.Inlines.Clear(); if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
-        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 27, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{backup.DisplayName} - Backup-Status: {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")}: {backup.FileName}  •  {backup.FileSize / 1024d / 1024d:0.00} MB") { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush") });
+        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.Bold, Foreground = (Brush)FindResource("GoldBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"YACA {backup.DisplayName} - Backup-Status: {(backup.IsAutomatic ? (IsGerman ? "Automatisch" : "Automatic") : (IsGerman ? "Manuell" : "Manual"))}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("ForegroundBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")} - {backup.FileName}") { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush") });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Größe" : "Size")} - {backup.FileSize / 1024d / 1024d:0.00} MB") { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush") });
     }
 
     private static void AddStarColumns(Grid grid, int count) { for (var i = 0; i < count; i++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); }
