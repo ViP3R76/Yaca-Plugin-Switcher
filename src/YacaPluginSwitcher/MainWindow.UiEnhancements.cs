@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,7 +23,8 @@ public partial class MainWindow
             return;
 
         _enhancementsInitialized = true;
-        PageHost.ContentChanged += (_, _) => Dispatcher.BeginInvoke(new Action(ApplyPageEnhancements));
+        var descriptor = DependencyPropertyDescriptor.FromProperty(ContentControl.ContentProperty, typeof(ContentControl));
+        descriptor?.AddValueChanged(PageHost, (_, _) => Dispatcher.BeginInvoke(new Action(ApplyPageEnhancements)));
         ApplyPageEnhancements();
     }
 
@@ -42,8 +44,9 @@ public partial class MainWindow
 
         if (settingsButton is null)
         {
-            var infoIndex = NavPanel.Children.IndexOf(NavPanel.Children.OfType<Button>().FirstOrDefault(button =>
-                string.Equals(button.Tag?.ToString(), "info", StringComparison.OrdinalIgnoreCase))!);
+            var infoButton = NavPanel.Children.OfType<Button>().FirstOrDefault(button =>
+                string.Equals(button.Tag?.ToString(), "info", StringComparison.OrdinalIgnoreCase));
+            var infoIndex = infoButton is null ? -1 : NavPanel.Children.IndexOf(infoButton);
             if (infoIndex >= 0)
             {
                 var content = new StackPanel();
@@ -193,10 +196,9 @@ public partial class MainWindow
                 _updaterStepPanel.Children.Add(label);
             }
 
-            var index = parent.Children.IndexOf(_updaterProgress!);
-            if (index < 0)
-                index = parent.Children.Count;
-            parent.Children.Insert(Math.Min(index + 1, parent.Children.Count), _updaterStepPanel);
+            var progressIndex = parent.Children.IndexOf(_updaterProgress!);
+            var insertIndex = progressIndex >= 0 ? progressIndex + 1 : parent.Children.Count;
+            parent.Children.Insert(Math.Min(insertIndex, parent.Children.Count), _updaterStepPanel);
         }
 
         if (!_updaterStatusHooked)
@@ -239,19 +241,20 @@ public partial class MainWindow
                 continue;
             }
 
+            var stepText = label.Text.Length >= 3 ? label.Text[3..] : label.Text;
             if (current > i || (current == 6 && i < 6))
             {
-                label.Text = "✓  " + label.Text[3..];
+                label.Text = "✓  " + stepText;
                 label.Foreground = (Brush)FindResource("SuccessBrush");
             }
             else if (current == i)
             {
-                label.Text = "●  " + label.Text[3..];
+                label.Text = "●  " + stepText;
                 label.Foreground = (Brush)FindResource("GoldBrush");
             }
             else
             {
-                label.Text = "○  " + label.Text[3..];
+                label.Text = "○  " + stepText;
                 label.Foreground = (Brush)FindResource("SecondaryBrush");
             }
         }
