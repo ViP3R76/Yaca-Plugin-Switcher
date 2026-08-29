@@ -89,7 +89,7 @@ public partial class MainWindow
         host.Children.Add(button);
     }
 
-    private void AddReferenceWave(Grid host, string geometry, Brush stroke, double thickness, double opacity, double height)
+    private static void AddReferenceWave(Grid host, string geometry, Brush stroke, double thickness, double opacity, double height)
     {
         host.Children.Add(new System.Windows.Shapes.Path
         {
@@ -123,20 +123,23 @@ public partial class MainWindow
     private void RefreshLanguageDependentUi()
     {
         var language = Localization.Normalize(_service.Settings.Language);
-        if (string.Equals(language, _lastObservedLanguage, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        _lastObservedLanguage = language;
-        BuildNavigation();
-        LoadLanguageSelector();
-        SetActiveNav(_activePage);
-        ApplyReferenceNavigationIcons();
-
-        if (_activePage == "home")
+        if (!string.Equals(language, _lastObservedLanguage, StringComparison.OrdinalIgnoreCase))
         {
-            ApplyLocalizedDashboardText();
-            ApplyReferencePanelIcons();
+            _lastObservedLanguage = language;
+            BuildNavigation();
+            LoadLanguageSelector();
+            SetActiveNav(_activePage);
+            ApplyReferenceNavigationIcons();
+
+            if (_activePage == "home")
+            {
+                ApplyLocalizedDashboardText();
+                ApplyReferencePanelIcons();
+            }
         }
+
+        EnsureVersionPanelLayout();
+        RefreshVersionPanelLayout();
     }
 
     private void ApplyLocalizedDashboardText()
