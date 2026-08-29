@@ -10,7 +10,7 @@
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\vip3r_76.ico</ApplicationIcon>
+    <ApplicationIcon>$(MSBuildProjectDirectory)\Assets\vip3r_76.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -26,7 +26,7 @@
     <Resource Include="Assets\github_icon.png" />
     <Resource Include="Assets\*.svg" />
   </ItemGroup>
-  <Target Name="GenerateVip3rBrandingIcon" BeforeTargets="PrepareForBuild">
+  <Target Name="GenerateVip3rBrandingIcon" BeforeTargets="PrepareResourceNames">
     <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\GenerateBrandingIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76_logo.png&quot; -Output &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76.ico&quot;" />
   </Target>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
