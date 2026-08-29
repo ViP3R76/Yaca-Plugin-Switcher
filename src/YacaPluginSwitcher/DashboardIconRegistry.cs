@@ -30,19 +30,19 @@ internal static class DashboardIconRegistry
 
     private static readonly Dictionary<string, string> AssetPaths = new(StringComparer.OrdinalIgnoreCase)
     {
-        [IconAssetDashboard] = "/YacaPluginSwitcher;component/Assets/dashboard-home-icon.svg",
-        [IconAssetRefresh] = "/YacaPluginSwitcher;component/Assets/refresh-update-icon.svg",
-        [IconAssetSync] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
-        [IconAssetBackup] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
-        [IconAssetBackups] = "/YacaPluginSwitcher;component/Assets/data-update-icon.svg",
-        [IconAssetUpdater] = "/YacaPluginSwitcher;component/Assets/sync-icon.svg",
-        [IconAssetInfo] = "/YacaPluginSwitcher;component/Assets/info-notepad-icon.svg",
-        [IconAssetExit] = "/YacaPluginSwitcher;component/Assets/power-off-icon.svg",
-        [IconAssetInstalled] = "/YacaPluginSwitcher;component/Assets/checked-shield-icon.svg",
-        [IconAssetTeamSpeak] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
-        [IconAssetTeamSpeakActive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
-        [IconAssetTeamSpeakInactive] = "/YacaPluginSwitcher;component/Assets/TS_InLine_Light.svg",
-        [IconAssetSort] = "/YacaPluginSwitcher;component/Assets/sort-toggle-icon.svg"
+        [IconAssetDashboard] = "/Assets/dashboard-home-icon.svg",
+        [IconAssetRefresh] = "/Assets/refresh-update-icon.svg",
+        [IconAssetSync] = "/Assets/sync-icon.svg",
+        [IconAssetBackup] = "/Assets/data-update-icon.svg",
+        [IconAssetBackups] = "/Assets/data-update-icon.svg",
+        [IconAssetUpdater] = "/Assets/sync-icon.svg",
+        [IconAssetInfo] = "/Assets/info-notepad-icon.svg",
+        [IconAssetExit] = "/Assets/power-off-icon.svg",
+        [IconAssetInstalled] = "/Assets/checked-shield-icon.svg",
+        [IconAssetTeamSpeak] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakActive] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakInactive] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetSort] = "/Assets/sort-toggle-icon.svg"
     };
 
     internal static bool TryGetAssetPath(string assetKey, out string path) => AssetPaths.TryGetValue(assetKey, out path!);
