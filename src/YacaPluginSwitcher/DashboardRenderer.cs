@@ -113,15 +113,16 @@ public partial class MainWindow
         Grid.SetRow(content, 0);
         header.Children.Add(content);
 
-        header.Children.Add(new Border
+        var separator = new Border
         {
-            Grid.Row = 1,
             Height = 1,
             Background = brush,
             Opacity = 0.65,
             Margin = new Thickness(0, 7, 0, 0),
             HorizontalAlignment = HorizontalAlignment.Stretch
-        });
+        };
+        Grid.SetRow(separator, 1);
+        header.Children.Add(separator);
 
         return header;
     }
