@@ -11,6 +11,6 @@ public sealed record YacaPluginInfo(
     string? ValidationMessage = null)
 {
     public string DisplayName => Build.HasValue
-        ? $"YACA {Version} (Build: {Build.Value})"
+        ? $"YACA {Version} - (Build-{Build.Value})"
         : $"YACA {Version}";
 }
