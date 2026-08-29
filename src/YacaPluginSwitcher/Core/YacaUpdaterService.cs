@@ -16,7 +16,7 @@ public sealed class YacaUpdaterService
     private readonly YacaService _service;
 
     public YacaUpdaterService(YacaService service) => _service = service;
-    public string DownloadDirectory => Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory, "plugins_download");
+    public static string DownloadDirectory => Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory, "plugins_download");
 
     public Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
     {
@@ -61,7 +61,7 @@ public sealed class YacaUpdaterService
             try
             {
                 progress?.Report(new(version, 0, null, "Download wird vorbereitet", false, false, null));
-                using var response = await http.GetAsync(string.Format(CdnBase, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var response = await http.GetAsync(string.Format(System.Globalization.CultureInfo.InvariantCulture, CdnBase, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var total = response.Content.Headers.ContentLength;
                 await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
