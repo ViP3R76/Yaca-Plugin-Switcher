@@ -14,10 +14,11 @@ namespace YacaPluginSwitcher;
 public partial class MainWindow
 {
     private readonly List<TextBlock> _rendererUpdaterSteps = [];
-    private StackPanel? _rendererUpdaterStepPanel;
-    private bool _rendererInitialized;
-    private bool _rendererStatusHooked;
     private readonly HashSet<UIElement> _rendererHoverHooks = [];
+    private StackPanel? _rendererUpdaterStepPanel;
+    private TextBlock? _rendererTeamSpeakStatusSource;
+    private bool _rendererInitialized;
+    private bool _rendererUpdaterStatusHooked;
 
     protected override void OnContentRendered(EventArgs e)
     {
@@ -32,6 +33,7 @@ public partial class MainWindow
 
     private void ApplyCentralRendererState()
     {
+        EnsureSettingsNavigation();
         ApplyNavigationHoverRules();
         ApplyComboAndChromeHoverRules();
 
@@ -40,6 +42,31 @@ public partial class MainWindow
 
         if (_activePage == "switch")
             ApplySwitchPageRenderer();
+    }
+
+    private void EnsureSettingsNavigation()
+    {
+        if (NavPanel.Children.OfType<Button>().Any(b => string.Equals(b.Tag?.ToString(), "config", StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var infoButton = NavPanel.Children.OfType<Button>().FirstOrDefault(b => string.Equals(b.Tag?.ToString(), "info", StringComparison.OrdinalIgnoreCase));
+        if (infoButton is null) return;
+        var index = NavPanel.Children.IndexOf(infoButton);
+        if (index < 0) return;
+
+        var content = new StackPanel();
+        ConfigureNavContent(content, DashboardIconRegistry.IconAssetSettings, IsGerman ? "Einstellungen" : "Settings");
+        var settingsButton = new Button
+        {
+            Style = (Style)FindResource("NavButtonStyle"),
+            Height = 46,
+            Tag = "config",
+            Content = content,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch
+        };
+        settingsButton.Click += (_, _) => ShowConfig();
+        NavPanel.Children.Insert(index, settingsButton);
+        _navButtons.Add(("config", settingsButton));
     }
 
     private void ApplyNavigationHoverRules()
@@ -116,6 +143,13 @@ public partial class MainWindow
     private void ApplyTeamSpeakVisualState()
     {
         if (_tsStatus is null || _teamSpeakStatusIcon is null) return;
+
+        if (!ReferenceEquals(_rendererTeamSpeakStatusSource, _tsStatus))
+        {
+            _rendererTeamSpeakStatusSource = _tsStatus;
+            var descriptor = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
+            descriptor?.AddValueChanged(_tsStatus, (_, _) => ApplyTeamSpeakVisualState());
+        }
 
         var running = TeamSpeakDetector.IsRunning();
 
@@ -240,9 +274,9 @@ public partial class MainWindow
             parent.Children.Insert(Math.Max(0, progressIndex + 1), _rendererUpdaterStepPanel);
         }
 
-        if (!_rendererStatusHooked)
+        if (!_rendererUpdaterStatusHooked)
         {
-            _rendererStatusHooked = true;
+            _rendererUpdaterStatusHooked = true;
             var descriptor = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
             descriptor?.AddValueChanged(_updaterStatus, (_, _) =>
             {
