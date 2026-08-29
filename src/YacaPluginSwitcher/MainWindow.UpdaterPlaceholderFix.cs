@@ -5,9 +5,16 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    // Kept only for compatibility with the existing dashboard wiring.
-    // The updater will be integrated properly later; there is intentionally
-    // no "Coming Soon" badge or placeholder UI.
+    static MainWindow()
+    {
+        EventManager.RegisterClassHandler(
+            typeof(Border),
+            FrameworkElement.LoadedEvent,
+            new RoutedEventHandler(HideUpdaterPlaceholderBadge));
+    }
+
+    // Compatibility target for the existing dashboard wiring. The updater itself
+    // will be integrated later; no placeholder badge is displayed.
     private void ShowComingSoon()
     {
         ShowError(IsGerman
@@ -15,20 +22,13 @@ public partial class MainWindow
             : "The YACA Updater is not integrated yet.");
     }
 
-    private void RemoveUpdaterPlaceholderBadge()
+    private static void HideUpdaterPlaceholderBadge(object sender, RoutedEventArgs e)
     {
-        foreach (var button in FindVisualButtons(PageHost).ToList())
-        {
-            if (button.Content is not Grid grid) continue;
-            foreach (var child in grid.Children.OfType<Border>().ToList())
-            {
-                if (child.Child is TextBlock text &&
-                    (text.Text.Contains("BALD", StringComparison.OrdinalIgnoreCase) ||
-                     text.Text.Contains("COMING", StringComparison.OrdinalIgnoreCase)))
-                {
-                    grid.Children.Remove(child);
-                }
-            }
-        }
+        if (sender is not Border border || border.Child is not TextBlock text) return;
+        if (!text.Text.Contains("BALD", StringComparison.OrdinalIgnoreCase) &&
+            !text.Text.Contains("COMING", StringComparison.OrdinalIgnoreCase)) return;
+
+        border.Visibility = Visibility.Collapsed;
+        e.Handled = true;
     }
 }
