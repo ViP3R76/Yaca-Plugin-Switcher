@@ -21,6 +21,7 @@ internal static class DashboardIconRegistry
     internal const string IconAssetBackups = "icon_asset_backups";
     internal const string IconAssetUpdater = "icon_asset_updater";
     internal const string IconAssetInfo = "icon_asset_info";
+    internal const string IconAssetSettings = "icon_asset_settings";
     internal const string IconAssetExit = "icon_asset_exit";
     internal const string IconAssetInstalled = "icon_asset_installed";
     internal const string IconAssetTeamSpeak = "icon_asset_teamspeak";
@@ -38,12 +39,13 @@ internal static class DashboardIconRegistry
         [IconAssetBackups] = "/Assets/data-update-icon.svg",
         [IconAssetUpdater] = "/Assets/sync-icon.svg",
         [IconAssetInfo] = "/Assets/info-notepad-icon.svg",
+        [IconAssetSettings] = "/Assets/settings-icon.svg",
         [IconAssetExit] = "/Assets/power-off-icon.svg",
         [IconAssetInstalled] = "/Assets/checked-shield-icon.svg",
-        [IconAssetTeamSpeak] = "/Assets/ts_stacked_light.svg",
-        [IconAssetTeamSpeakActive] = "/Assets/ts_stacked_light.svg",
-        [IconAssetTeamSpeakInactive] = "/Assets/ts_stacked_light.svg",
-        [IconAssetTeamSpeakStatus] = "/Assets/ts_stacked_light.svg",
+        [IconAssetTeamSpeak] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakActive] = "/Assets/TS_InLine_Light.svg",
+        [IconAssetTeamSpeakInactive] = "/Assets/power-off-icon.svg",
+        [IconAssetTeamSpeakStatus] = "/Assets/TS_InLine_Light.svg",
         [IconAssetSort] = "/Assets/sort-toggle-icon.svg"
     };
 
