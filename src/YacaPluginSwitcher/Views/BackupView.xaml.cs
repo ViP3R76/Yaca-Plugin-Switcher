@@ -42,17 +42,48 @@ public partial class BackupView : UserControl
         PluginDownloadsGrid.ItemsSource = _pluginDownloadRows;
     }
 
+    private void BackupSelection_Changed(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox checkBox && checkBox.IsChecked == true)
+        {
+            foreach (var row in _pluginDownloadRows) row.Selected = false;
+            PluginDownloadsGrid.Items.Refresh();
+        }
+    }
+
+    private void PluginDownloadSelection_Changed(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox checkBox && checkBox.IsChecked == true)
+        {
+            foreach (var row in _rows) row.Selected = false;
+            Grid.Items.Refresh();
+        }
+    }
+
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
 
-        // Explicit selection always takes precedence. A plugin selection cannot delete backups.
-        // If both categories contain selections, both are deleted as the documented exception.
-        if (selectedDownloads.Count > 0 || selectedBackups.Count > 0)
+        // Selection is isolated by category. If both categories are deliberately selected,
+        // the documented exception permits deleting both. A plugin-only selection can never
+        // fall through into the backup deletion path.
+        if (selectedDownloads.Count > 0 && selectedBackups.Count == 0)
         {
-            var deletedDownloads = selectedDownloads.Count > 0 ? DeletePluginDownloads(selectedDownloads, false) : 0;
-            var deletedBackups = selectedBackups.Count > 0 ? DeleteBackups(selectedBackups, false) : 0;
+            DeletePluginDownloads(selectedDownloads);
+            return;
+        }
+
+        if (selectedBackups.Count > 0 && selectedDownloads.Count == 0)
+        {
+            DeleteBackups(selectedBackups);
+            return;
+        }
+
+        if (selectedDownloads.Count > 0 && selectedBackups.Count > 0)
+        {
+            var deletedDownloads = DeletePluginDownloads(selectedDownloads, false);
+            var deletedBackups = DeleteBackups(selectedBackups, false);
             var parts = new List<string>();
             if (deletedBackups > 0) parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
             if (deletedDownloads > 0) parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
