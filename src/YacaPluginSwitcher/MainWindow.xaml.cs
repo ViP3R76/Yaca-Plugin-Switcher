@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using YacaPluginSwitcher.Core;
@@ -51,9 +52,25 @@ public partial class MainWindow : Window
     private void AddNav(string key, string iconKey, string text, Action action)
     {
         var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        if (DashboardIconData.TryGetValue(iconKey, out var data)) content.Children.Add(CreateIcon(data, (Brush)FindResource("ForegroundBrush"), 30, 30, 2.35));
-        content.Children.Add(new TextBlock { Text = text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) });
+        System.Windows.Shapes.Path? icon = null;
+        if (DashboardIconData.TryGetValue(iconKey, out var data))
+        {
+            icon = CreateIcon(data, (Brush)FindResource("ForegroundBrush"), 30, 30, iconKey.Equals("switch", StringComparison.OrdinalIgnoreCase) ? 4.0 : 2.35);
+            content.Children.Add(icon);
+        }
+        var label = new TextBlock { Text = text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) };
+        content.Children.Add(label);
         var button = new Button { Style = (Style)FindResource("NavButtonStyle"), Height = 46, Tag = key, Content = content };
+
+        var foregroundBinding = new Binding(nameof(Button.Foreground))
+        {
+            RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
+            Mode = BindingMode.OneWay
+        };
+        label.SetBinding(TextBlock.ForegroundProperty, foregroundBinding);
+        if (icon is not null)
+            icon.SetBinding(System.Windows.Shapes.Path.StrokeProperty, foregroundBinding);
+
         button.Click += (_, _) => action();
         NavPanel.Children.Add(button); _navButtons.Add((key, button));
     }
@@ -109,7 +126,7 @@ public partial class MainWindow : Window
             _tsDescription!.Text = running ? (IsGerman ? "TeamSpeak 3 ist aktiv. Für einen sicheren Wechsel bitte zuerst schließen." : "TeamSpeak 3 is active. Close it before switching.") : (IsGerman ? "TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich." : "TeamSpeak 3 is not active.\nSwitching is ready.");
             _tsClose!.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
             var backup = _service.Backups.ListBackups().FirstOrDefault();
-            _backupSummary!.Text = backup is null ? Texts.NoBackups : $"{backup.Timestamp:dd.MM.yyyy HH:mm}\n{backup.DisplayName}  •  {backup.FileSize / 1024d / 1024d:0.00} MB\nDatei  {backup.FileName}";
+            UpdateBackupSummary(backup);
             RenderVersionList(current);
             if (_pageStatus is not null) _pageStatus.Text = string.IsNullOrWhiteSpace(notice) ? (running ? Texts.TeamspeakRunning : Texts.TeamspeakStopped) : notice;
         }
@@ -157,7 +174,7 @@ public partial class MainWindow : Window
     private void CreateBackupFromDashboard()
     {
         var text = Texts; if (TeamSpeakDetector.IsRunning() && _service.Settings.WarnIfTeamSpeakRunning && MessageBox.Show(text.TeamspeakRunningMessage, text.TeamspeakRunningTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-        try { var current = _service.DetectCurrent(); if (current is null) { ShowError(text.NotInstalled); return; } if (_service.Backups.CreateBackup(_service.TargetFile, current) is null) { ShowError(text.ErrorUnexpected); return; } _service.Backups.Trim(_service.Settings.MaxBackups); RefreshHome(); FlashElement(_backupCard); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException) { _service.Logger.Error($"Dashboard backup failed: {ex}"); ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected)); }
+        try { var current = _service.DetectCurrent(); if (current is null) { ShowError(text.NotInstalled); return; } if (_service.Backups.CreateBackup(_service.TargetFile, current, automatic: false) is null) { ShowError(text.ErrorUnexpected); return; } _service.Backups.Trim(_service.Settings.MaxBackups); RefreshHome(); FlashElement(_backupCard); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException) { _service.Logger.Error($"Dashboard backup failed: {ex}"); ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected)); }
     }
 
     private void CloseTeamSpeak()
