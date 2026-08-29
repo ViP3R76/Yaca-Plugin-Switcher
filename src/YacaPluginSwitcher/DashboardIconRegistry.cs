@@ -70,6 +70,15 @@ internal static class DashboardIconRegistry
         };
     }
 
+    internal static void SetAsset(Image icon, string assetKey)
+    {
+        if (icon is not SvgIcon svgIcon || !TryGetAssetPath(assetKey, out var path))
+            return;
+
+        svgIcon.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+        svgIcon.Tag = assetKey;
+    }
+
     internal static void SetFill(Image icon, Brush fill)
     {
         if (icon is SvgIcon svgIcon)
