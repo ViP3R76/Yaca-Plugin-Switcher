@@ -29,6 +29,6 @@ public partial class MainWindow
             _teamSpeakStatusIcon,
             running
                 ? (Brush)FindResource("ErrorBrush")
-                : (Brush)FindResource("GoldBrush"));
+                : (Brush)FindResource("SuccessBrush"));
     }
 }
