@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace YacaPluginSwitcher;
 
@@ -11,6 +12,7 @@ public partial class MainWindow
 {
     private readonly HashSet<Button> _uiFixNavigationButtons = [];
     private Image? _teamSpeakStatusIcon;
+    private DispatcherTimer? _teamSpeakStatusTimer;
     private bool _uiFixesHooked;
 
     protected override void OnInitialized(EventArgs e)
@@ -20,12 +22,24 @@ public partial class MainWindow
             return;
 
         _uiFixesHooked = true;
-        Loaded += (_, _) =>
+        Loaded += UiFixes_Loaded;
+    }
+
+    private void UiFixes_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (_teamSpeakStatusTimer is null)
         {
             LanguageCombo.SelectionChanged += UiFixes_LanguageChanged;
-            ApplyNavigationUiFixes();
-            ApplyTeamSpeakStatusUiFix();
-        };
+            _teamSpeakStatusTimer = new DispatcherTimer(DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+            _teamSpeakStatusTimer.Tick += (_, _) => ApplyTeamSpeakStatusUiFix();
+            _teamSpeakStatusTimer.Start();
+        }
+
+        ApplyNavigationUiFixes();
+        ApplyTeamSpeakStatusUiFix();
     }
 
     private void UiFixes_LanguageChanged(object sender, SelectionChangedEventArgs e)
@@ -59,8 +73,8 @@ public partial class MainWindow
             }
         }
 
-        // Exit uses the exact same content renderer and dimensions as the
-        // normal navigation buttons.
+        // Exit follows exactly the same content renderer as every other
+        // navigation entry: same icon size, text spacing and vertical center.
         ConfigureNavContent(ExitNavContent, DashboardIconRegistry.IconAssetExit,
             IsGerman ? "Beenden" : "Exit");
     }
