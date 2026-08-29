@@ -98,7 +98,7 @@ public partial class MainWindow
 
     private void ApplyReferenceTileStyles()
     {
-        var referenceStyle = (Style)FindResource("ReferenceTileButtonStyle");
+        var referenceStyle = (Style)FindResource("TileButtonStyle");
         var referenceTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "YACA WECHSELN",
