@@ -18,43 +18,27 @@ public partial class BackupView : UserControl
 
     public BackupView(YacaService service, MainWindow owner)
     {
-        _service = service;
-        _owner = owner;
-        InitializeComponent();
-        LoadBackups();
-        LoadPluginDownloads();
+        _service = service; _owner = owner; InitializeComponent(); LoadBackups(); LoadPluginDownloads();
     }
 
-    private bool SelectiveDeletionEnabled =>
-        _service.Settings.ExpertSettings && _service.Settings.SelectableBackupsForDeletion;
+    private bool SelectiveDeletionEnabled => _service.Settings.ExpertSettings && _service.Settings.SelectableBackupsForDeletion;
 
     private void LoadBackups()
     {
-        TitleText.Text = Texts.BackupTitle;
-        _rows.Clear();
-        var backups = _service.Backups.ListBackups();
-        foreach (var backup in backups)
-            _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
-
+        TitleText.Text = Texts.BackupTitle; _rows.Clear();
+        foreach (var backup in _service.Backups.ListBackups()) _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
         Grid.ItemsSource = _rows;
         BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
         BackupCard.Height = 54 + Math.Max(1, _service.Settings.MaxBackups) * 44;
-        DeleteButton.Visibility = Visibility.Visible;
-        DeleteButton.Content = "LÖSCHEN";
+        DeleteButton.Visibility = Visibility.Visible; DeleteButton.Content = "LÖSCHEN";
     }
 
     private void LoadPluginDownloads()
     {
-        var enabled = _service.Settings.KeepYacaPluginDownloads;
-        PluginDownloadsCard.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        var enabled = _service.Settings.KeepYacaPluginDownloads; PluginDownloadsCard.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
         if (!enabled) return;
-
-        PluginDownloadsTitle.Text = IsGerman() ? "YACA Plugin Downloads" : "YACA Plugin Downloads";
-        _pluginDownloadRows.Clear();
-        Directory.CreateDirectory(PluginDownloadDirectory);
-        foreach (var file in Directory.EnumerateFiles(PluginDownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
-                     .OrderByDescending(File.GetLastWriteTime))
-            _pluginDownloadRows.Add(new PluginDownloadRow(file));
+        PluginDownloadsTitle.Text = "YACA Plugin Downloads"; _pluginDownloadRows.Clear(); Directory.CreateDirectory(PluginDownloadDirectory);
+        foreach (var file in Directory.EnumerateFiles(PluginDownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly).OrderByDescending(File.GetLastWriteTime)) _pluginDownloadRows.Add(new PluginDownloadRow(file));
         PluginDownloadsGrid.ItemsSource = _pluginDownloadRows;
     }
 
@@ -63,8 +47,8 @@ public partial class BackupView : UserControl
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
 
-        // Selection always wins over the global backup deletion mode. This prevents
-        // selecting a plugin download from accidentally deleting backups.
+        // Explicit selection always takes precedence. A plugin selection cannot delete backups.
+        // If both categories contain selections, both are deleted as the documented exception.
         if (selectedDownloads.Count > 0 || selectedBackups.Count > 0)
         {
             var deletedDownloads = selectedDownloads.Count > 0 ? DeletePluginDownloads(selectedDownloads, false) : 0;
@@ -72,25 +56,16 @@ public partial class BackupView : UserControl
             var parts = new List<string>();
             if (deletedBackups > 0) parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
             if (deletedDownloads > 0) parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
-            SetFooter(parts.Count > 0
-                ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.")
-                : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."),
-                parts.Count > 0);
+            SetFooter(parts.Count > 0 ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.") : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."), parts.Count > 0);
             return;
         }
 
         if (!SelectiveDeletionEnabled)
         {
             var allBackups = _rows.Select(row => row.Info).ToList();
-            if (allBackups.Count == 0)
-            {
-                SetFooter(IsGerman() ? "Keine Backups vorhanden." : "No backups available.", false);
-                return;
-            }
-            DeleteBackups(allBackups);
-            return;
+            if (allBackups.Count == 0) { SetFooter(IsGerman() ? "Keine Backups vorhanden." : "No backups available.", false); return; }
+            DeleteBackups(allBackups); return;
         }
-
         SetFooter(IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.", false);
     }
 
@@ -98,77 +73,53 @@ public partial class BackupView : UserControl
     {
         try
         {
-            _service.Backups.DeleteBackups(backups);
-            LoadBackups();
-            if (updateFooter)
-                SetFooter(IsGerman() ? $"{backups.Count} Backup(s) wurden gelöscht." : $"{backups.Count} backup(s) deleted.", true);
+            _service.Backups.DeleteBackups(backups); LoadBackups();
+            if (updateFooter) SetFooter(IsGerman() ? $"{backups.Count} Backup(s) wurden gelöscht." : $"{backups.Count} backup(s) deleted.", true);
             return backups.Count;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or YacaOperationException)
         {
-            _service.Logger.Error($"Backup deletion failed: {ex}");
-            if (updateFooter) SetFooter(Localization.GetErrorMessage(ex, Texts, Texts.ErrorUnexpected), false);
-            return 0;
+            _service.Logger.Error($"Backup deletion failed: {ex}"); if (updateFooter) SetFooter(Localization.GetErrorMessage(ex, Texts, Texts.ErrorUnexpected), false); return 0;
         }
     }
 
-    private int DeletePluginDownloads(IReadOnlyList<PluginDownloadRow> downloads, bool updateFooter = true)
+    private int DeletePluginDownloads(List<PluginDownloadRow> downloads, bool updateFooter = true)
     {
         var deleted = 0;
         foreach (var row in downloads)
         {
-            try
-            {
-                if (File.Exists(row.FilePath)) { File.Delete(row.FilePath); deleted++; }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                _service.Logger.Error($"Plugin download deletion failed: {ex}");
-            }
+            try { if (File.Exists(row.FilePath)) { File.Delete(row.FilePath); deleted++; } }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _service.Logger.Error($"Plugin download deletion failed: {ex}"); }
         }
         LoadPluginDownloads();
-        if (updateFooter)
-            SetFooter(IsGerman() ? $"{deleted} Plugin-Download(s) wurden gelöscht." : $"{deleted} plugin download(s) deleted.", deleted > 0);
+        if (updateFooter) SetFooter(IsGerman() ? $"{deleted} Plugin-Download(s) wurden gelöscht." : $"{deleted} plugin download(s) deleted.", deleted > 0);
         return deleted;
     }
 
     private void Restore_Click(object sender, RoutedEventArgs e)
     {
-        if (Grid.SelectedItem is not BackupRow row)
-        {
-            SetFooter(IsGerman() ? "Bitte ein Backup auswählen." : "Please select a backup.", false);
-            return;
-        }
-
+        if (Grid.SelectedItem is not BackupRow row) { SetFooter(IsGerman() ? "Bitte ein Backup auswählen." : "Please select a backup.", false); return; }
         var text = Texts;
-        if (TeamSpeakDetector.IsRunning())
-        {
-            SetFooter(text.BackupRunningMessage, false);
-            return;
-        }
-
+        if (TeamSpeakDetector.IsRunning()) { SetFooter(text.BackupRunningMessage, false); return; }
         try
         {
             var current = _service.DetectCurrent();
-            if (current is not null && _service.Backups.CreateBackup(_service.TargetFile, current) is null)
-                throw new InvalidOperationException(text.BackupCreatedBeforeRestoreFailed);
-
+            if (current is not null && _service.Backups.CreateBackup(_service.TargetFile, current) is null) throw new InvalidOperationException(text.BackupCreatedBeforeRestoreFailed);
             _service.Backups.Restore(row.Info, _service.TargetFile);
             SetFooter(IsGerman() ? "Backup wurde erfolgreich wiederhergestellt." : "Backup was restored successfully.", true);
-            // Stay on the backup manager. Refresh the displayed rows without navigation.
-            LoadBackups();
-            LoadPluginDownloads();
+            LoadBackups(); LoadPluginDownloads();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or YacaOperationException)
         {
-            _service.Logger.Error($"Backup restore failed: {ex}");
-            SetFooter(Localization.GetErrorMessage(ex, text, text.RestoreFailed), false);
+            _service.Logger.Error($"Backup restore failed: {ex}"); SetFooter(Localization.GetErrorMessage(ex, text, text.RestoreFailed), false);
         }
     }
 
     private void SetFooter(string message, bool success)
     {
-        _owner.SetStatus(message, success);
+        var footer = _owner.FindName("GlobalFooterStatusText") as TextBlock;
+        if (footer is null) return;
+        footer.Text = message; footer.Foreground = (Brush)_owner.FindResource(success ? "SuccessBrush" : "ForegroundBrush"); footer.FontWeight = success ? FontWeights.Bold : FontWeights.Normal;
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => _owner.ReturnHome();
@@ -195,17 +146,7 @@ public partial class BackupView : UserControl
         public long FileSize { get; }
         public string FileSizeDisplay => $"{FileSize / 1024d / 1024d:0.00} MB";
         public bool Selected { get; set; }
-
-        public PluginDownloadRow(string filePath)
-        {
-            FilePath = filePath; FileName = Path.GetFileName(filePath); Version = ExtractVersion(FileName) ?? "—"; Timestamp = File.GetLastWriteTime(filePath); FileSize = new FileInfo(filePath).Length;
-        }
-
-        private static string? ExtractVersion(string fileName)
-        {
-            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (!match.Success || match.Groups[1].Value.Length != 3) return null;
-            var digits = match.Groups[1].Value; return $"{digits[0]}.{digits[1]}.{digits[2]}";
-        }
+        public PluginDownloadRow(string filePath) { FilePath = filePath; FileName = Path.GetFileName(filePath); Version = ExtractVersion(FileName) ?? "—"; Timestamp = File.GetLastWriteTime(filePath); FileSize = new FileInfo(filePath).Length; }
+        private static string? ExtractVersion(string fileName) { var match = System.Text.RegularExpressions.Regex.Match(fileName, @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin", System.Text.RegularExpressions.RegexOptions.IgnoreCase); if (!match.Success || match.Groups[1].Value.Length != 3) return null; var digits = match.Groups[1].Value; return $"{digits[0]}.{digits[1]}.{digits[2]}"; }
     }
 }
