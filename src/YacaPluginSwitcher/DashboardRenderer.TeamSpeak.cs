@@ -7,10 +7,6 @@ public partial class MainWindow
 {
     private Image? _teamSpeakStatusIcon;
 
-    /// <summary>
-    /// Renderer-owned TeamSpeak status update. The behavior layer only signals
-    /// status changes; asset selection and visual state remain in the renderer.
-    /// </summary>
     private void UpdateTeamSpeakStatusIcon()
     {
         if (_teamSpeakStatusIcon is null || _tsStatus is null)
@@ -30,5 +26,9 @@ public partial class MainWindow
             running
                 ? (Brush)FindResource("ErrorBrush")
                 : (Brush)FindResource("SuccessBrush"));
+
+        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
+        _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
+        _teamSpeakStatusIcon.Margin = new Thickness(17, 0, 0, 0);
     }
 }
