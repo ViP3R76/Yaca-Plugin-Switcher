@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         AddNav("backups", "backups", IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
         NavPanel.Children.Add(new Separator { Margin = new Thickness(10, 12, 0, 12), Background = (Brush)FindResource("AccentSoftBrush") });
         AddNav("info", "info", IsGerman ? "Info & Links" : "Info & Links", ShowInfo);
+        if (ExitNavText is not null) ExitNavText.Text = IsGerman ? "Beenden" : "Exit";
     }
 
     private void AddNav(string key, string iconKey, string text, Action action)
@@ -70,7 +71,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void LoadLanguageSelector() { LanguageCombo.Items.Clear(); LanguageCombo.Items.Add(Texts.LanguageGerman); LanguageCombo.Items.Add(Texts.LanguageEnglish); LanguageCombo.SelectedIndex = IsGerman ? 0 : 1; }
+    private void LoadLanguageSelector() { LanguageCombo.Items.Clear(); LanguageCombo.Items.Add(Texts.LanguageGerman); LanguageCombo.Items.Add(Texts.LanguageEnglish); LanguageCombo.SelectedIndex = IsGerman ? 0 : 1; if (ExitNavText is not null) ExitNavText.Text = IsGerman ? "Beenden" : "Exit"; }
     private void LanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!IsInitialized || LanguageCombo.SelectedIndex < 0) return; var language = LanguageCombo.SelectedIndex == 0 ? Localization.German : Localization.English; if (string.Equals(Localization.Normalize(_service.Settings.Language), language, StringComparison.OrdinalIgnoreCase)) return; _service.Settings.Language = language; _service.Settings.Save(); BuildNavigation(); LoadLanguageSelector(); ShowCurrentPageAfterLanguageChange(); }
     private void ShowCurrentPageAfterLanguageChange() { switch (_activePage) { case "switch": ShowSwitchPage(); break; case "backups": ShowBackups(); break; case "config": ShowConfig(); break; case "info": ShowInfo(); break; default: ShowHome(); break; } }
 
@@ -132,10 +133,8 @@ public partial class MainWindow : Window
     private void ShowPageStatus(string message, bool success) { if (_pageStatus is null) { ShowSwitchPage(message); return; } _pageStatus.Text = message; _pageStatus.Foreground = (Brush)FindResource(success ? "SuccessBrush" : "ForegroundBrush"); _pageStatusBorder!.BorderBrush = (Brush)FindResource(success ? "SuccessBrush" : "BorderBrush"); }
     private void FlashElement(Border? element) { if (element is null) return; _flashTimer?.Stop(); var original = element.BorderBrush; element.BorderBrush = (Brush)FindResource("GoldBrush"); _flashTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(650) }; _flashTimer.Tick += (_, _) => { element.BorderBrush = original; _flashTimer!.Stop(); }; _flashTimer.Start(); }
     private void ShowError(string message) { if (_activePage != "home" && _pageStatus is not null) { ShowPageStatus(message, false); return; } MessageBox.Show(message, Texts.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error); }
-    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { if (FindVisualParent<Button>(e.OriginalSource as DependencyObject) is not null) return; if (e.ClickCount == 2) { ToggleMaximize(); return; } if (e.ChangedButton == MouseButton.Left && WindowState == WindowState.Normal) { try { DragMove(); } catch (InvalidOperationException) { } } }
-    private void ToggleMaximize() => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { if (e.ClickCount == 2) { if (WindowState == WindowState.Maximized) WindowState = WindowState.Normal; else WindowState = WindowState.Maximized; return; } if (e.ChangedButton == MouseButton.Left) DragMove(); }
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-    private void Maximize_Click(object sender, RoutedEventArgs e) => ToggleMaximize();
+    private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
-    private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject { while (child is not null) { if (child is T match) return match; child = VisualTreeHelper.GetParent(child); } return null; }
 }
