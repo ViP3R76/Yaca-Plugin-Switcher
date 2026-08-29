@@ -81,14 +81,15 @@ public partial class MainWindow
 
             if (string.Equals(button.Tag?.ToString(), "updater", StringComparison.OrdinalIgnoreCase))
             {
-                button.Click += (_, _) =>
+                button.PreviewMouseLeftButtonDown += (_, _) =>
                 {
                     var alreadyOnUpdaterPage = _activePage == "switch";
-                    ShowSwitchPage(
-                        alreadyOnUpdaterPage
-                            ? null
-                            : (IsGerman ? "YACA Updater: Download-Bereich geöffnet." : "YACA Updater: download area opened."),
-                        "updater");
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        SetActiveNav("updater");
+                        if (alreadyOnUpdaterPage)
+                            SetGlobalStatus(IsGerman ? "Bereit." : "Ready.");
+                    }), System.Windows.Threading.DispatcherPriority.Background);
                 };
             }
 
