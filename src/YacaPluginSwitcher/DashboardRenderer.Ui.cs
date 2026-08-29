@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using SharpVectors.Converters;
 
 namespace YacaPluginSwitcher;
 
@@ -18,7 +17,6 @@ public partial class MainWindow
     private StackPanel? _rendererUpdaterStepPanel;
     private bool _rendererInitialized;
     private bool _rendererStatusHooked;
-    private bool _rendererPageHooked;
     private readonly HashSet<UIElement> _rendererHoverHooks = [];
 
     protected override void OnContentRendered(EventArgs e)
@@ -48,18 +46,9 @@ public partial class MainWindow
     {
         foreach (var button in NavPanel.Children.OfType<Button>())
         {
-            if (!_rendererHoverHooks.Add(button))
-            {
-                continue;
-            }
-
+            if (!_rendererHoverHooks.Add(button)) continue;
             button.MouseEnter += (_, _) => SetNavigationHover(button, true);
             button.MouseLeave += (_, _) => SetNavigationHover(button, false);
-        }
-
-        if (!_rendererHoverHooks.Contains(ExitNavContent))
-        {
-            _rendererHoverHooks.Add(ExitNavContent);
         }
     }
 
@@ -98,9 +87,7 @@ public partial class MainWindow
         {
             if (button.Style != FindResource("ChromeButtonStyle") && button.Style != FindResource("ChromeCloseButtonStyle"))
                 continue;
-
-            if (!_rendererHoverHooks.Add(button))
-                continue;
+            if (!_rendererHoverHooks.Add(button)) continue;
 
             button.MouseEnter += (_, _) =>
             {
@@ -128,12 +115,10 @@ public partial class MainWindow
 
     private void ApplyTeamSpeakVisualState()
     {
-        if (_tsStatus is null || _teamSpeakStatusIcon is null)
-            return;
+        if (_tsStatus is null || _teamSpeakStatusIcon is null) return;
 
         var running = TeamSpeakDetector.IsRunning();
 
-        // Only the icon is left aligned. The status text itself remains centered.
         if (_tsStatus.Parent is StackPanel textPanel)
         {
             textPanel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -148,13 +133,21 @@ public partial class MainWindow
 
         _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left;
         _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
-        DashboardIconRegistry.SetAsset(
-            _teamSpeakStatusIcon,
-            running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped);
+        var desiredAsset = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
 
-        // Status SVGs are pre-coloured assets. Do not apply SvgIcon.Fill here,
-        // otherwise both checkmarks become the same colour.
-        _teamSpeakStatusIcon is SvgIcon svg ? svg.Fill = null! : null;
+        if (!string.Equals(_teamSpeakStatusIcon.Tag as string, desiredAsset, StringComparison.OrdinalIgnoreCase))
+        {
+            var natural = DashboardIconRegistry.CreateNaturalIcon(desiredAsset, 44, 44);
+            natural.HorizontalAlignment = HorizontalAlignment.Left;
+            natural.VerticalAlignment = VerticalAlignment.Center;
+            if (_teamSpeakStatusIcon.Parent is Panel parent && parent.Children.IndexOf(_teamSpeakStatusIcon) >= 0)
+            {
+                var index = parent.Children.IndexOf(_teamSpeakStatusIcon);
+                parent.Children.RemoveAt(index);
+                parent.Children.Insert(index, natural);
+                _teamSpeakStatusIcon = natural;
+            }
+        }
     }
 
     private void ApplySwitchPageRenderer()
@@ -178,12 +171,13 @@ public partial class MainWindow
 
     private void ApplyUpdaterActionButtonStyle()
     {
-        if (PageHost.Content is not Grid root)
-            return;
+        if (PageHost.Content is not Grid root) return;
 
         foreach (var button in FindVisualChildren<Button>(root))
         {
-            if (button.Content is not string text || !text.Contains("YACA UPDATES", StringComparison.OrdinalIgnoreCase) && !text.Contains("CHECK FOR YACA", StringComparison.OrdinalIgnoreCase))
+            if (button.Content is not string text ||
+                (!text.Contains("YACA UPDATES", StringComparison.OrdinalIgnoreCase) &&
+                 !text.Contains("CHECK FOR YACA", StringComparison.OrdinalIgnoreCase)))
                 continue;
 
             button.Background = (Brush)FindResource("GoldBrush");
@@ -263,8 +257,7 @@ public partial class MainWindow
 
     private void ApplyUpdaterStatusVisibility()
     {
-        if (_rendererUpdaterStepPanel is null || _updaterStatus is null)
-            return;
+        if (_rendererUpdaterStepPanel is null || _updaterStatus is null) return;
 
         var status = _updaterStatus.Text?.Trim() ?? string.Empty;
         var active = status.Length > 0 &&
@@ -277,8 +270,7 @@ public partial class MainWindow
 
     private void UpdateUpdaterSteps(string status)
     {
-        if (_rendererUpdaterSteps.Count == 0)
-            return;
+        if (_rendererUpdaterSteps.Count == 0) return;
 
         var current = status switch
         {
@@ -324,10 +316,7 @@ public partial class MainWindow
 
     private void SuppressUpdaterFooterWhenAlreadyOnUpdaterPage()
     {
-        if (_activePage != "switch")
-            return;
-
-        // The updater is already visible. Do not duplicate its navigation message in the footer.
+        if (_activePage != "switch") return;
         if (GlobalFooterStatusText.Text.Contains("YACA Updater", StringComparison.OrdinalIgnoreCase))
             SetGlobalStatus(IsGerman ? "Bereit." : "Ready.");
     }
@@ -337,11 +326,9 @@ public partial class MainWindow
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T typed)
-                return typed;
+            if (child is T typed) return typed;
             var nested = FindVisualChild<T>(child);
-            if (nested is not null)
-                return nested;
+            if (nested is not null) return nested;
         }
         return null;
     }
@@ -351,11 +338,8 @@ public partial class MainWindow
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T typed)
-                yield return typed;
-
-            foreach (var nested in FindVisualChildren<T>(child))
-                yield return nested;
+            if (child is T typed) yield return typed;
+            foreach (var nested in FindVisualChildren<T>(child)) yield return nested;
         }
     }
 }
