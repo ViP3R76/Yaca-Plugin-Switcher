@@ -9,5 +9,6 @@ public sealed record BackupInfo(
     string Sha256)
 {
     public string DisplayName => SourceDisplayName;
+    public long? SourceBuild { get; init; }
     public bool IsAutomatic { get; init; }
 }
