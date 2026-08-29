@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
@@ -18,7 +19,7 @@ public sealed class YacaUpdaterService
     public YacaUpdaterService(YacaService service) => _service = service;
     public static string DownloadDirectory => Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory, "plugins_download");
 
-    public Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
+    public static Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
         IReadOnlyList<(string Version, string FileName, long Size)> result = Directory.EnumerateFiles(DownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
@@ -61,7 +62,7 @@ public sealed class YacaUpdaterService
             try
             {
                 progress?.Report(new(version, 0, null, "Download wird vorbereitet", false, false, null));
-                using var response = await http.GetAsync(string.Format(System.Globalization.CultureInfo.InvariantCulture, CdnBase, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var response = await http.GetAsync(string.Format(CultureInfo.InvariantCulture, CdnBase, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var total = response.Content.Headers.ContentLength;
                 await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
