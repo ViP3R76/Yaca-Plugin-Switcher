@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace YacaPluginSwitcher;
 
@@ -33,6 +34,15 @@ public partial class MainWindow
         descriptor?.AddValueChanged(window.PageHost, (_, _) =>
             window.Dispatcher.BeginInvoke(new Action(window.ApplyUiCorrections), System.Windows.Threading.DispatcherPriority.ContextIdle));
 
+        var footerDescriptor = DependencyPropertyDescriptor.FromProperty(TextBlock.ForegroundProperty, typeof(TextBlock));
+        footerDescriptor?.AddValueChanged(window.GlobalFooterStatusText, (_, _) =>
+        {
+            var successBrush = window.FindResource("SuccessBrush") as Brush;
+            window.GlobalFooterStatusText.FontWeight = ReferenceEquals(window.GlobalFooterStatusText.Foreground, successBrush)
+                ? FontWeights.Bold
+                : FontWeights.Normal;
+        });
+
         window.ApplyUiCorrections();
     }
 
@@ -46,6 +56,7 @@ public partial class MainWindow
         ApplyTeamSpeakIconCorrection();
         ApplyUpdaterButtonCorrection();
         ApplyUpdaterNavigationCorrection();
+        ApplyBackupCreateCorrection();
         ApplyRefreshIconCorrection();
     }
 
@@ -59,8 +70,8 @@ public partial class MainWindow
         if (branding is null)
             return;
 
-        branding.Width = 200;
-        branding.Height = 200;
+        branding.Width = 230;
+        branding.Height = 230;
         branding.HorizontalAlignment = HorizontalAlignment.Center;
         branding.VerticalAlignment = VerticalAlignment.Center;
     }
@@ -115,31 +126,37 @@ public partial class MainWindow
                 button.Content = label;
             }
 
-            button.Background = (Brush)FindResource("GoldBrush");
-            button.Foreground = Brushes.Black;
-            button.BorderBrush = (Brush)FindResource("GoldBrush");
+            // LayoutUpdated fires continuously. Never blindly restore the normal
+            // state while the mouse is over the button; doing so previously won
+            // against the MouseEnter handler and made the hover state ineffective.
+            var hoverBackground = (Brush)FindResource("ControlHoverBrush");
+            var gold = (Brush)FindResource("GoldBrush");
+            var normalBackground = gold;
+            var normalForeground = Brushes.Black;
+
+            button.Background = button.IsMouseOver ? hoverBackground : normalBackground;
+            button.Foreground = button.IsMouseOver ? gold : normalForeground;
+            button.BorderBrush = gold;
             button.BorderThickness = new Thickness(1);
-            label.Foreground = Brushes.Black;
+            label.Foreground = button.IsMouseOver ? gold : normalForeground;
 
             if (!Equals(button.Tag, "ui-corrected-updater-button"))
             {
                 button.Tag = "ui-corrected-updater-button";
-                button.MouseEnter += (_, _) =>
-                {
-                    button.Background = (Brush)FindResource("ControlHoverBrush");
-                    button.Foreground = (Brush)FindResource("GoldBrush");
-                    button.BorderBrush = (Brush)FindResource("GoldBrush");
-                    label.Foreground = (Brush)FindResource("GoldBrush");
-                };
-                button.MouseLeave += (_, _) =>
-                {
-                    button.Background = (Brush)FindResource("GoldBrush");
-                    button.Foreground = Brushes.Black;
-                    button.BorderBrush = (Brush)FindResource("GoldBrush");
-                    label.Foreground = Brushes.Black;
-                };
+                button.MouseEnter += (_, _) => ApplyUpdaterButtonVisualState(button, label, true);
+                button.MouseLeave += (_, _) => ApplyUpdaterButtonVisualState(button, label, false);
             }
         }
+    }
+
+    private void ApplyUpdaterButtonVisualState(Button button, TextBlock label, bool hover)
+    {
+        var gold = (Brush)FindResource("GoldBrush");
+        button.Background = hover ? (Brush)FindResource("ControlHoverBrush") : gold;
+        button.Foreground = hover ? gold : Brushes.Black;
+        button.BorderBrush = gold;
+        button.BorderThickness = new Thickness(1);
+        label.Foreground = hover ? gold : Brushes.Black;
     }
 
     private void ApplyUpdaterNavigationCorrection()
@@ -160,6 +177,56 @@ public partial class MainWindow
                 }), System.Windows.Threading.DispatcherPriority.ContextIdle);
             }
         }
+    }
+
+    private void ApplyBackupCreateCorrection()
+    {
+        var button = NavPanel.Children.OfType<Button>().FirstOrDefault(b =>
+            string.Equals(b.Tag?.ToString(), "backup-create", StringComparison.OrdinalIgnoreCase));
+        if (button is null || button.Resources.Contains("BackupCreateCorrectionHooked"))
+            return;
+
+        button.Resources["BackupCreateCorrectionHooked"] = true;
+        HashSet<string>? beforeNames = null;
+
+        button.PreviewMouseDown += (_, _) =>
+        {
+            try
+            {
+                beforeNames = _service.Backups.ListBackups()
+                    .Select(b => b.DisplayName)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                beforeNames = null;
+            }
+        };
+
+        button.Click += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+        {
+            try
+            {
+                var after = _service.Backups.ListBackups();
+                var created = beforeNames is not null && after.Any(b => !beforeNames.Contains(b.DisplayName));
+                if (!created)
+                    return;
+
+                GlobalFooterStatusText.Text = IsGerman
+                    ? "Backup wurde erfolgreich erstellt."
+                    : "Backup was created successfully.";
+                GlobalFooterStatusText.Foreground = (Brush)FindResource("SuccessBrush");
+                GlobalFooterStatusText.FontWeight = FontWeights.Bold;
+            }
+            catch
+            {
+                // The original backup handler owns error reporting. Do not replace it here.
+            }
+            finally
+            {
+                beforeNames = null;
+            }
+        }), System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     private void ApplyRefreshIconCorrection()
