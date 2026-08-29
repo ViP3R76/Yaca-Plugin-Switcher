@@ -20,7 +20,7 @@ public sealed class BackupManager
         Directory.CreateDirectory(_backupRoot);
     }
 
-    public BackupInfo? CreateBackup(string targetFile, YacaPluginInfo? current)
+    public BackupInfo? CreateBackup(string targetFile, YacaPluginInfo? current, bool automatic = false)
     {
         if (string.IsNullOrWhiteSpace(targetFile) || !File.Exists(targetFile))
             return null;
@@ -41,14 +41,15 @@ public sealed class BackupManager
             BackupFileName,
             current?.DisplayName ?? "Unbekannte YACA-Version",
             fileInfo.Length,
-            hash);
+            hash)
+        {
+            IsAutomatic = automatic
+        };
 
         var metadataPath = Path.Combine(directory, "backup.json");
-        File.WriteAllText(
-            metadataPath,
-            JsonSerializer.Serialize(info, JsonOptions));
+        File.WriteAllText(metadataPath, JsonSerializer.Serialize(info, JsonOptions));
 
-        _logger.Info($"Backup erstellt: {backupFile}");
+        _logger.Info($"Backup erstellt: {backupFile} ({(automatic ? "automatisch" : "manuell")})");
         return info;
     }
 
@@ -130,7 +131,6 @@ public sealed class BackupManager
             TryDelete(temp);
         }
     }
-
 
     public void DeleteBackups(IEnumerable<BackupInfo> backups)
     {
