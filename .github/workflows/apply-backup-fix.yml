@@ -1,0 +1,93 @@
+name: Apply dashboard backup fix
+
+on:
+  push:
+    branches: [feature/wpf-ui-build]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[skip dashboard fix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch DashboardRenderer
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('src/YacaPluginSwitcher/DashboardRenderer.cs')
+          text = path.read_text(encoding='utf-8')
+          pattern = r'    private void UpdateBackupSummary\(BackupInfo\? backup\)\n    \{.*?\n    \}\n\n    private static Grid CreateBackupFolderIcon'
+          replacement = '''    private void UpdateBackupSummary(BackupInfo? backup)
+    {
+        if (_backupSummary is null) return;
+        _backupSummary.Inlines.Clear();
+        if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
+
+        var versionText = !string.IsNullOrWhiteSpace(backup.SourceVersion)
+            ? $"YACA {backup.SourceVersion}"
+            : backup.DisplayName.Split(" - ", 2, StringSplitOptions.None)[0];
+        var statusText = backup.IsAutomatic
+            ? (IsGerman ? "Automatisch" : "Automatic")
+            : (IsGerman ? "Manuell" : "Manual");
+        var buildText = backup.SourceBuild?.ToString(CultureInfo.InvariantCulture) ?? "—";
+
+        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}")
+        {
+            FontSize = 34,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("GoldBrush")
+        });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run(versionText)
+        {
+            FontSize = 20,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("ForegroundBrush")
+        });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run("────────────────────────")
+        {
+            FontSize = 7,
+            Foreground = (Brush)FindResource("BorderBrush")
+        });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"Build: {buildText}  •  {statusText}")
+        {
+            FontSize = 16,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("ForegroundBrush")
+        });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Datei" : "File")}  -  {backup.FileName}")
+        {
+            FontSize = 15,
+            Foreground = (Brush)FindResource("ForegroundBrush")
+        });
+        _backupSummary.Inlines.Add(new LineBreak());
+        _backupSummary.Inlines.Add(new Run($"{(IsGerman ? "Größe" : "Size")}  -  {backup.FileSize / 1024d / 1024d:0.00} MB")
+        {
+            FontSize = 15,
+            Foreground = (Brush)FindResource("ForegroundBrush")
+        });
+    }
+
+    private static Grid CreateBackupFolderIcon'''
+          patched, count = re.subn(pattern, replacement, text, flags=re.S)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one UpdateBackupSummary block, found {count}')
+          path.write_text(patched, encoding='utf-8')
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/YacaPluginSwitcher/DashboardRenderer.cs
+          git diff --cached --quiet || git commit -m "Fix latest backup panel layout [skip dashboard fix]"
+          git push
