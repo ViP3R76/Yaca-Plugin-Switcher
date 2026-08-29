@@ -10,6 +10,7 @@ public partial class MainWindow
     {
         ApplyReferenceNavigationIcons();
         ApplyReferencePanelIcons();
+        ApplyReferenceTileStyles();
     }
 
     private void ApplyReferenceNavigationIcons()
@@ -91,6 +92,20 @@ public partial class MainWindow
             parent.Children.RemoveAt(0);
             parent.Children.Insert(0, icon);
         }
+
+        ApplyReferenceTileStyles();
+    }
+
+    private void ApplyReferenceTileStyles()
+    {
+        var referenceStyle = (Style)FindResource("ReferenceTileButtonStyle");
+        var baseStyle = (Style)FindResource("TileButtonStyle");
+
+        foreach (var button in FindVisualButtons(PageHost).ToList())
+        {
+            if (button.Style == baseStyle && button.ActualHeight >= 180)
+                button.Style = referenceStyle;
+        }
     }
 
     private static System.Windows.Shapes.Path CreateIcon(string data, Brush stroke, double width, double height, double thickness) => new()
@@ -115,6 +130,20 @@ public partial class MainWindow
             if (child is DependencyObject dependency)
             {
                 foreach (var nested in FindVisualTextBlocks(dependency))
+                    yield return nested;
+            }
+        }
+    }
+
+    private static IEnumerable<Button> FindVisualButtons(DependencyObject root)
+    {
+        foreach (var child in LogicalTreeHelper.GetChildren(root))
+        {
+            if (child is Button button)
+                yield return button;
+            if (child is DependencyObject dependency)
+            {
+                foreach (var nested in FindVisualButtons(dependency))
                     yield return nested;
             }
         }
