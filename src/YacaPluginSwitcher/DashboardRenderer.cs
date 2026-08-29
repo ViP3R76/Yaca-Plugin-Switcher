@@ -21,7 +21,7 @@ public partial class MainWindow
     private const double DashboardBadgeFontSize = 14;
     private const double DashboardVersionListFontSize = 17;
     private const double DashboardFooterFontSize = 18;
-    private Button? _versionsFooter;
+    private TextBlock? _versionsFooterText;
 
     private static readonly Dictionary<string, string> DashboardIconData = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -93,13 +93,18 @@ public partial class MainWindow
     {
         var card = CreatePanelCard((Brush)FindResource("BorderBrush")); var panel = new Grid(); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); var header = CreateDashboardHeader("backups", IsGerman ? "VERFÜGBARE YACA-VERSIONEN" : "AVAILABLE YACA VERSIONS"); Grid.SetRow(header, 0); panel.Children.Add(header);
         _versionList = new StackPanel { Margin = new Thickness(6, 10, 6, 8) }; Grid.SetRow(_versionList, 1); panel.Children.Add(_versionList);
-        var footer = new TextBlock { Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, Cursor = System.Windows.Input.Cursors.Hand, Padding = new Thickness(8, 4, 8, 4), Tag = "versions-footer" };
+
+        var footer = new Grid { Margin = new Thickness(6, 0, 6, 2), Cursor = System.Windows.Input.Cursors.Hand, Tag = "versions-footer" };
+        footer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var footerText = new TextBlock { Text = "0", FontSize = DashboardFooterFontSize, Foreground = (Brush)FindResource("AccentBrush"), Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Left, Padding = new Thickness(8, 4, 8, 4), TextWrapping = TextWrapping.NoWrap };
+        Grid.SetColumn(footerText, 0); footer.Children.Add(footerText);
+        var footerArrow = new System.Windows.Shapes.Path { Data = Geometry.Parse("M 2 2 L 8 8 L 2 14"), Stroke = (Brush)FindResource("AccentBrush"), StrokeThickness = 2.2, Fill = Brushes.Transparent, Width = 18, Height = 18, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0), IsHitTestVisible = false };
+        Grid.SetColumn(footerArrow, 1); footer.Children.Add(footerArrow);
         footer.MouseLeftButtonUp += (_, _) => ShowSwitchPage();
         Grid.SetRow(footer, 2); panel.Children.Add(footer); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
-        _versionsFooterText = footer;
+        _versionsFooterText = footerText;
     }
-
-    private TextBlock? _versionsFooterText;
 
     private Grid CreateDashboardHeader(string iconKey, string text, Brush? headerBrush = null)
     {
@@ -152,7 +157,9 @@ public partial class MainWindow
             if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true) { var badge = new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(4), Padding = new Thickness(7, 2, 7, 2), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Child = new TextBlock { Text = IsGerman ? "INSTALLIERT" : "INSTALLED", Foreground = Brushes.Black, FontSize = 10, FontWeight = FontWeights.Bold } }; Grid.SetColumn(badge, 1); grid.Children.Add(badge); }
             row.Child = grid; _versionList.Children.Add(row);
         }
-        if (_versionsFooterText is not null) _versionsFooterText.Text = $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} {(IsGerman ? "Versionen verfügbar – YACA wechseln" : "versions available – switch YACA")}";
+        if (_versionsFooterText is not null) _versionsFooterText.Text = IsGerman
+            ? $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} Version(en) verfügbar"
+            : $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} version(s) available";
     }
 
     private void UpdateBackupSummary(BackupInfo? backup)
