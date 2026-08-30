@@ -35,21 +35,27 @@
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
         </Style>
+        <Style x:Key="BackupSelectionCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CanSelect}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="6,6,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="58" />
+            <RowDefinition Height="1" />
             <RowDefinition Height="*" />
             <RowDefinition Height="58" />
         </Grid.RowDefinitions>
 
-        <!-- Übergeordneter Seitenheader: links Titel, rechts Kapazitätsstatus. -->
+        <!-- Übergeordneter Seitenheader. Die Trennlinie gehört zur Seite und nicht zu einem Sub-Panel. -->
         <Grid Grid.Row="0" Margin="0,0,6,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="1" />
-            </Grid.RowDefinitions>
             <TextBlock Text="BACKUPS VERWALTEN"
                        FontSize="28"
                        FontWeight="SemiBold"
@@ -64,12 +70,13 @@
                        Foreground="{StaticResource AccentBrush}"
                        FontSize="28"
                        FontWeight="SemiBold" />
-            <Border Grid.Row="1"
-                    Background="{StaticResource AccentBrush}"
-                    Opacity="0.65" />
         </Grid>
+        <Border Grid.Row="1"
+                Margin="0,0,6,0"
+                Background="{StaticResource AccentBrush}"
+                Opacity="0.65" />
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition x:Name="BackupPanelRow" Height="Auto" />
                 <RowDefinition Height="10" />
@@ -139,16 +146,13 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  IsEnabled="{Binding CanSelect}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center" />
+                                                  Style="{StaticResource BackupSelectionCheckBoxStyle}" />
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="YACA" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Backup" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <!-- SHA-256 benötigt die volle Hash-Länge ohne Abschneiden. -->
                             <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
@@ -225,16 +229,17 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Datei" Binding="{Binding FileName}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="190" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Buildversion" Binding="{Binding BuildVersion}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </Border>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="6,6,6,0">
+        <Grid Grid.Row="3" Margin="6,6,6,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="Auto" />
