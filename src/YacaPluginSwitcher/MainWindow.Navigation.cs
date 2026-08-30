@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using SharpVectors.Converters;
 
 namespace YacaPluginSwitcher;
 
@@ -51,8 +52,7 @@ public partial class MainWindow
 
     /// <summary>
     /// Erstellt den Inhalt eines Navigationsbuttons.
-    /// Die SVG-Füllfarbe ist direkt an die Foreground-Farbe des Buttons gebunden.
-    /// Dadurch übernimmt das zentrale Navigation-MouseOver automatisch auch das Icon.
+    /// Die SVG-Füllfarbe ist an die Foreground-Farbe des übergeordneten Buttons gebunden.
     /// </summary>
     private static void ConfigureNavContent(StackPanel content, string iconAssetKey, string text, Brush? iconBrush = null)
     {
@@ -65,10 +65,13 @@ public partial class MainWindow
             ?? Brushes.White;
 
         var icon = DashboardIconRegistry.CreateIcon(iconAssetKey, foregroundBrush, 30, 30);
-        icon.SetBinding(System.Windows.Shapes.Shape.FillProperty, new Binding("Foreground")
+        if (icon is SvgIcon svgIcon)
         {
-            RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1)
-        });
+            svgIcon.SetBinding(SvgIcon.FillProperty, new Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1)
+            });
+        }
 
         content.Children.Add(icon);
         content.Children.Add(new TextBlock
