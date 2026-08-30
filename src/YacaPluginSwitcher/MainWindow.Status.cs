@@ -19,31 +19,25 @@ public partial class MainWindow
         GlobalFooterStatusText.FontWeight =
             success ? FontWeights.Bold : FontWeights.Normal;
         GlobalFooterStatusText.TextWrapping = TextWrapping.NoWrap;
+        GlobalFooterStatusText.TextTrimming = TextTrimming.None;
         GlobalFooterStatusText.TextAlignment = TextAlignment.Center;
+        GlobalFooterStatusText.VerticalAlignment = VerticalAlignment.Center;
     }
 
     /// <summary>
-    /// Zeigt nach einem erfolgreichen Pluginwechsel den neuen YACA-Stand an.
+    /// Zeigt einen erfolgreichen Pluginwechsel als eindeutige einzeilige Statusmeldung an.
     /// </summary>
     private void SetPluginSwitchFooterStatus(YacaPluginInfo plugin)
     {
-        if (plugin is null)
-        {
-            return;
-        }
+        ArgumentNullException.ThrowIfNull(plugin);
 
         var build = plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
 
-        GlobalFooterStatusText.Text = IsGerman
-            ? $"Plugin gewechselt auf: Yaca {plugin.Version} Punkt (Build: {build})"
-            : $"Plugin switched to: Yaca {plugin.Version} Point (Build: {build})";
-
-        GlobalFooterStatusText.Foreground =
-            (Brush)FindResource("SuccessBrush");
-        GlobalFooterStatusText.FontWeight = FontWeights.Bold;
-        GlobalFooterStatusText.TextWrapping = TextWrapping.NoWrap;
-        GlobalFooterStatusText.TextTrimming = TextTrimming.None;
-        GlobalFooterStatusText.VerticalAlignment = VerticalAlignment.Center;
+        SetGlobalStatus(
+            IsGerman
+                ? $"Plugin gewechselt auf: Yaca {plugin.Version} Punkt (Build: {build})"
+                : $"Plugin switched to: Yaca {plugin.Version} Point (Build: {build})",
+            success: true);
     }
 
     /// <summary>
