@@ -57,8 +57,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
                     <Grid Background="{TemplateBinding Background}">
-                        <Track x:Name="PART_Track"
-                               IsDirectionReversed="{Binding Orientation, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ScrollBarDirectionConverter}}">
+                        <Track x:Name="PART_Track" IsDirectionReversed="True">
                             <Track.Thumb>
                                 <Thumb Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" />
                             </Track.Thumb>
