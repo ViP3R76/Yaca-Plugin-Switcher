@@ -9,6 +9,7 @@ public partial class MainWindow
 {
     private CheckBox? _updaterSelectAll;
     private Button? _updaterSearchButton;
+    private Button? _updaterDownloadButton;
     private StackPanel? _updaterSelectionList;
     private StackPanel? _updaterSelectionPanel;
 
@@ -82,10 +83,127 @@ public partial class MainWindow
     }
 
     /// <summary>
+    /// Erstellt die kompakte Auswahloberfläche einmalig.
+    /// </summary>
+    private void EnsureUpdaterSelectionControls()
+    {
+        if (_updaterSelectionPanel is not null)
+        {
+            ResolveUpdaterSearchButton();
+            return;
+        }
+
+        if (_updaterStatus?.Parent is not StackPanel parent)
+        {
+            return;
+        }
+
+        _updaterSelectionList = new StackPanel
+        {
+            Margin = new Thickness(6, 2, 6, 2)
+        };
+
+        var versionScroll = new ScrollViewer
+        {
+            Content = _updaterSelectionList,
+            MaxHeight = 118,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = (Brush)FindResource("ControlBrush")
+        };
+
+        _updaterSelectAll = new CheckBox
+        {
+            Content = IsGerman ? "Alle Versionen auswählen" : "Select all versions",
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("GoldBrush"),
+            Margin = new Thickness(4, 4, 4, 5)
+        };
+        _updaterSelectAll.Click += UpdaterSelectAll_Click;
+
+        var downloadButton = new Button
+        {
+            Content = IsGerman ? "AUSGEWÄHLTE HERUNTERLADEN" : "DOWNLOAD SELECTED",
+            Height = 38,
+            Style = (Style)FindResource("NormalActionButtonStyle"),
+            Margin = new Thickness(0, 6, 4, 0)
+        };
+        downloadButton.Click += async (_, _) => await DownloadSelectedUpdaterVersionsAsync();
+        _updaterDownloadButton = downloadButton;
+
+        var cancelButton = new Button
+        {
+            Content = IsGerman ? "ABBRECHEN" : "CANCEL",
+            Height = 38,
+            Style = (Style)FindResource("NormalActionButtonStyle"),
+            Margin = new Thickness(4, 6, 0, 0)
+        };
+        cancelButton.Click += CancelUpdaterSelection_Click;
+
+        var buttonGrid = new Grid();
+        buttonGrid.ColumnDefinitions.Add(new ColumnDefinition());
+        buttonGrid.ColumnDefinitions.Add(new ColumnDefinition());
+        Grid.SetColumn(downloadButton, 0);
+        Grid.SetColumn(cancelButton, 1);
+        buttonGrid.Children.Add(downloadButton);
+        buttonGrid.Children.Add(cancelButton);
+
+        _updaterSelectionPanel = new StackPanel
+        {
+            Visibility = Visibility.Collapsed,
+            Background = (Brush)FindResource("ControlBrush"),
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+
+        _updaterSelectionPanel.Children.Add(
+            new Border
+            {
+                Height = 1,
+                Background = (Brush)FindResource("AccentSoftBrush"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+        _updaterSelectionPanel.Children.Add(
+            new TextBlock
+            {
+                Text = IsGerman ? "DOWNLOAD AUSWAHL" : "DOWNLOAD SELECTION",
+                FontSize = 12,
+                FontWeight = FontWeights.Bold,
+                Foreground = (Brush)FindResource("GoldBrush"),
+                Margin = new Thickness(4, 0, 4, 0)
+            });
+        _updaterSelectionPanel.Children.Add(_updaterSelectAll);
+        _updaterSelectionPanel.Children.Add(versionScroll);
+        _updaterSelectionPanel.Children.Add(buttonGrid);
+
+        parent.Children.Add(_updaterSelectionPanel);
+        ResolveUpdaterSearchButton();
+    }
+
+    /// <summary>
+    /// Ermittelt den zentral gestylten Updateprüfungsbutton der aktuellen Seite.
+    /// </summary>
+    private void ResolveUpdaterSearchButton()
+    {
+        if (PageHost.Content is not Grid root)
+        {
+            return;
+        }
+
+        _updaterSearchButton = FindVisualChildren<Button>(root)
+            .FirstOrDefault(button =>
+                button.Content is string text
+                && (text.Contains("NACH UPDATES SUCHEN", StringComparison.OrdinalIgnoreCase)
+                    || text.Contains("CHECK FOR UPDATES", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
     /// Zeigt die gefundenen fehlenden Versionen zur expliziten Auswahl an.
     /// </summary>
     private void ShowUpdaterSelection(IReadOnlyList<string> versions)
     {
+        EnsureUpdaterSelectionControls();
+
         if (_updaterSelectionPanel is null || _updaterSelectionList is null)
         {
             return;
@@ -113,6 +231,7 @@ public partial class MainWindow
         }
 
         _updaterSelectionPanel.Visibility = Visibility.Visible;
+        ResolveUpdaterSearchButton();
 
         if (_updaterVersion is not null)
         {
@@ -169,6 +288,11 @@ public partial class MainWindow
             _updaterProgress.Value = 0;
         }
 
+        if (_updaterDownloadButton is not null)
+        {
+            _updaterDownloadButton.IsEnabled = false;
+        }
+
         var progress = new Progress<YacaUpdaterProgress>(UpdateUpdaterProgress);
 
         try
@@ -212,6 +336,11 @@ public partial class MainWindow
             if (_updaterSelectionPanel is not null)
             {
                 _updaterSelectionPanel.IsEnabled = true;
+            }
+
+            if (_updaterDownloadButton is not null)
+            {
+                _updaterDownloadButton.IsEnabled = true;
             }
 
             _updaterCts.Dispose();
@@ -301,10 +430,7 @@ public partial class MainWindow
     /// </summary>
     private void ShowUpdaterReadyState()
     {
-        if (_updaterSelectionPanel is not null)
-        {
-            _updaterSelectionPanel.Visibility = Visibility.Collapsed;
-        }
+        HideUpdaterSelection();
 
         if (_updaterProgress is not null)
         {
