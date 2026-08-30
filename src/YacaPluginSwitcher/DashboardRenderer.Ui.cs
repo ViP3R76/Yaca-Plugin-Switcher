@@ -36,6 +36,36 @@ public partial class MainWindow
             ApplyTeamSpeakVisualState();
         if (_activePage == "switch")
             ApplySwitchPageRenderer();
+
+        SquareAllOverviewFrames();
+        Dispatcher.BeginInvoke(new Action(SquareAllOverviewFrames), System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// Erzwingt eine einheitliche, vollständig eckige Rahmenoptik für sämtliche
+    /// Border-Elemente der aktuell dargestellten Übersicht. Das greift auch auf
+    /// Border-Elemente aus ControlTemplates zu, sobald WPF diese visualisiert hat.
+    /// </summary>
+    private void SquareAllOverviewFrames()
+    {
+        if (PageHost.Content is DependencyObject page)
+        {
+            SquareBordersRecursive(page);
+        }
+    }
+
+    private static void SquareBordersRecursive(DependencyObject element)
+    {
+        if (element is Border border)
+        {
+            border.CornerRadius = new CornerRadius(0);
+        }
+
+        var childCount = VisualTreeHelper.GetChildrenCount(element);
+        for (var i = 0; i < childCount; i++)
+        {
+            SquareBordersRecursive(VisualTreeHelper.GetChild(element, i));
+        }
     }
 
     private void EnsureSettingsNavigation()
