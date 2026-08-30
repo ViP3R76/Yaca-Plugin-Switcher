@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -158,7 +159,7 @@ public partial class MainWindow
                 if (beforeNames is not null && after.Any(b => !beforeNames.Contains(b.DisplayName)))
                 {
                     var current = _service.DetectCurrent();
-                    var build = current?.Build?.ToString() ?? "—";
+                    var build = current?.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
                     GlobalFooterStatusText.Text = current is null
                         ? (IsGerman ? "Backup wurde erfolgreich erstellt." : "Backup was created successfully.")
                         : (IsGerman
