@@ -38,9 +38,6 @@ public partial class BackupView : UserControl
         Grid.ItemsSource = _rows;
         BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
 
-        // Der Header besteht aus 38 px, die Trennlinie aus 1 px und der DataGrid-Kopf aus 38 px.
-        // Dazu kommen exakt MaxBackups Datenzeilen mit je 44 px sowie Padding und Border des Panels.
-        // Dadurch wird bei vier Backups Platz für genau vier vollständige Zeilen reserviert.
         var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
         BackupCard.Height = 99 + maximumBackups * 44;
 
@@ -271,6 +268,7 @@ public partial class BackupView : UserControl
         public string FilePath { get; }
         public string FileName { get; }
         public string Version { get; }
+        public string BuildVersion { get; }
         public DateTime Timestamp { get; }
         public long FileSize { get; }
         public string FileSizeDisplay => $"{FileSize / 1024d / 1024d:0.00} MB";
@@ -282,6 +280,7 @@ public partial class BackupView : UserControl
             FilePath = filePath;
             FileName = Path.GetFileName(filePath);
             Version = ExtractVersion(FileName) ?? "—";
+            BuildVersion = ExtractBuildVersion(FileName) ?? "—";
             Timestamp = File.GetLastWriteTime(filePath);
             FileSize = new FileInfo(filePath).Length;
         }
@@ -298,6 +297,16 @@ public partial class BackupView : UserControl
 
             var digits = match.Groups[1].Value;
             return $"{digits[0]}.{digits[1]}.{digits[2]}";
+        }
+
+        private static string? ExtractBuildVersion(string fileName)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(
+                fileName,
+                @"yaca_\d+_(?<build>[^.]+(?:\.[^.]+)*?)\.ts3_plugin$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            return match.Success ? match.Groups["build"].Value : null;
         }
     }
 }
