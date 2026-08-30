@@ -157,7 +157,13 @@ public partial class MainWindow
                 var after = _service.Backups.ListBackups();
                 if (beforeNames is not null && after.Any(b => !beforeNames.Contains(b.DisplayName)))
                 {
-                    GlobalFooterStatusText.Text = IsGerman ? "Backup wurde erfolgreich erstellt." : "Backup was created successfully.";
+                    var current = _service.DetectCurrent();
+                    var build = current?.Build?.ToString() ?? "—";
+                    GlobalFooterStatusText.Text = current is null
+                        ? (IsGerman ? "Backup wurde erfolgreich erstellt." : "Backup was created successfully.")
+                        : (IsGerman
+                            ? $"Backup erstellt: Yaca {current.Version} · Build: {build}"
+                            : $"Backup created: Yaca {current.Version} · Build: {build}");
                     GlobalFooterStatusText.Foreground = (Brush)FindResource("SuccessBrush");
                     GlobalFooterStatusText.FontWeight = FontWeights.Bold;
                 }
