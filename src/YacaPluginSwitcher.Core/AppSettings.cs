@@ -24,6 +24,7 @@ public sealed class AppSettings
     public bool DebugLogging { get; set; }
     public bool SelectableBackupsForDeletion { get; set; }
     public bool KeepYacaPluginDownloads { get; set; }
+    public bool DownloadAllPluginsWithoutPrompt { get; set; }
     public string Language { get; set; } = string.Empty;
 
     [JsonIgnore]
