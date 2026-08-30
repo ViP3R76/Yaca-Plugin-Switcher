@@ -38,9 +38,10 @@ public partial class BackupView : UserControl
         Grid.ItemsSource = _rows;
         BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
 
-        // Das Panel reserviert exakt den Platz für Header, Spaltenkopf und die konfigurierte Anzahl an Backup-Zeilen.
+        // Header 38 px + Spaltenkopf 38 px + konfigurierte Datenzeilen + Border/Padding.
+        // Dadurch werden z. B. bei MaxBackups=4 exakt vier vollständige Zeilen reserviert.
         var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
-        BackupCard.Height = 20 + 38 + 38 + maximumBackups * 44 + 2;
+        BackupCard.Height = 98 + maximumBackups * 44;
 
         DeleteButton.Visibility = Visibility.Visible;
         DeleteButton.Content = "LÖSCHEN";
@@ -245,7 +246,6 @@ public partial class BackupView : UserControl
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => _owner.ReturnHome();
-
     private bool IsGerman() => Localization.Normalize(_service.Settings.Language) == Localization.German;
 
     private sealed class BackupRow
