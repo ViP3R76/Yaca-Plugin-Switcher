@@ -6,6 +6,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
+                <!-- Navigation verwendet einen eigenen Template-Style ohne generischen MouseOver-Rahmen. -->
                 <ResourceDictionary Source="Styles/Navigation.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
