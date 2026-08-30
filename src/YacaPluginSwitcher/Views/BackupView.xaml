@@ -64,7 +64,6 @@
                        Foreground="{StaticResource AccentBrush}"
                        FontSize="28"
                        FontWeight="SemiBold" />
-            <!-- Eigenständige Trennlinie direkt unter dem Seitenheader. -->
             <Border Grid.Row="1"
                     Background="{StaticResource AccentBrush}"
                     Opacity="0.65" />
@@ -77,7 +76,6 @@
                 <RowDefinition x:Name="PluginDownloadsPanelRow" Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Dediziertes Backup-Panel. Die Höhe wird abhängig von MaxBackups gesetzt. -->
             <Border x:Name="BackupCard"
                     Grid.Row="0"
                     Background="{StaticResource SurfaceBrush}"
@@ -150,13 +148,13 @@
                             <DataGridTextColumn Header="YACA" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <!-- SHA-256 benötigt die volle Hash-Länge ohne Abschneiden. -->
                             <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </Border>
 
-            <!-- Bewusste Leerzeile ausschließlich zwischen den beiden dedizierten Panels. -->
             <Border x:Name="PluginDownloadsCard"
                     Grid.Row="2"
                     Background="{StaticResource SurfaceBrush}"
