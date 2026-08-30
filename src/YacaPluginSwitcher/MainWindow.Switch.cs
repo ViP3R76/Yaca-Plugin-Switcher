@@ -44,7 +44,8 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Erstellt das Grundlayout der Wechselansicht mit zwei gleich breiten Spalten.
+    /// Erstellt das Grundlayout der Wechselansicht mit einer linken Gesamtspalte
+    /// und zwei getrennten Bereichen auf der rechten Seite.
     /// </summary>
     private static Grid CreateSwitchPageRoot()
     {
@@ -58,13 +59,18 @@ public partial class MainWindow
         root.ColumnDefinitions.Add(
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
+        root.RowDefinitions.Add(
+            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(
+            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
         return root;
     }
 
     /// <summary>
     /// Erstellt das linke Panel mit der Liste der verfügbaren YACA-Versionen.
-    /// Das StackPanel wird am Panel als Tag weitergegeben, damit die bestehende
-    /// Sortier- und Aktualisierungslogik dieselbe Instanz verwenden kann.
+    /// Das Panel erstreckt sich über beide rechten Bereiche, damit die linke
+    /// Versionsliste die komplette Höhe der Ansicht nutzt.
     /// </summary>
     private Border CreateAvailableVersionsPanel(Grid root)
     {
@@ -112,6 +118,8 @@ public partial class MainWindow
         left.Child = leftPanel;
         left.Tag = list;
         Grid.SetColumn(left, 0);
+        Grid.SetRow(left, 0);
+        Grid.SetRowSpan(left, 2);
         root.Children.Add(left);
 
         return left;
