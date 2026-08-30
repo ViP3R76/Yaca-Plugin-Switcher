@@ -38,10 +38,11 @@ public partial class BackupView : UserControl
         Grid.ItemsSource = _rows;
         BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
 
-        // Header 38 px + Spaltenkopf 38 px + konfigurierte Datenzeilen + Border/Padding.
-        // Dadurch werden z. B. bei MaxBackups=4 exakt vier vollständige Zeilen reserviert.
+        // Der Header besteht aus 38 px, die Trennlinie aus 1 px und der DataGrid-Kopf aus 38 px.
+        // Dazu kommen exakt MaxBackups Datenzeilen mit je 44 px sowie Padding und Border des Panels.
+        // Dadurch wird bei vier Backups Platz für genau vier vollständige Zeilen reserviert.
         var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
-        BackupCard.Height = 98 + maximumBackups * 44;
+        BackupCard.Height = 99 + maximumBackups * 44;
 
         DeleteButton.Visibility = Visibility.Visible;
         DeleteButton.Content = "LÖSCHEN";
