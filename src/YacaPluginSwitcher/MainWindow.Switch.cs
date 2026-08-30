@@ -13,23 +13,67 @@ public partial class MainWindow
 
     /// <summary>
     /// Erstellt die Ansicht zum Wechseln zwischen den verfügbaren YACA-Versionen.
-    /// Beim ersten Aufruf des Verwaltungsbereichs werden bereits gespeicherte
-    /// Plugin-Archive einmalig durch den zentralen Updater verarbeitet.
+    /// Beim ersten Aufruf werden bereits gespeicherte Plugin-Archive einmalig
+    /// durch den zentralen Updater geprüft und bei Bedarf integriert.
     /// </summary>
     private void ShowSwitchPage(string? status = null)
     {
         _activePage = "switch";
         SetActiveNav("switch");
 
-        var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var root = CreateSwitchPageRoot();
 
-        // Linkes Panel: verfügbare YACA-Versionen.
+        var leftPanel = CreateAvailableVersionsPanel(root);
+        var versionList = (StackPanel)leftPanel.Tag!;
+        _ = versionList;
+
+        CreateUpdaterPanel(root);
+        CreateDownloadedFilesPanel(root);
+
+        var current = _service.DetectCurrent();
+        RenderSwitchVersionList(versionList, current);
+        PageHost.Content = root;
+
+        if (status is not null)
+        {
+            SetGlobalStatus(status);
+        }
+
+        _ = RefreshDownloadedFilesAsync();
+        _ = InitializeStoredDownloadsAsync(versionList);
+    }
+
+    /// <summary>
+    /// Erstellt das Grundlayout der Wechselansicht mit zwei gleich breiten Spalten.
+    /// </summary>
+    private Grid CreateSwitchPageRoot()
+    {
+        var root = new Grid
+        {
+            Margin = new Thickness(0, 4, 0, 0)
+        };
+
+        root.ColumnDefinitions.Add(
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.ColumnDefinitions.Add(
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        return root;
+    }
+
+    /// <summary>
+    /// Erstellt das linke Panel mit der Liste der verfügbaren YACA-Versionen.
+    /// Das StackPanel wird am Panel als Tag weitergegeben, damit die bestehende
+    /// Sortier- und Aktualisierungslogik dieselbe Instanz verwenden kann.
+    /// </summary>
+    private Border CreateAvailableVersionsPanel(Grid root)
+    {
+        var accent = (Brush)FindResource("AccentBrush");
+
         var left = new Border
         {
             Background = (Brush)FindResource("SurfaceBrush"),
-            BorderBrush = (Brush)FindResource("AccentBrush"),
+            BorderBrush = accent,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(20),
@@ -37,54 +81,22 @@ public partial class MainWindow
         };
 
         var leftPanel = new Grid();
-        leftPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        leftPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        leftPanel.RowDefinitions.Add(
+            new RowDefinition { Height = GridLength.Auto });
+        leftPanel.RowDefinitions.Add(
+            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        var leftHeader = new Grid();
-        leftHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        leftHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var header = CreateSwitchHeader(accent);
+        Grid.SetRow(header, 0);
+        leftPanel.Children.Add(header);
 
-        var header = CreateDashboardHeader(
-            DashboardIconRegistry.IconAssetSync,
-            IsGerman ? "VERFÜGBARE VERSIONEN" : "AVAILABLE VERSIONS",
-            (Brush)FindResource("AccentBrush"));
-
-        // Der Header spannt beide Spalten. Dadurch bleibt die Trennlinie unterhalb
-        // des Sortiericons vollständig durchgehend.
-        Grid.SetColumn(header, 0);
-        Grid.SetColumnSpan(header, 2);
-        leftHeader.Children.Add(header);
-
-        var list = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
-
-        var sortButton = new Button
+        var list = new StackPanel
         {
-            Width = 34,
-            Height = 34,
-            Margin = new Thickness(8, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Top,
-            Background = Brushes.Transparent,
-            BorderBrush = (Brush)FindResource("AccentBrush"),
-            Foreground = (Brush)FindResource("AccentBrush"),
-            ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
-            Content = DashboardIconRegistry.CreateIcon(
-                DashboardIconRegistry.IconAssetSort,
-                (Brush)FindResource("AccentBrush"),
-                20,
-                20)
+            Margin = new Thickness(6, 10, 6, 6)
         };
 
-        sortButton.Click += (_, _) =>
-        {
-            _switchSortDescending = !_switchSortDescending;
-            RenderSwitchVersionList(list, _service.DetectCurrent());
-        };
-
-        Grid.SetColumn(sortButton, 1);
-        leftHeader.Children.Add(sortButton);
-
-        Grid.SetRow(leftHeader, 0);
-        leftPanel.Children.Add(leftHeader);
+        var sortButton = CreateSortButton(list, accent);
+        header.Children.Add(sortButton);
 
         var scroll = new ScrollViewer
         {
@@ -96,19 +108,82 @@ public partial class MainWindow
 
         Grid.SetRow(scroll, 1);
         leftPanel.Children.Add(scroll);
+
         left.Child = leftPanel;
+        left.Tag = list;
         Grid.SetColumn(left, 0);
         root.Children.Add(left);
 
-        // Rechtes Panel: Updater und bereits heruntergeladene Dateien.
-        var right = new Grid { Margin = new Thickness(6) };
-        right.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        right.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        return left;
+    }
 
+    /// <summary>
+    /// Erstellt den Header des linken Versionspanels inklusive Sortierbutton.
+    /// </summary>
+    private Grid CreateSwitchHeader(Brush accent)
+    {
+        var headerHost = new Grid();
+        headerHost.ColumnDefinitions.Add(
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        headerHost.ColumnDefinitions.Add(
+            new ColumnDefinition { Width = GridLength.Auto });
+
+        var header = CreateDashboardHeader(
+            DashboardIconRegistry.IconAssetSync,
+            IsGerman ? "VERFÜGBARE VERSIONEN" : "AVAILABLE VERSIONS",
+            accent);
+
+        // Der Header spannt beide Spalten. Dadurch bleibt die Trennlinie unterhalb
+        // des Sortiericons vollständig durchgehend.
+        Grid.SetColumn(header, 0);
+        Grid.SetColumnSpan(header, 2);
+        headerHost.Children.Add(header);
+
+        return headerHost;
+    }
+
+    /// <summary>
+    /// Erstellt den Sortierbutton für die Versionsliste.
+    /// </summary>
+    private Button CreateSortButton(StackPanel list, Brush accent)
+    {
+        var sortButton = new Button
+        {
+            Width = 34,
+            Height = 34,
+            Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Top,
+            Background = Brushes.Transparent,
+            BorderBrush = accent,
+            Foreground = accent,
+            ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
+            Content = DashboardIconRegistry.CreateIcon(
+                DashboardIconRegistry.IconAssetSort,
+                accent,
+                20,
+                20)
+        };
+
+        sortButton.Click += (_, _) =>
+        {
+            _switchSortDescending = !_switchSortDescending;
+            RenderSwitchVersionList(list, _service.DetectCurrent());
+        };
+
+        Grid.SetColumn(sortButton, 1);
+        return sortButton;
+    }
+
+    /// <summary>
+    /// Erstellt das rechte Updater-Panel.
+    /// </summary>
+    private void CreateUpdaterPanel(Grid root)
+    {
+        var gold = (Brush)FindResource("GoldBrush");
         var updaterCard = new Border
         {
             Background = (Brush)FindResource("SurfaceBrush"),
-            BorderBrush = (Brush)FindResource("GoldBrush"),
+            BorderBrush = gold,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(20),
@@ -116,16 +191,49 @@ public partial class MainWindow
         };
 
         var updaterPanel = new Grid();
-        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        updaterPanel.Children.Add(
-            CreateDashboardHeader(
-                DashboardIconRegistry.IconAssetSync,
-                "DOWNLOADER",
-                (Brush)FindResource("GoldBrush")));
+        updaterPanel.RowDefinitions.Add(
+            new RowDefinition { Height = GridLength.Auto });
+        updaterPanel.RowDefinitions.Add(
+            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        updaterPanel.RowDefinitions.Add(
+            new RowDefinition { Height = GridLength.Auto });
 
-        var updateContent = new StackPanel
+        var header = CreateDashboardHeader(
+            DashboardIconRegistry.IconAssetSync,
+            "DOWNLOADER",
+            gold);
+        Grid.SetRow(header, 0);
+        updaterPanel.Children.Add(header);
+
+        var content = CreateUpdaterContent();
+        Grid.SetRow(content, 1);
+        updaterPanel.Children.Add(content);
+
+        var updateButton = new Button
+        {
+            Content = IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES",
+            Height = 42,
+            Style = (Style)FindResource("UpdateSearchButtonStyle"),
+            Margin = new Thickness(6, 4, 6, 0),
+            Cursor = Cursors.Hand
+        };
+
+        updateButton.Click += async (_, _) => await RunUpdaterAsync();
+        Grid.SetRow(updateButton, 2);
+        updaterPanel.Children.Add(updateButton);
+
+        updaterCard.Child = updaterPanel;
+        Grid.SetRow(updaterCard, 0);
+        Grid.SetColumn(updaterCard, 1);
+        root.Children.Add(updaterCard);
+    }
+
+    /// <summary>
+    /// Erstellt die Status- und Fortschrittsanzeigen des Updater-Panels.
+    /// </summary>
+    private StackPanel CreateUpdaterContent()
+    {
+        var content = new StackPanel
         {
             Margin = new Thickness(6, 14, 6, 6),
             VerticalAlignment = VerticalAlignment.Center
@@ -168,35 +276,24 @@ public partial class MainWindow
             HorizontalAlignment = HorizontalAlignment.Center
         };
 
-        updateContent.Children.Add(_updaterVersion);
-        updateContent.Children.Add(_updaterStatus);
-        updateContent.Children.Add(_updaterProgress);
-        updateContent.Children.Add(_updaterSize);
+        content.Children.Add(_updaterVersion);
+        content.Children.Add(_updaterStatus);
+        content.Children.Add(_updaterProgress);
+        content.Children.Add(_updaterSize);
 
-        Grid.SetRow(updateContent, 1);
-        updaterPanel.Children.Add(updateContent);
+        return content;
+    }
 
-        var updateButton = new Button
-        {
-            Content = IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES",
-            Height = 42,
-            Style = (Style)FindResource("UpdateSearchButtonStyle"),
-            Margin = new Thickness(6, 4, 6, 0),
-            Cursor = Cursors.Hand
-        };
-
-        updateButton.Click += async (_, _) => await RunUpdaterAsync();
-        Grid.SetRow(updateButton, 2);
-        updaterPanel.Children.Add(updateButton);
-
-        updaterCard.Child = updaterPanel;
-        Grid.SetRow(updaterCard, 0);
-        right.Children.Add(updaterCard);
-
+    /// <summary>
+    /// Erstellt das Panel für bereits heruntergeladene Plugin-Dateien.
+    /// </summary>
+    private void CreateDownloadedFilesPanel(Grid root)
+    {
+        var gold = (Brush)FindResource("GoldBrush");
         var filesCard = new Border
         {
             Background = (Brush)FindResource("SurfaceBrush"),
-            BorderBrush = (Brush)FindResource("GoldBrush"),
+            BorderBrush = gold,
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(20),
@@ -204,15 +301,23 @@ public partial class MainWindow
         };
 
         var filesPanel = new Grid();
-        filesPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        filesPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        filesPanel.Children.Add(
-            CreateDashboardHeader(
-                DashboardIconRegistry.IconAssetBackup,
-                IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES",
-                (Brush)FindResource("GoldBrush")));
+        filesPanel.RowDefinitions.Add(
+            new RowDefinition { Height = GridLength.Auto });
+        filesPanel.RowDefinitions.Add(
+            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
+        var header = CreateDashboardHeader(
+            DashboardIconRegistry.IconAssetBackup,
+            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES",
+            gold);
+        Grid.SetRow(header, 0);
+        filesPanel.Children.Add(header);
+
+        _downloadedFilesPanel = new StackPanel
+        {
+            Margin = new Thickness(6, 10, 6, 6)
+        };
+
         var filesScroll = new ScrollViewer
         {
             Content = _downloadedFilesPanel,
@@ -223,23 +328,11 @@ public partial class MainWindow
 
         Grid.SetRow(filesScroll, 1);
         filesPanel.Children.Add(filesScroll);
+
         filesCard.Child = filesPanel;
         Grid.SetRow(filesCard, 1);
-        right.Children.Add(filesCard);
-        Grid.SetColumn(right, 1);
-        root.Children.Add(right);
-
-        var current = _service.DetectCurrent();
-        RenderSwitchVersionList(list, current);
-        PageHost.Content = root;
-
-        if (status is not null)
-        {
-            SetGlobalStatus(status);
-        }
-
-        _ = RefreshDownloadedFilesAsync();
-        _ = InitializeStoredDownloadsAsync(list);
+        Grid.SetColumn(filesCard, 1);
+        root.Children.Add(filesCard);
     }
 
     /// <summary>
@@ -287,12 +380,13 @@ public partial class MainWindow
     {
         list.Children.Clear();
 
+        var plugins = GetDistinctPlugins();
         var ordered = _switchSortDescending
-            ? GetDistinctPlugins()
+            ? plugins
                 .OrderByDescending(plugin => plugin.Version)
                 .ThenByDescending(plugin => plugin.Build)
                 .ToList()
-            : GetDistinctPlugins()
+            : plugins
                 .OrderBy(plugin => plugin.Version)
                 .ThenBy(plugin => plugin.Build)
                 .ToList();
@@ -312,21 +406,32 @@ public partial class MainWindow
                 Margin = new Thickness(0, 2, 0, 2),
                 Height = 58,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
-                Content = new TextBlock
-                {
-                    Text = active
-                        ? $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})   —   {Texts.Active.TrimEnd(':')}"
-                        : $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})",
-                    FontSize = 15,
-                    Foreground = active
-                        ? (Brush)FindResource("SuccessBrush")
-                        : (Brush)FindResource("ForegroundBrush")
-                }
+                Content = CreateVersionButtonContent(plugin, active)
             };
 
             button.Click += (_, _) => Activate(plugin);
             list.Children.Add(button);
         }
+    }
+
+    /// <summary>
+    /// Erstellt den Textinhalt eines Versionsbuttons.
+    /// </summary>
+    private TextBlock CreateVersionButtonContent(YacaPluginInfo plugin, bool active)
+    {
+        var build = plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
+        var text = active
+            ? $"YACA {plugin.Version} - (Build: {build})   —   {Texts.Active.TrimEnd(':')}"
+            : $"YACA {plugin.Version} - (Build: {build})";
+
+        return new TextBlock
+        {
+            Text = text,
+            FontSize = 15,
+            Foreground = active
+                ? (Brush)FindResource("SuccessBrush")
+                : (Brush)FindResource("ForegroundBrush")
+        };
     }
 
     /// <summary>
@@ -352,6 +457,7 @@ public partial class MainWindow
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
+
             _service.Installer.Install(
                 plugin,
                 _service.TargetFile,
