@@ -153,7 +153,8 @@
                             <DataGridTextColumn Header="Backup" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <!-- 64-stelliger SHA-256-Hash benötigt ausreichend Platz und bleibt vollständig sichtbar. -->
+                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="470" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
