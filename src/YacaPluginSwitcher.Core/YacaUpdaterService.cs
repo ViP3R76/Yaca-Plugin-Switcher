@@ -74,6 +74,13 @@ public sealed class YacaUpdaterService
             .ToList();
     }
 
+    /// <summary>
+    /// Prüft bereits gespeicherte .ts3_plugin-Archive und integriert sie nur nach
+    /// erfolgreicher Extraktion und DLL-Validierung in den lokalen Versionsbestand.
+    /// </summary>
+    public Task ProcessStoredDownloadsAsync(IProgress<YacaUpdaterProgress>? progress = null, CancellationToken cancellationToken = default)
+        => ProcessExistingDownloadsAsync(progress, cancellationToken);
+
     public async Task DownloadMissingAsync(IProgress<YacaUpdaterProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
