@@ -318,4 +318,61 @@ public partial class MainWindow
             list.Children.Add(button);
         }
     }
+
+    /// <summary>
+    /// Aktiviert die ausgewählte YACA-Version.
+    /// </summary>
+    private void Activate(YacaPluginInfo plugin)
+    {
+        var text = Texts;
+        var current = _service.DetectCurrent();
+
+        if (current?.Sha256.Equals(
+                plugin.Sha256,
+                StringComparison.OrdinalIgnoreCase) == true)
+        {
+            SetGlobalStatus(text.AlreadyActiveMessage);
+            return;
+        }
+
+        if (_service.Settings.WarnIfTeamSpeakRunning
+            && TeamSpeakDetector.IsRunning())
+        {
+            SetGlobalStatus(text.TeamspeakRunningMessage);
+            return;
+        }
+
+        try
+        {
+            Mouse.OverrideCursor = Cursors.Wait;
+
+            _service.Installer.Install(
+                plugin,
+                _service.TargetFile,
+                current,
+                _service.Settings.AutomaticBackup,
+                _service.Settings.MaxBackups);
+
+            ShowSwitchPage();
+            SetPluginSwitchFooterStatus(plugin);
+        }
+        catch (Exception ex) when (
+            ex is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or YacaOperationException)
+        {
+            _service.Logger.Error($"YACA switch failed: {ex}");
+            ShowError(
+                Localization.GetErrorMessage(
+                    ex,
+                    text,
+                    text.ErrorUnexpected));
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
 }
