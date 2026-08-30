@@ -44,7 +44,7 @@
             <RowDefinition Height="58" />
         </Grid.RowDefinitions>
 
-        <!-- Globaler Seitenkopf: Titel links, Backupstatus rechts, durchgehende Trennlinie. -->
+        <!-- Übergeordneter Seitenheader: links Titel, rechts Kapazitätsstatus. -->
         <Grid Grid.Row="0" Margin="0,0,6,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -56,10 +56,8 @@
                        Foreground="{StaticResource AccentBrush}"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Left" />
-            <!-- Wird vom bestehenden Code weiterhin als Sprach-/Statusziel referenziert. -->
             <TextBlock x:Name="TitleText" Visibility="Collapsed" />
             <TextBlock x:Name="BackupCapacityText"
-                       Grid.Row="0"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Center"
                        Margin="0,0,8,0"
@@ -70,28 +68,39 @@
                     Opacity="0.65" />
         </Grid>
 
-        <StackPanel Grid.Row="1">
-            <!-- Zugehöriger Panel-Titel: Yaca Backups. -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="BackupPanelRow" Height="Auto" />
+                <RowDefinition Height="10" />
+                <RowDefinition x:Name="PluginDownloadsPanelRow" Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Dediziertes Backup-Panel. Die Höhe wird abhängig von MaxBackups gesetzt. -->
             <Border x:Name="BackupCard"
+                    Grid.Row="0"
                     Background="{StaticResource SurfaceBrush}"
                     BorderBrush="{StaticResource AccentBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
-                    Padding="10"
-                    Margin="0,8,0,0">
+                    Padding="10">
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="38" />
                         <RowDefinition Height="38" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Text="Yaca Backups"
-                               FontSize="18"
+                               FontSize="24"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
                                Margin="4,0,0,0" />
+                    <Border Grid.Row="1"
+                            Height="1"
+                            Background="{StaticResource AccentSoftBrush}"
+                            VerticalAlignment="Bottom" />
                     <DataGrid x:Name="Grid"
-                              Grid.Row="1"
+                              Grid.Row="2"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
@@ -146,27 +155,34 @@
                 </Grid>
             </Border>
 
-            <!-- Bewusste Leerzeile zwischen Backups und Plugin-Downloads. -->
+            <!-- Bewusste Leerzeile zwischen den beiden dedizierten Panels. -->
             <Border x:Name="PluginDownloadsCard"
+                    Grid.Row="2"
                     Background="{StaticResource SurfaceBrush}"
                     BorderBrush="{StaticResource GoldBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="10"
-                    Margin="0,10,0,0"
                     Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="42" />
+                        <RowDefinition Height="38" />
+                        <RowDefinition Height="38" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock x:Name="PluginDownloadsTitle"
-                               FontSize="18"
+                               FontSize="24"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"
-                               Foreground="{StaticResource GoldBrush}" />
+                               Foreground="{StaticResource GoldBrush}"
+                               Margin="4,0,0,0" />
+                    <Border Grid.Row="1"
+                            Height="1"
+                            Background="{StaticResource GoldBrush}"
+                            Opacity="0.65"
+                            VerticalAlignment="Bottom" />
                     <DataGrid x:Name="PluginDownloadsGrid"
-                              Grid.Row="1"
+                              Grid.Row="2"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
@@ -211,7 +227,7 @@
                     </DataGrid>
                 </Grid>
             </Border>
-        </StackPanel>
+        </Grid>
 
         <Grid Grid.Row="2" Margin="6,6,6,0">
             <Grid.ColumnDefinitions>
