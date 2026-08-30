@@ -3,13 +3,15 @@
         Zentraler Navigation-Style.
         Die Navigation besitzt bewusst keinen MouseOver-Rahmen. Der Rahmen des
         aktuell ausgewählten Eintrags wird ausschließlich durch SetActiveNav gesetzt.
+        Die SVG-Icons übernehmen ihre Farbe über die zentrale Foreground-Bindung
+        des Navigationsbuttons.
     -->
     <ControlTemplate x:Key="NavigationButtonTemplate" TargetType="Button">
         <Border x:Name="NavigationBorder"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="5"
+                CornerRadius="0"
                 SnapsToDevicePixels="True">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
