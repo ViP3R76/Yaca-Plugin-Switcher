@@ -3,20 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{StaticResource BackgroundBrush}">
     <UserControl.Resources>
-        <Style x:Key="BackupActionButtonStyle"
-               BasedOn="{StaticResource NormalActionButtonStyle}"
-               TargetType="Button">
+        <Style x:Key="BackupActionButtonStyle" BasedOn="{StaticResource NormalActionButtonStyle}" TargetType="Button">
             <Setter Property="MinWidth" Value="150" />
             <Setter Property="Height" Value="40" />
         </Style>
-
-        <Style x:Key="DeleteBackupButtonStyle"
-               BasedOn="{StaticResource DeleteActionButtonStyle}"
-               TargetType="Button">
+        <Style x:Key="DeleteBackupButtonStyle" BasedOn="{StaticResource DeleteActionButtonStyle}" TargetType="Button">
             <Setter Property="MinWidth" Value="150" />
             <Setter Property="Height" Value="40" />
         </Style>
-
         <Style x:Key="CenteredCellStyle" TargetType="DataGridCell">
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="Background" Value="Transparent" />
@@ -25,14 +19,12 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-
         <Style x:Key="CenteredTextStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Center" />
         </Style>
-
         <Style x:Key="CenteredHeaderStyle" TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{StaticResource ControlBrush}" />
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
@@ -47,123 +39,132 @@
 
     <Grid Margin="6,6,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="54" />
+            <RowDefinition Height="58" />
             <RowDefinition Height="*" />
             <RowDefinition Height="58" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <TextBlock x:Name="TitleText"
-                       FontSize="24"
+        <!-- Globaler Seitenkopf: Titel links, Backupstatus rechts, durchgehende Trennlinie. -->
+        <Grid Grid.Row="0" Margin="0,0,6,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="1" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="BACKUPS VERWALTEN"
+                       FontSize="28"
                        FontWeight="SemiBold"
-                       VerticalAlignment="Center" />
+                       Foreground="{StaticResource AccentBrush}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left" />
+            <!-- Wird vom bestehenden Code weiterhin als Sprach-/Statusziel referenziert. -->
+            <TextBlock x:Name="TitleText" Visibility="Collapsed" />
             <TextBlock x:Name="BackupCapacityText"
+                       Grid.Row="0"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Center"
                        Margin="0,0,8,0"
                        Foreground="{StaticResource AccentBrush}"
                        FontSize="13" />
+            <Border Grid.Row="1"
+                    Background="{StaticResource AccentBrush}"
+                    Opacity="0.65" />
         </Grid>
 
-        <!-- Vier Backups passen vollständig in den verfügbaren Bereich. Ein äußerer ScrollViewer
-             würde trotz deaktivierter Scrollbar weiterhin Mausrad-Scrolling verarbeiten. -->
         <StackPanel Grid.Row="1">
+            <!-- Zugehöriger Panel-Titel: Yaca Backups. -->
             <Border x:Name="BackupCard"
                     Background="{StaticResource SurfaceBrush}"
                     BorderBrush="{StaticResource AccentBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="10"
-                    Margin="0,0,0,10">
-                <DataGrid x:Name="Grid"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          CanUserResizeColumns="False"
-                          CanUserReorderColumns="False"
-                          CanUserResizeRows="False"
-                          CanUserSortColumns="False"
-                          IsReadOnly="False"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          Background="{StaticResource SurfaceBrush}"
-                          Foreground="{StaticResource ForegroundBrush}"
-                          BorderThickness="0"
-                          SelectionMode="Single"
-                          RowHeight="44"
-                          ColumnHeaderHeight="38"
-                          ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}"
-                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource NavSelectedBrush}" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.RowStyle>
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="✓" Width="52">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              IsEnabled="{Binding CanSelect}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="YACA"
-                                            Binding="{Binding DisplayName}"
-                                            Width="220"
-                                            ElementStyle="{StaticResource CenteredTextStyle}"
-                                            CellStyle="{StaticResource CenteredCellStyle}" />
-                        <DataGridTextColumn Header="Datum"
-                                            Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}"
-                                            Width="180"
-                                            ElementStyle="{StaticResource CenteredTextStyle}"
-                                            CellStyle="{StaticResource CenteredCellStyle}" />
-                        <DataGridTextColumn Header="Größe"
-                                            Binding="{Binding FileSizeDisplay}"
-                                            Width="120"
-                                            ElementStyle="{StaticResource CenteredTextStyle}"
-                                            CellStyle="{StaticResource CenteredCellStyle}" />
-                        <DataGridTextColumn Header="SHA-256"
-                                            Binding="{Binding Sha256}"
-                                            Width="300"
-                                            ElementStyle="{StaticResource CenteredTextStyle}"
-                                            CellStyle="{StaticResource CenteredCellStyle}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                    Margin="0,8,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="38" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Yaca Backups"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource AccentBrush}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0" />
+                    <DataGrid x:Name="Grid"
+                              Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserResizeColumns="False"
+                              CanUserReorderColumns="False"
+                              CanUserResizeRows="False"
+                              CanUserSortColumns="False"
+                              IsReadOnly="False"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="Horizontal"
+                              Background="{StaticResource SurfaceBrush}"
+                              Foreground="{StaticResource ForegroundBrush}"
+                              BorderThickness="0"
+                              SelectionMode="Single"
+                              RowHeight="44"
+                              ColumnHeaderHeight="38"
+                              ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource NavSelectedBrush}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="✓" Width="52">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  IsEnabled="{Binding CanSelect}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="YACA" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="300" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Border>
 
+            <!-- Bewusste Leerzeile zwischen Backups und Plugin-Downloads. -->
             <Border x:Name="PluginDownloadsCard"
                     Background="{StaticResource SurfaceBrush}"
                     BorderBrush="{StaticResource GoldBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="10"
+                    Margin="0,10,0,0"
                     Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="42" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-
                     <TextBlock x:Name="PluginDownloadsTitle"
                                FontSize="18"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"
                                Foreground="{StaticResource GoldBrush}" />
-
                     <DataGrid x:Name="PluginDownloadsGrid"
                               Grid.Row="1"
                               AutoGenerateColumns="False"
@@ -202,26 +203,10 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Datei"
-                                                Binding="{Binding FileName}"
-                                                Width="360"
-                                                ElementStyle="{StaticResource CenteredTextStyle}"
-                                                CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Version"
-                                                Binding="{Binding Version}"
-                                                Width="140"
-                                                ElementStyle="{StaticResource CenteredTextStyle}"
-                                                CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Größe"
-                                                Binding="{Binding FileSizeDisplay}"
-                                                Width="140"
-                                                ElementStyle="{StaticResource CenteredTextStyle}"
-                                                CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Datum"
-                                                Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}"
-                                                Width="190"
-                                                ElementStyle="{StaticResource CenteredTextStyle}"
-                                                CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Datei" Binding="{Binding FileName}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="190" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -234,20 +219,10 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <Button Content="Wiederherstellen"
-                        Click="Restore_Click"
-                        Margin="6,0"
-                        Style="{StaticResource BackupActionButtonStyle}" />
-                <Button Content="Schließen"
-                        Click="Close_Click"
-                        Margin="6,0"
-                        Style="{StaticResource BackupActionButtonStyle}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Wiederherstellen" Click="Restore_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" />
+                <Button Content="Schließen" Click="Close_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" />
             </StackPanel>
-
             <Button x:Name="DeleteButton"
                     Grid.Column="2"
                     Content="LÖSCHEN"

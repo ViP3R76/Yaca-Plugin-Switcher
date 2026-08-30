@@ -17,15 +17,9 @@ public partial class MainWindow
         _activePage = "switch";
         SetActiveNav("switch");
 
-        var root = new Grid
-        {
-            Margin = new Thickness(0, 4, 0, 0)
-        };
-
-        root.ColumnDefinitions.Add(
-            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.ColumnDefinitions.Add(
-            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
         // Linkes Panel: verfügbare YACA-Versionen.
         var left = new Border
@@ -39,35 +33,31 @@ public partial class MainWindow
         };
 
         var leftPanel = new Grid();
-        leftPanel.RowDefinitions.Add(
-            new RowDefinition { Height = GridLength.Auto });
-        leftPanel.RowDefinitions.Add(
-            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        leftPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        leftPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
         var leftHeader = new Grid();
-        leftHeader.ColumnDefinitions.Add(
-            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        leftHeader.ColumnDefinitions.Add(
-            new ColumnDefinition { Width = GridLength.Auto });
+        leftHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        leftHeader.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         var header = CreateDashboardHeader(
             DashboardIconRegistry.IconAssetSync,
             IsGerman ? "VERFÜGBARE VERSIONEN" : "AVAILABLE VERSIONS",
             (Brush)FindResource("AccentBrush"));
 
+        // Der Header spannt beide Spalten. Dadurch bleibt die Trennlinie unterhalb des Sortiericons durchgehend.
         Grid.SetColumn(header, 0);
+        Grid.SetColumnSpan(header, 2);
         leftHeader.Children.Add(header);
 
-        var list = new StackPanel
-        {
-            Margin = new Thickness(6, 10, 6, 6)
-        };
+        var list = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
 
         var sortButton = new Button
         {
             Width = 34,
             Height = 34,
             Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Top,
             Background = Brushes.Transparent,
             BorderBrush = (Brush)FindResource("AccentBrush"),
             Foreground = (Brush)FindResource("AccentBrush"),
@@ -82,9 +72,7 @@ public partial class MainWindow
         sortButton.Click += (_, _) =>
         {
             _switchSortDescending = !_switchSortDescending;
-            RenderSwitchVersionList(
-                list,
-                currentForSort: _service.DetectCurrent());
+            RenderSwitchVersionList(list, currentForSort: _service.DetectCurrent());
         };
 
         Grid.SetColumn(sortButton, 1);
@@ -103,21 +91,14 @@ public partial class MainWindow
 
         Grid.SetRow(scroll, 1);
         leftPanel.Children.Add(scroll);
-
         left.Child = leftPanel;
         Grid.SetColumn(left, 0);
         root.Children.Add(left);
 
         // Rechtes Panel: Updater und bereits heruntergeladene Dateien.
-        var right = new Grid
-        {
-            Margin = new Thickness(6)
-        };
-
-        right.RowDefinitions.Add(
-            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        right.RowDefinitions.Add(
-            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        var right = new Grid { Margin = new Thickness(6) };
+        right.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        right.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
         var updaterCard = new Border
         {
@@ -130,25 +111,12 @@ public partial class MainWindow
         };
 
         var updaterPanel = new Grid();
-        updaterPanel.RowDefinitions.Add(
-            new RowDefinition { Height = GridLength.Auto });
-        updaterPanel.RowDefinitions.Add(
-            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        updaterPanel.RowDefinitions.Add(
-            new RowDefinition { Height = GridLength.Auto });
+        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        updaterPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        updaterPanel.Children.Add(CreateDashboardHeader(DashboardIconRegistry.IconAssetSync, "DOWNLOADER", (Brush)FindResource("GoldBrush")));
 
-        updaterPanel.Children.Add(
-            CreateDashboardHeader(
-                DashboardIconRegistry.IconAssetSync,
-                "DOWNLOADER",
-                (Brush)FindResource("GoldBrush")));
-
-        var updateContent = new StackPanel
-        {
-            Margin = new Thickness(6, 14, 6, 6),
-            VerticalAlignment = VerticalAlignment.Center
-        };
-
+        var updateContent = new StackPanel { Margin = new Thickness(6, 14, 6, 6), VerticalAlignment = VerticalAlignment.Center };
         _updaterVersion = new TextBlock
         {
             Text = IsGerman ? "Bereit für Updates" : "Ready for updates",
@@ -157,19 +125,15 @@ public partial class MainWindow
             Foreground = (Brush)FindResource("ForegroundBrush"),
             HorizontalAlignment = HorizontalAlignment.Center
         };
-
         _updaterStatus = new TextBlock
         {
-            Text = IsGerman
-                ? "Neue YACA Versionen können hier heruntergeladen werden."
-                : "New YACA versions can be downloaded here.",
+            Text = IsGerman ? "Neue YACA Versionen können hier heruntergeladen werden." : "New YACA versions can be downloaded here.",
             FontSize = 14,
             Foreground = (Brush)FindResource("SecondaryBrush"),
             TextAlignment = TextAlignment.Center,
             Margin = new Thickness(0, 8, 0, 12),
             TextWrapping = TextWrapping.Wrap
         };
-
         _updaterProgress = new ProgressBar
         {
             Height = 10,
@@ -178,19 +142,16 @@ public partial class MainWindow
             Visibility = Visibility.Collapsed,
             Margin = new Thickness(0, 0, 0, 10)
         };
-
         _updaterSize = new TextBlock
         {
             FontSize = 12,
             Foreground = (Brush)FindResource("SecondaryBrush"),
             HorizontalAlignment = HorizontalAlignment.Center
         };
-
         updateContent.Children.Add(_updaterVersion);
         updateContent.Children.Add(_updaterStatus);
         updateContent.Children.Add(_updaterProgress);
         updateContent.Children.Add(_updaterSize);
-
         Grid.SetRow(updateContent, 1);
         updaterPanel.Children.Add(updateContent);
 
@@ -202,12 +163,9 @@ public partial class MainWindow
             Margin = new Thickness(6, 4, 6, 0),
             Cursor = Cursors.Hand
         };
-
         updateButton.Click += async (_, _) => await RunUpdaterAsync();
-
         Grid.SetRow(updateButton, 2);
         updaterPanel.Children.Add(updateButton);
-
         updaterCard.Child = updaterPanel;
         Grid.SetRow(updaterCard, 0);
         right.Children.Add(updaterCard);
@@ -223,22 +181,11 @@ public partial class MainWindow
         };
 
         var filesPanel = new Grid();
-        filesPanel.RowDefinitions.Add(
-            new RowDefinition { Height = GridLength.Auto });
-        filesPanel.RowDefinitions.Add(
-            new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        filesPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        filesPanel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        filesPanel.Children.Add(CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup, IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", (Brush)FindResource("GoldBrush")));
 
-        filesPanel.Children.Add(
-            CreateDashboardHeader(
-                DashboardIconRegistry.IconAssetBackup,
-                IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES",
-                (Brush)FindResource("GoldBrush")));
-
-        _downloadedFilesPanel = new StackPanel
-        {
-            Margin = new Thickness(6, 10, 6, 6)
-        };
-
+        _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
         var filesScroll = new ScrollViewer
         {
             Content = _downloadedFilesPanel,
@@ -246,20 +193,16 @@ public partial class MainWindow
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
             Background = (Brush)FindResource("SurfaceBrush")
         };
-
         Grid.SetRow(filesScroll, 1);
         filesPanel.Children.Add(filesScroll);
-
         filesCard.Child = filesPanel;
         Grid.SetRow(filesCard, 1);
         right.Children.Add(filesCard);
-
         Grid.SetColumn(right, 1);
         root.Children.Add(right);
 
         var current = _service.DetectCurrent();
         RenderSwitchVersionList(list, current);
-
         PageHost.Content = root;
 
         if (status is not null)
@@ -273,49 +216,31 @@ public partial class MainWindow
     /// <summary>
     /// Rendert die verfügbaren YACA-Versionen in der gewählten Sortierreihenfolge.
     /// </summary>
-    private void RenderSwitchVersionList(
-        StackPanel list,
-        YacaPluginInfo? currentForSort)
+    private void RenderSwitchVersionList(StackPanel list, YacaPluginInfo? currentForSort)
     {
         list.Children.Clear();
 
         var ordered = _switchSortDescending
-            ? GetDistinctPlugins()
-                .OrderByDescending(plugin => plugin.Version)
-                .ThenByDescending(plugin => plugin.Build)
-                .ToList()
-            : GetDistinctPlugins()
-                .OrderBy(plugin => plugin.Version)
-                .ThenBy(plugin => plugin.Build)
-                .ToList();
+            ? GetDistinctPlugins().OrderByDescending(plugin => plugin.Version).ThenByDescending(plugin => plugin.Build).ToList()
+            : GetDistinctPlugins().OrderBy(plugin => plugin.Version).ThenBy(plugin => plugin.Build).ToList();
 
         foreach (var plugin in ordered)
         {
-            var active = currentForSort?.Sha256.Equals(
-                plugin.Sha256,
-                StringComparison.OrdinalIgnoreCase) == true;
-
+            var active = currentForSort?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true;
             var button = new Button
             {
                 Style = (Style)FindResource("TileButtonStyle"),
-                BorderBrush = active
-                    ? (Brush)FindResource("SuccessBrush")
-                    : (Brush)FindResource("AccentBrush"),
+                BorderBrush = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("AccentBrush"),
                 Margin = new Thickness(0, 2, 0, 2),
                 Height = 58,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
                 Content = new TextBlock
                 {
                     Text = active
-                        ? $"YACA {plugin.Version} - " +
-                          $"(Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"}) " +
-                          $"  —   {Texts.Active.TrimEnd(':')}"
-                        : $"YACA {plugin.Version} - " +
-                          $"(Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})",
+                        ? $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})   —   {Texts.Active.TrimEnd(':')}"
+                        : $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})",
                     FontSize = 15,
-                    Foreground = active
-                        ? (Brush)FindResource("SuccessBrush")
-                        : (Brush)FindResource("ForegroundBrush")
+                    Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush")
                 }
             };
 
@@ -332,16 +257,13 @@ public partial class MainWindow
         var text = Texts;
         var current = _service.DetectCurrent();
 
-        if (current?.Sha256.Equals(
-                plugin.Sha256,
-                StringComparison.OrdinalIgnoreCase) == true)
+        if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true)
         {
             SetGlobalStatus(text.AlreadyActiveMessage);
             return;
         }
 
-        if (_service.Settings.WarnIfTeamSpeakRunning
-            && TeamSpeakDetector.IsRunning())
+        if (_service.Settings.WarnIfTeamSpeakRunning && TeamSpeakDetector.IsRunning())
         {
             SetGlobalStatus(text.TeamspeakRunningMessage);
             return;
@@ -350,13 +272,7 @@ public partial class MainWindow
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-
-            _service.Installer.Install(
-                plugin,
-                _service.TargetFile,
-                current,
-                _service.Settings.AutomaticBackup,
-                _service.Settings.MaxBackups);
+            _service.Installer.Install(plugin, _service.TargetFile, current, _service.Settings.AutomaticBackup, _service.Settings.MaxBackups);
 
             // Die Ansicht darf den erfolgreichen Wechselstatus nicht überschreiben.
             ShowSwitchPage();
@@ -370,11 +286,7 @@ public partial class MainWindow
             or YacaOperationException)
         {
             _service.Logger.Error($"YACA switch failed: {ex}");
-            ShowError(
-                Localization.GetErrorMessage(
-                    ex,
-                    text,
-                    text.ErrorUnexpected));
+            ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected));
         }
         finally
         {
