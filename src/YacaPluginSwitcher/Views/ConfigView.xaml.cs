@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,7 +9,7 @@ namespace YacaPluginSwitcher;
 
 /// <summary>
 /// Konfigurationsansicht des YACA Plugin Switchers.
-/// Die Ansicht lädt und speichert ausschließlich die Einstellungen; fachliche
+/// Die Ansicht lädt und speichert ausschließlich Einstellungen; fachliche
 /// Update- und Installationslogik verbleibt in den Core-Diensten.
 /// </summary>
 public partial class ConfigView : UserControl
@@ -73,6 +74,11 @@ public partial class ConfigView : UserControl
             DebugLogging.IsChecked = _service.Settings.DebugLogging;
             SelectableBackups.IsChecked = _service.Settings.SelectableBackupsForDeletion;
             PathsList.ItemsSource = _service.Settings.TeamSpeakPluginDirectories.ToList();
+
+            LogDirectory.Text = _service.Paths.LogDirectory;
+            BackupDirectory.Text = _service.Paths.BackupDirectory;
+            PluginDirectory.Text = _service.Paths.PluginDirectory;
+            AppDirectory.Text = _service.Paths.BaseDirectory;
 
             UpdateExpert();
         }
@@ -170,7 +176,43 @@ public partial class ConfigView : UserControl
     }
 
     /// <summary>
-    /// Validiert und speichert die Einstellungen atomar über AppSettings.Save().
+    /// Öffnet ein vorhandenes Verzeichnis über den Windows Explorer.
+    /// Die Prüfung verhindert, dass ungültige Pfade an ShellExecute übergeben werden.
+    /// </summary>
+    private static void OpenDirectory(string directory)
+    {
+        if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+            return;
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = directory,
+            UseShellExecute = true
+        });
+    }
+
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        OpenDirectory(_service.Paths.LogDirectory);
+    }
+
+    private void OpenBackupDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        OpenDirectory(_service.Paths.BackupDirectory);
+    }
+
+    private void OpenPluginDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        OpenDirectory(_service.Paths.PluginDirectory);
+    }
+
+    private void OpenAppDirectory_Click(object sender, RoutedEventArgs e)
+    {
+        OpenDirectory(_service.Paths.BaseDirectory);
+    }
+
+    /// <summary>
+    /// Validiert und speichert die Einstellungen über AppSettings.Save().
     /// </summary>
     private void Save_Click(object sender, RoutedEventArgs e)
     {
