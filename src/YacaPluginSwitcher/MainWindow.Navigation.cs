@@ -35,7 +35,7 @@ public partial class MainWindow
             "switch",
             DashboardIconRegistry.IconAssetSync,
             IsGerman ? "YACA wechseln" : "Switch YACA",
-            ShowSwitchPage);
+            () => ShowSwitchPage());
 
         AddNav(
             "updater",
