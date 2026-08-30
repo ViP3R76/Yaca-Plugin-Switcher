@@ -24,7 +24,7 @@ public sealed record YacaUpdaterProgress(
 /// von YACA-Versionen. Temporäre Dateien werden ausschließlich im portablen
 /// Temp-Verzeichnis neben der Anwendung verarbeitet.
 /// </summary>
-public sealed class YacaUpdaterService
+public sealed partial class YacaUpdaterService
 {
     private const string CdnBase = "https://cdn.yaca.systems/yaca_{0}_3.6.x.ts3_plugin";
 
@@ -531,7 +531,8 @@ public sealed class YacaUpdaterService
     }
 
     /// <summary>
-    /// Validiert die final installierte DLL nochmals gegen die ursprüngliche Quelle.
+    /// Validiert die endgültig installierte DLL und vergleicht sie mit dem
+    /// ursprünglichen Validierungsergebnis.
     /// </summary>
     private static void ValidateInstalledDll(
         string path,
@@ -550,96 +551,163 @@ public sealed class YacaUpdaterService
             || installedValidation.Version != expected)
         {
             throw new InvalidDataException(
-                "Die verschobene DLL konnte nicht erfolgreich verifiziert werden.");
+                "Die installierte DLL konnte nach dem Verschieben nicht verifiziert werden.");
         }
     }
 
     /// <summary>
-    /// Ermittelt ausschließlich lokal vorhandene und erfolgreich validierte
-    /// Versions-DLLs.
+    /// Ermittelt die Versionen, die bereits als valide DLL im normalen Plugin-Verzeichnis existieren.
     /// </summary>
     private HashSet<string> GetValidatedLocalVersions()
     {
-        var versions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         if (!Directory.Exists(_service.Paths.PluginDirectory))
-            return versions;
+            return [];
+
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in Directory.EnumerateFiles(
                      _service.Paths.PluginDirectory,
                      "yaca_*_win64.dll",
                      SearchOption.TopDirectoryOnly))
         {
-            var match = VersionDigitsRegex.Match(Path.GetFileName(file));
-
-            if (!match.Success)
-                continue;
-
-            var digits = match.Groups[1].Value;
-
-            if (digits.Length != 3
-                || !Version.TryParse(
-                    $"{digits[0]}.{digits[1]}.{digits[2]}",
-                    out var expected))
-            {
-                continue;
-            }
-
             var validation = YacaValidator.Validate(file);
 
-            if (validation.IsValid
-                && validation.Version is not null
-                && validation.Version == expected)
+            if (!validation.IsValid || validation.Version is null)
+                continue;
+
+            result.Add(
+                validation.Version.ToString().Replace(".", "", StringComparison.Ordinal));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Prüft eine konkrete installierte DLL erneut auf Gültigkeit und erwartete Version.
+    /// </summary>
+    private static bool IsValidInstalledVersion(string path, string expectedVersion)
+    {
+        if (!File.Exists(path))
+            return false;
+
+        var validation = YacaValidator.Validate(path);
+
+        return validation.IsValid
+            && validation.Version is not null
+            && Version.TryParse(expectedVersion, out var expected)
+            && validation.Version == expected
+            && !string.IsNullOrWhiteSpace(validation.Sha256);
+    }
+
+    /// <summary>
+    /// Liest Versionsnummern aus einer YACA-API-Antwort und ergänzt sie in der Sortiermenge.
+    /// </summary>
+    private static async Task LoadVersionsAsync(
+        HttpClient http,
+        string url,
+        IDictionary<long, string> versions,
+        CancellationToken cancellationToken)
+    {
+        using var response = await http.GetAsync(url, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+        ExtractVersions(document.RootElement, versions);
+    }
+
+    /// <summary>
+    /// Durchsucht JSON rekursiv nach plausiblen YACA-Versionsangaben.
+    /// </summary>
+    private static void ExtractVersions(
+        JsonElement element,
+        IDictionary<long, string> versions)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var property in element.EnumerateObject())
+                {
+                    ExtractVersions(property.Value, versions);
+                }
+
+                break;
+
+            case JsonValueKind.Array:
+                foreach (var item in element.EnumerateArray())
+                {
+                    ExtractVersions(item, versions);
+                }
+
+                break;
+
+            case JsonValueKind.String:
+                AddVersion(element.GetString(), versions);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Übernimmt eine einzelne Versionsangabe, wenn sie das erwartete Format besitzt.
+    /// </summary>
+    private static void AddVersion(
+        string? value,
+        IDictionary<long, string> versions)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        var match = VersionStringRegex.Match(value.Trim());
+        if (!match.Success || !Version.TryParse(match.Value, out var version))
+            return;
+
+        versions[ParseVersion(match.Value)] = match.Value;
+    }
+
+    /// <summary>
+    /// Liest eine YACA-Version aus einem bekannten Archiv- oder DLL-Dateinamen.
+    /// </summary>
+    private static string? ExtractVersion(string fileName)
+    {
+        var archiveMatch = VersionArchiveRegex.Match(fileName);
+        if (archiveMatch.Success)
+        {
+            var digits = archiveMatch.Groups[1].Value;
+            if (digits.Length == 6)
             {
-                versions.Add(digits);
+                return $"{digits[..2]}.{digits[2..4]}.{digits[4..6]}";
             }
         }
 
-        return versions;
-    }
-
-    /// <summary>
-    /// Prüft, ob die angegebene Ziel-DLL bereits als gültige Version installiert ist.
-    /// </summary>
-    private static bool IsValidInstalledVersion(string target, string expectedVersion)
-    {
-        if (!File.Exists(target))
-            return false;
-
-        var validation = YacaValidator.Validate(target);
-
-        return validation.IsValid
-               && validation.Version is not null
-               && validation.Version.Equals(ParseVersion(expectedVersion));
-    }
-
-    /// <summary>
-    /// Entfernt alte temporäre Updater-Dateien und Validierungsverzeichnisse.
-    /// </summary>
-    private void CleanTemporaryUpdaterFiles()
-    {
-        if (!Directory.Exists(TempDirectory))
-            return;
-
-        foreach (var file in Directory.EnumerateFiles(
-                     TempDirectory,
-                     "yaca_*.ts3_plugin*",
-                     SearchOption.TopDirectoryOnly))
+        var dllMatch = VersionDigitsRegex.Match(fileName);
+        if (dllMatch.Success)
         {
-            TryDelete(file);
+            var digits = dllMatch.Groups[1].Value;
+            if (digits.Length == 6)
+            {
+                return $"{digits[..2]}.{digits[2..4]}.{digits[4..6]}";
+            }
         }
 
-        foreach (var directory in Directory.EnumerateDirectories(
-                     TempDirectory,
-                     "validate_*",
-                     SearchOption.TopDirectoryOnly))
-        {
-            TryDeleteDirectory(directory);
-        }
+        return null;
     }
 
     /// <summary>
-    /// Meldet einen Status ohne zusätzliche Byte-Fortschrittsinformation.
+    /// Wandelt eine Versionsnummer in einen stabilen numerischen Sortierwert um.
+    /// </summary>
+    private static long ParseVersion(string version)
+    {
+        if (!Version.TryParse(version, out var parsed))
+            return long.MinValue;
+
+        return parsed.Major * 1_000_000L
+             + parsed.Minor * 1_000L
+             + parsed.Build;
+    }
+
+    /// <summary>
+    /// Meldet einen einzelnen Updater-Schritt an die Oberfläche.
     /// </summary>
     private static void Report(
         IProgress<YacaUpdaterProgress>? progress,
@@ -661,83 +729,33 @@ public sealed class YacaUpdaterService
     }
 
     /// <summary>
-    /// Lädt Versionen aus einer YACA-API und ignoriert ausschließlich erwartbare
-    /// HTTP- bzw. JSON-Fehler, damit die zweite Quelle weiterhin abgefragt werden kann.
+    /// Entfernt bekannte temporäre Updater-Dateien aus dem portablen Temp-Verzeichnis.
     /// </summary>
-    private static async Task LoadVersionsAsync(
-        HttpClient http,
-        string url,
-        SortedDictionary<long, string> versions,
-        CancellationToken cancellationToken)
+    private void CleanTemporaryUpdaterFiles()
     {
-        try
+        if (!Directory.Exists(TempDirectory))
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(
+                     TempDirectory,
+                     "yaca_*_3.6.x.ts3_plugin*",
+                     SearchOption.TopDirectoryOnly))
         {
-            await using var stream = await http.GetStreamAsync(
-                url,
-                cancellationToken);
-
-            using var document = await JsonDocument.ParseAsync(
-                stream,
-                cancellationToken: cancellationToken);
-
-            if (document.RootElement.ValueKind != JsonValueKind.Array)
-                return;
-
-            foreach (var element in document.RootElement.EnumerateArray())
-            {
-                if (!element.TryGetProperty("version", out var property))
-                    continue;
-
-                var version = property.GetString();
-
-                if (string.IsNullOrWhiteSpace(version)
-                    || !VersionStringRegex.IsMatch(version))
-                {
-                    continue;
-                }
-
-                if (long.TryParse(
-                    version.Replace(".", "", StringComparison.Ordinal),
-                    out var number))
-                {
-                    versions[number] = version;
-                }
-            }
+            TryDelete(file);
         }
-        catch (HttpRequestException)
+
+        foreach (var directory in Directory.EnumerateDirectories(
+                     TempDirectory,
+                     "validate_*",
+                     SearchOption.TopDirectoryOnly))
         {
-            // Eine nicht erreichbare Quelle darf die Prüfung der zweiten Quelle nicht verhindern.
+            TryDeleteDirectory(directory);
         }
-        catch (JsonException)
-        {
-            // Ungültige API-Daten werden verworfen; die zweite Quelle wird weiterhin geprüft.
-        }
-    }
-
-    private static Version ParseVersion(string value)
-    {
-        return Version.TryParse(value, out var version)
-            ? version
-            : new Version(0, 0, 0);
     }
 
     /// <summary>
-    /// Extrahiert die dreistellige Versionsnummer aus einem gespeicherten Archivnamen.
+    /// Löscht eine Datei fehlertolerant.
     /// </summary>
-    private static string? ExtractVersion(string fileName)
-    {
-        var match = VersionArchiveRegex.Match(fileName);
-
-        if (!match.Success)
-            return null;
-
-        var digits = match.Groups[1].Value;
-
-        return digits.Length == 3
-            ? $"{digits[0]}.{digits[1]}.{digits[2]}"
-            : null;
-    }
-
     private static void TryDelete(string path)
     {
         try
@@ -747,10 +765,13 @@ public sealed class YacaUpdaterService
         }
         catch
         {
-            // Temporäre Aufräumfehler dürfen den eigentlichen Updateablauf nicht blockieren.
+            // Aufräumen darf einen erfolgreichen Workflow nicht nachträglich fehlschlagen lassen.
         }
     }
 
+    /// <summary>
+    /// Löscht ein Verzeichnis inklusive Inhalt fehlertolerant.
+    /// </summary>
     private static void TryDeleteDirectory(string path)
     {
         try
@@ -760,7 +781,7 @@ public sealed class YacaUpdaterService
         }
         catch
         {
-            // Temporäre Aufräumfehler dürfen den eigentlichen Updateablauf nicht blockieren.
+            // Aufräumen darf einen erfolgreichen Workflow nicht nachträglich fehlschlagen lassen.
         }
     }
 }
