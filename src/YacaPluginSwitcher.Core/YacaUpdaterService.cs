@@ -17,15 +17,14 @@ public sealed class YacaUpdaterService
     private static readonly Version MinExclusiveVersion = new(1, 7, 5);
     private static readonly Regex ArchiveDllRegex = new(@"^yaca(?:_\d+)?_win64\.dll$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private readonly YacaService _service;
-    private readonly string _applicationDirectory;
 
     public YacaUpdaterService(YacaService service)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
-        _applicationDirectory = Path.GetFullPath(Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory);
     }
 
-    public string DownloadDirectory => Path.Combine(_applicationDirectory, "plugins_download");
+    public string DownloadDirectory => Path.Combine(_service.Paths.BaseDirectory, "plugins_download");
+    public string TempDirectory => _service.Paths.TempDirectory;
 
     public Task<IReadOnlyList<(string Version, string FileName, long Size)>> GetAvailableDownloadsAsync(CancellationToken cancellationToken = default)
     {
@@ -33,47 +32,68 @@ public sealed class YacaUpdaterService
         Directory.CreateDirectory(DownloadDirectory);
         IReadOnlyList<(string Version, string FileName, long Size)> result = Directory.EnumerateFiles(DownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
             .Select(path => (Version: ExtractVersion(Path.GetFileName(path)) ?? "—", FileName: Path.GetFileName(path), Size: new FileInfo(path).Length))
-            .OrderByDescending(x => ParseVersion(x.Version)).ToList();
+            .OrderByDescending(x => ParseVersion(x.Version))
+            .ToList();
         return Task.FromResult(result);
     }
 
     public async Task<IReadOnlyList<string>> GetMissingVersionsAsync(CancellationToken cancellationToken = default)
     {
-        Directory.CreateDirectory(DownloadDirectory);
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
         var versions = new SortedDictionary<long, string>();
         await LoadVersionsAsync(http, "https://yaca.systems/api/changelog/getDownloads", versions, cancellationToken);
         await LoadVersionsAsync(http, "https://yaca.systems/api/changelog/get?locale=en", versions, cancellationToken);
+
+        // Nur eine bereits validierte DLL im Versionsbestand zählt als vorhanden.
+        // Ein .ts3_plugin-Archiv allein zählt niemals als vorhandene Version.
         var local = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var file in Directory.EnumerateFiles(_service.Paths.PluginDirectory, "yaca_*_win64.dll"))
+        if (Directory.Exists(_service.Paths.PluginDirectory))
         {
-            var match = Regex.Match(Path.GetFileName(file), @"^yaca_(\d+)_win64\.dll$", RegexOptions.IgnoreCase);
-            if (match.Success) local.Add(match.Groups[1].Value);
+            foreach (var file in Directory.EnumerateFiles(_service.Paths.PluginDirectory, "yaca_*_win64.dll", SearchOption.TopDirectoryOnly))
+            {
+                var match = Regex.Match(Path.GetFileName(file), @"^yaca_(\d+)_win64\.dll$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (!match.Success)
+                    continue;
+
+                var digits = match.Groups[1].Value;
+                if (digits.Length != 3 || !Version.TryParse($"{digits[0]}.{digits[1]}.{digits[2]}", out var expected))
+                    continue;
+
+                var validation = YacaValidator.Validate(file);
+                if (validation.IsValid && validation.Version is not null && validation.Version == expected)
+                    local.Add(digits);
+            }
         }
-        foreach (var file in Directory.EnumerateFiles(DownloadDirectory, "yaca_*.ts3_plugin"))
-        {
-            var version = ExtractVersion(Path.GetFileName(file));
-            if (!string.IsNullOrWhiteSpace(version)) local.Add(version.Replace(".", "", StringComparison.Ordinal));
-        }
-        return versions.Where(kv => Version.TryParse(kv.Value, out var version) && version > MinExclusiveVersion && !local.Contains(kv.Value.Replace(".", "", StringComparison.Ordinal)))
-            .Select(kv => kv.Value).OrderByDescending(ParseVersion).ToList();
+
+        return versions
+            .Where(kv => Version.TryParse(kv.Value, out var version)
+                         && version > MinExclusiveVersion
+                         && !local.Contains(kv.Value.Replace(".", "", StringComparison.Ordinal)))
+            .Select(kv => kv.Value)
+            .OrderByDescending(ParseVersion)
+            .ToList();
     }
 
     public async Task DownloadMissingAsync(IProgress<YacaUpdaterProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         Directory.CreateDirectory(DownloadDirectory);
+        Directory.CreateDirectory(TempDirectory);
+        CleanTemporaryUpdaterFiles();
         await ProcessExistingDownloadsAsync(progress, cancellationToken);
 
         var missing = await GetMissingVersionsAsync(cancellationToken);
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+
         foreach (var version in missing)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var tag = version.Replace(".", "", StringComparison.Ordinal);
-            var archivePath = Path.Combine(DownloadDirectory, $"yaca_{tag}_3.6.x.ts3_plugin");
+            var archivePath = Path.Combine(TempDirectory, $"yaca_{tag}_3.6.x.ts3_plugin");
             var partialPath = archivePath + ".part";
+
             try
             {
+                TryDelete(archivePath);
                 TryDelete(partialPath);
                 Report(progress, version, "Download", false, false, null);
                 using var response = await http.GetAsync(string.Format(CultureInfo.InvariantCulture, CdnFormat, version), HttpCompletionOption.ResponseHeadersRead, cancellationToken);
@@ -94,15 +114,27 @@ public sealed class YacaUpdaterService
                 output.Close();
                 File.Move(partialPath, archivePath, true);
                 await ProcessDownloadedArchiveAsync(version, archivePath, progress, cancellationToken);
+
+                if (_service.Settings.KeepYacaPluginDownloads)
+                {
+                    Directory.CreateDirectory(DownloadDirectory);
+                    File.Move(archivePath, Path.Combine(DownloadDirectory, Path.GetFileName(archivePath)), true);
+                }
+                else
+                {
+                    TryDelete(archivePath);
+                }
             }
             catch (OperationCanceledException)
             {
                 TryDelete(partialPath);
+                TryDelete(archivePath);
                 throw;
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
             {
                 TryDelete(partialPath);
+                TryDelete(archivePath);
                 progress?.Report(new(version, 0, null, "Fehlgeschlagen", true, false, ex.Message));
             }
         }
@@ -110,6 +142,9 @@ public sealed class YacaUpdaterService
 
     private async Task ProcessExistingDownloadsAsync(IProgress<YacaUpdaterProgress>? progress, CancellationToken cancellationToken)
     {
+        if (!Directory.Exists(DownloadDirectory))
+            return;
+
         var archives = Directory.EnumerateFiles(DownloadDirectory, "yaca_*.ts3_plugin", SearchOption.TopDirectoryOnly)
             .Select(path => (Path: path, Version: ExtractVersion(Path.GetFileName(path))))
             .Where(x => !string.IsNullOrWhiteSpace(x.Version))
@@ -133,6 +168,8 @@ public sealed class YacaUpdaterService
             try
             {
                 await ProcessDownloadedArchiveAsync(version, archive.Path, progress, cancellationToken);
+                if (!_service.Settings.KeepYacaPluginDownloads)
+                    TryDelete(archive.Path);
             }
             catch (OperationCanceledException)
             {
@@ -153,10 +190,9 @@ public sealed class YacaUpdaterService
 
         var tag = version.Replace(".", "", StringComparison.Ordinal);
         var target = Path.Combine(_service.Paths.PluginDirectory, $"yaca_{tag}_win64.dll");
-        var extractionDirectory = Path.Combine(Path.GetTempPath(), "yaca_validate_" + Guid.NewGuid().ToString("N"));
+        var extractionDirectory = Path.Combine(TempDirectory, "validate_" + Guid.NewGuid().ToString("N"));
         var tempDll = Path.Combine(extractionDirectory, "yaca_win64.dll");
         var tempTarget = Path.Combine(_service.Paths.PluginDirectory, $".yaca_install_{Guid.NewGuid():N}.tmp");
-        var completedSuccessfully = false;
 
         try
         {
@@ -184,37 +220,42 @@ public sealed class YacaUpdaterService
             Directory.CreateDirectory(_service.Paths.PluginDirectory);
             Report(progress, version, "Verschieben", false, false, null);
             File.Copy(tempDll, tempTarget, false);
-
             var stagedValidation = YacaValidator.Validate(tempTarget);
-            if (!stagedValidation.IsValid || !string.Equals(stagedValidation.Sha256, validation.Sha256, StringComparison.OrdinalIgnoreCase))
+            if (!stagedValidation.IsValid || !string.Equals(stagedValidation.Sha256, validation.Sha256, StringComparison.OrdinalIgnoreCase) || stagedValidation.Version != expectedVersion)
                 throw new InvalidDataException("Die temporär bereitgestellte DLL konnte nicht verifiziert werden.");
 
             File.Move(tempTarget, target, true);
-
             var installedValidation = YacaValidator.Validate(target);
             if (!installedValidation.IsValid || !string.Equals(installedValidation.Sha256, validation.Sha256, StringComparison.OrdinalIgnoreCase) || installedValidation.Version != expectedVersion)
                 throw new InvalidDataException("Die verschobene DLL konnte nicht erfolgreich verifiziert werden.");
 
-            if (_service.Settings.KeepYacaPluginDownloads)
-                Report(progress, version, "Download behalten", false, false, null);
-            else
-                Report(progress, version, "Download löschen", false, false, null);
-
+            Report(progress, version, _service.Settings.KeepYacaPluginDownloads ? "Download behalten" : "Download löschen", false, false, null);
             Report(progress, version, "Abgeschlossen", true, true, null);
-            completedSuccessfully = true;
         }
         finally
         {
             TryDelete(tempDll);
             TryDelete(tempTarget);
             try { if (Directory.Exists(extractionDirectory)) Directory.Delete(extractionDirectory, true); } catch { }
-            if (completedSuccessfully && !_service.Settings.KeepYacaPluginDownloads)
-                TryDelete(archivePath);
         }
+
         await Task.CompletedTask;
     }
 
-    private static void Report(IProgress<YacaUpdaterProgress>? progress, string version, string status, bool completed, bool success, string? error) => progress?.Report(new(version, 0, null, status, completed, success, error));
+    private void CleanTemporaryUpdaterFiles()
+    {
+        if (!Directory.Exists(TempDirectory))
+            return;
+        foreach (var file in Directory.EnumerateFiles(TempDirectory, "yaca_*.ts3_plugin*", SearchOption.TopDirectoryOnly))
+            TryDelete(file);
+        foreach (var directory in Directory.EnumerateDirectories(TempDirectory, "validate_*", SearchOption.TopDirectoryOnly))
+        {
+            try { Directory.Delete(directory, true); } catch { }
+        }
+    }
+
+    private static void Report(IProgress<YacaUpdaterProgress>? progress, string version, string status, bool completed, bool success, string? error)
+        => progress?.Report(new(version, 0, null, status, completed, success, error));
 
     private static async Task LoadVersionsAsync(HttpClient http, string url, SortedDictionary<long, string> versions, CancellationToken cancellationToken)
     {
@@ -239,7 +280,7 @@ public sealed class YacaUpdaterService
 
     private static string? ExtractVersion(string fileName)
     {
-        var match = Regex.Match(fileName, @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin", RegexOptions.IgnoreCase);
+        var match = Regex.Match(fileName, @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         if (!match.Success) return null;
         var digits = match.Groups[1].Value;
         return digits.Length == 3 ? $"{digits[0]}.{digits[1]}.{digits[2]}" : null;
@@ -247,10 +288,6 @@ public sealed class YacaUpdaterService
 
     private static void TryDelete(string path)
     {
-        try
-        {
-            if (File.Exists(path)) File.Delete(path);
-        }
-        catch { }
+        try { if (File.Exists(path)) File.Delete(path); } catch { }
     }
 }
