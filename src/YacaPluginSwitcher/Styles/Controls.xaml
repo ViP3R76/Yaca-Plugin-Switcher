@@ -100,6 +100,49 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
+    <!-- Globaler Darkmode für Listen. Keine WPF-Standardoptik für ListBox/ListBoxItem. -->
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style TargetType="ListBoxItem">
+        <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="ItemBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource NavSelectedBrush}" />
+                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="ScrollBar">
         <Setter Property="Width" Value="10" /><Setter Property="Background" Value="{StaticResource ControlBrush}" /><Setter Property="Foreground" Value="{StaticResource AccentSoftBrush}" />
         <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar"><Grid Background="{TemplateBinding Background}"><Track x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}" ViewportSize="{TemplateBinding ViewportSize}" IsDirectionReversed="True"><Track.Thumb><Thumb Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" /></Track.Thumb></Track></Grid><ControlTemplate.Triggers><Trigger Property="Orientation" Value="Horizontal"><Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" /></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
