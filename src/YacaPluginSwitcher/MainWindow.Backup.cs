@@ -44,10 +44,12 @@ public partial class MainWindow
 
             _service.Backups.Trim(_service.Settings.MaxBackups);
             RefreshHome();
+
+            var build = current.Build?.ToString() ?? "—";
             SetGlobalStatus(
                 IsGerman
-                    ? "Backup wurde erfolgreich erstellt."
-                    : "Backup created successfully.",
+                    ? $"Backup erstellt: Yaca {current.Version} · Build: {build}"
+                    : $"Backup created: Yaca {current.Version} · Build: {build}",
                 true);
         }
         catch (Exception ex) when (
