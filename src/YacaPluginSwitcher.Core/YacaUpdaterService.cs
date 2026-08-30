@@ -162,7 +162,11 @@ public sealed class YacaUpdaterService
             {
                 var validation = YacaValidator.Validate(target);
                 if (validation.IsValid && validation.Version is not null && validation.Version.Equals(ParseVersion(version)))
+                {
+                    if (!_service.Settings.KeepYacaPluginDownloads)
+                        TryDelete(archive.Path);
                     continue;
+                }
             }
 
             try
