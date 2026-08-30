@@ -74,7 +74,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition x:Name="BackupPanelRow" Height="Auto" />
                 <RowDefinition Height="10" />
-                <!-- Das Download-Panel erhält den gesamten verbleibenden Platz bis zu den Buttons. -->
                 <RowDefinition x:Name="PluginDownloadsPanelRow" Height="*" />
             </Grid.RowDefinitions>
 
@@ -98,7 +97,6 @@
                                Foreground="{StaticResource AccentBrush}"
                                VerticalAlignment="Center"
                                Margin="4,0,0,0" />
-                    <!-- Trennlinie unmittelbar unter dem Sub-Panel-Header; keine zusätzliche Leerzeile. -->
                     <Border Grid.Row="1"
                             Background="{StaticResource AccentSoftBrush}"
                             Opacity="0.65" />
@@ -152,7 +150,7 @@
                             <DataGridTextColumn Header="YACA" Binding="{Binding DisplayName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="300" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="360" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
