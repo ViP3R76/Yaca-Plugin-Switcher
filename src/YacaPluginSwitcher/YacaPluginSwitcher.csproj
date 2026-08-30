@@ -39,7 +39,7 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
-  <Target Name="PublishReleaseFromBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true'">
+  <Target Name="PublishReleaseFromBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true' and '$(YacaLocalBuild)' != 'true'">
     <Exec Command="dotnet publish &quot;$(MSBuildProjectFullPath)&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:YacaReleasePackaging=true --no-restore" />
   </Target>
 </Project>
