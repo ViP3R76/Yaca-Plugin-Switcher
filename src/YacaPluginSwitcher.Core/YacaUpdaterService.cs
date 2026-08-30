@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using YacaPluginSwitcher.Models;
@@ -487,7 +486,7 @@ public sealed class YacaUpdaterService
     /// Prüft die extrahierte DLL auf Gültigkeit, erkannte Version und SHA-256.
     /// </summary>
     private static void EnsureValidYacaVersion(
-        YacaValidationResult validation,
+        ValidationResult validation,
         string expectedVersion)
     {
         if (!validation.IsValid
@@ -512,7 +511,7 @@ public sealed class YacaUpdaterService
     /// </summary>
     private static void ValidateStagedDll(
         string path,
-        YacaValidationResult sourceValidation,
+        ValidationResult sourceValidation,
         string expectedVersion)
     {
         var stagedValidation = YacaValidator.Validate(path);
@@ -536,7 +535,7 @@ public sealed class YacaUpdaterService
     /// </summary>
     private static void ValidateInstalledDll(
         string path,
-        YacaValidationResult sourceValidation,
+        ValidationResult sourceValidation,
         string expectedVersion)
     {
         var installedValidation = YacaValidator.Validate(path);
