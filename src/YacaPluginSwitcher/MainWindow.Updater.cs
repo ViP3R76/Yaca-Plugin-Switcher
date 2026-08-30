@@ -28,9 +28,9 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Startet die Updateprüfung. Nach der Prüfung wird bewusst noch kein Download
-    /// gestartet. Der Benutzer erhält zunächst eine Auswahl der tatsächlich fehlenden
-    /// Versionen und entscheidet selbst über eine, mehrere oder alle Versionen.
+    /// Startet die Updateprüfung. Standardmäßig wird anschließend die Auswahl angezeigt.
+    /// Ist der Direktdownload aktiviert, werden alle gefundenen fehlenden Versionen ohne
+    /// weitere Nachfrage über den zentralen Updater heruntergeladen.
     /// </summary>
     private async Task RunUpdaterAsync()
     {
@@ -67,6 +67,14 @@ public partial class MainWindow
                 return;
             }
 
+            if (_service.Settings.DownloadAllPluginsWithoutPrompt)
+            {
+                // Die Updateprüfung ist beendet. Der Prüf-Token wird anschließend nicht
+                // für den Download wiederverwendet; DownloadUpdaterVersionsAsync erzeugt
+                // dafür einen eigenen Lebenszyklus.
+                return;
+            }
+
             ShowUpdaterSelection(missingVersions);
         }
         catch (OperationCanceledException)
@@ -87,6 +95,9 @@ public partial class MainWindow
             _updaterCts.Dispose();
             _updaterCts = null;
         }
+
+        if (_service.Settings.DownloadAllPluginsWithoutPrompt)
+            await DownloadUpdaterVersionsAsync(missingVersions);
     }
 
     /// <summary>
@@ -231,7 +242,16 @@ public partial class MainWindow
             return;
         }
 
-        if (_updaterCts is not null)
+        await DownloadUpdaterVersionsAsync(selectedVersions);
+    }
+
+    /// <summary>
+    /// Führt einen vollständigen Downloadlauf für die angegebenen Versionen aus.
+    /// Diese Methode ist der gemeinsame Einstiegspunkt für manuelle und automatische Downloads.
+    /// </summary>
+    private async Task DownloadUpdaterVersionsAsync(IReadOnlyList<string> versions)
+    {
+        if (versions.Count == 0 || _updaterCts is not null)
             return;
 
         _updaterCts = new CancellationTokenSource();
@@ -252,7 +272,7 @@ public partial class MainWindow
 
         try
         {
-            await _updater.DownloadSelectedAsync(selectedVersions, progress, _updaterCts.Token);
+            await _updater.DownloadSelectedAsync(versions, progress, _updaterCts.Token);
             await RefreshDownloadedFilesAsync();
 
             _plugins.Clear();
