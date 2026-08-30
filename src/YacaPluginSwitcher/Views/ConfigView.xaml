@@ -13,7 +13,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Zentraler Seitenheader für die Konfigurationsseite. -->
+            <!-- Zentraler Seitenheader der Konfigurationsseite. -->
             <StackPanel Grid.Row="0" Margin="0,4,0,14">
                 <TextBlock x:Name="TitleText"
                            Text="KONFIGURATION"
@@ -25,7 +25,7 @@
                         Background="{StaticResource AccentSoftBrush}" />
             </StackPanel>
 
-            <!-- Allgemeine Einstellungen -->
+            <!-- Allgemeine und direkt relevante Einstellungen. -->
             <Border Grid.Row="1"
                     Style="{StaticResource CardStyle}"
                     Margin="0,0,0,10">
@@ -34,7 +34,7 @@
                                FontSize="18"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource AccentBrush}"
-                               Margin="0,0,0,10" />
+                               Margin="0,0,0,12" />
 
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
@@ -42,7 +42,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Sprache"
-                                   FontSize="14"
+                                   FontSize="15"
                                    VerticalAlignment="Center" />
                         <ComboBox x:Name="LanguageCombo"
                                   Grid.Column="1"
@@ -53,35 +53,60 @@
                     </Grid>
 
                     <CheckBox x:Name="AutomaticBackup"
-                              Margin="0,5" />
+                              Margin="0,5"
+                              FontSize="15" />
                     <CheckBox x:Name="WarnRunning"
-                              Margin="0,5" />
-                    <CheckBox x:Name="KeepYacaPluginDownloads"
-                              Margin="0,5" />
-                    <CheckBox x:Name="DownloadAllWithoutPrompt"
-                              Margin="0,5" />
+                              Margin="0,5"
+                              FontSize="15" />
 
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="220" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Maximale Backups"
-                                   FontSize="14"
-                                   VerticalAlignment="Center" />
-                        <TextBox x:Name="MaxBackups"
-                                 Grid.Column="1"
-                                 Width="100"
-                                 Height="34"
-                                 HorizontalAlignment="Left"
-                                 VerticalContentAlignment="Center" />
-                    </Grid>
+                    <TextBlock Text="Maximale Backups"
+                               Margin="0,12,0,5"
+                               FontSize="15"
+                               Foreground="{StaticResource SecondaryBrush}" />
+                    <TextBox x:Name="MaxBackups"
+                             Width="100"
+                             Height="34"
+                             HorizontalAlignment="Left"
+                             VerticalContentAlignment="Center"
+                             FontSize="15" />
+                </StackPanel>
+            </Border>
+
+            <!-- Einstellungen für den YACA-Downloader. -->
+            <Border Grid.Row="2"
+                    Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="YACA DOWNLOADER"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource AccentBrush}"
+                               Margin="0,0,0,10" />
+                    <CheckBox x:Name="KeepYacaPluginDownloads"
+                              Margin="0,5"
+                              FontSize="15" />
+                    <CheckBox x:Name="DownloadAllWithoutPrompt"
+                              Margin="0,5"
+                              FontSize="15" />
+                </StackPanel>
+            </Border>
+
+            <!-- TeamSpeak-Ziel und Mehrfachinstanzen. -->
+            <Border Grid.Row="3"
+                    Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="TEAMSPEAK"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource AccentBrush}"
+                               Margin="0,0,0,10" />
 
                     <TextBlock Text="Aktiver TeamSpeak-Pfad"
-                               Margin="0,12,0,5"
-                               FontSize="14"
-                               Foreground="{StaticResource SecondaryBrush}" />
-                    <Grid>
+                               FontSize="15"
+                               Foreground="{StaticResource SecondaryBrush}"
+                               Margin="0,0,0,5" />
+                    <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -90,6 +115,7 @@
                                  Height="36"
                                  HorizontalAlignment="Stretch"
                                  VerticalContentAlignment="Center"
+                                 FontSize="14"
                                  ToolTip="Vollständiger TeamSpeak Plugin-Pfad" />
                         <Button Grid.Column="1"
                                 Content="Durchsuchen"
@@ -99,25 +125,30 @@
                                 Margin="8,0,0,0"
                                 Style="{StaticResource NormalActionButtonStyle}" />
                     </Grid>
+
+                    <CheckBox x:Name="MultipleInstances"
+                              Margin="0,4,0,8"
+                              FontSize="15" />
                 </StackPanel>
             </Border>
 
-            <!-- Erweiterte Einstellungen -->
-            <Border Grid.Row="2"
+            <!-- Expertenfunktionen bewusst getrennt von den Standardoptionen. -->
+            <Border Grid.Row="4"
                     Style="{StaticResource CardStyle}"
                     Margin="0,0,0,10">
                 <StackPanel>
                     <CheckBox x:Name="Expert"
                               Content="Experteneinstellungen"
-                              FontSize="15"
+                              FontSize="16"
                               FontWeight="SemiBold"
                               IsChecked="False"
                               Checked="Expert_Changed"
                               Unchecked="Expert_Changed"
-                              Margin="0,0,0,8" />
+                              Margin="0,0,0,10" />
 
                     <StackPanel x:Name="ExpertPanel"
                                 Visibility="Collapsed">
+                        <!-- TeamSpeak-Pfade -->
                         <Border Background="{StaticResource ControlBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
@@ -129,20 +160,14 @@
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource GoldBrush}"
                                            Margin="0,0,0,8" />
-                                <CheckBox x:Name="MultipleInstances"
-                                          Margin="0,3,0,8" />
                                 <TextBlock Text="Verfügbare TeamSpeak-Pfade"
-                                           FontSize="14"
+                                           FontSize="15"
                                            Foreground="{StaticResource SecondaryBrush}"
                                            Margin="0,2,0,5" />
                                 <ListBox x:Name="PathsList"
                                          Height="130"
-                                         Background="{StaticResource BackgroundBrush}"
-                                         BorderBrush="{StaticResource BorderBrush}"
-                                         BorderThickness="1"
-                                         FontSize="14"
-                                         Padding="4" />
-                                <WrapPanel Margin="0,8,0,0">
+                                         Margin="0,0,0,8" />
+                                <WrapPanel>
                                     <Button Content="Hinzufügen"
                                             Click="AddPath_Click"
                                             Style="{StaticResource NormalActionButtonStyle}"
@@ -150,7 +175,7 @@
                                             MinWidth="110" />
                                     <Button Content="Entfernen"
                                             Click="RemovePath_Click"
-                                            Style="{StaticResource NormalActionButtonStyle}"
+                                            Style="{StaticResource DeleteActionButtonStyle}"
                                             Margin="0,0,6,6"
                                             MinWidth="110" />
                                     <Button Content="Ausgewählten Pfad verwenden"
@@ -167,10 +192,12 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Logging und Backup-Verhalten. -->
                         <Border Background="{StaticResource ControlBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
-                                Padding="14">
+                                Padding="14"
+                                Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="PROTOKOLLIERUNG &amp; BACKUPS"
                                            FontSize="16"
@@ -178,18 +205,130 @@
                                            Foreground="{StaticResource GoldBrush}"
                                            Margin="0,0,0,8" />
                                 <CheckBox x:Name="GeneralLogging"
-                                          Margin="0,3" />
+                                          Margin="0,3"
+                                          FontSize="15" />
                                 <CheckBox x:Name="DebugLogging"
-                                          Margin="0,3" />
+                                          Margin="0,3"
+                                          FontSize="15" />
                                 <CheckBox x:Name="SelectableBackups"
-                                          Margin="0,3" />
+                                          Margin="0,3"
+                                          FontSize="15" />
+
+                                <TextBlock Text="Log-Verzeichnis"
+                                           FontSize="15"
+                                           Foreground="{StaticResource SecondaryBrush}"
+                                           Margin="0,10,0,5" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="LogDirectory"
+                                             Height="34"
+                                             IsReadOnly="True"
+                                             VerticalContentAlignment="Center"
+                                             FontSize="14" />
+                                    <Button Grid.Column="1"
+                                            Content="Öffnen"
+                                            Click="OpenLogDirectory_Click"
+                                            Style="{StaticResource NormalActionButtonStyle}"
+                                            Width="90"
+                                            Height="38"
+                                            Margin="8,0,0,0" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Wichtige Programmverzeichnisse nur anzeigen; die Pfade selbst bleiben technisch fest definiert. -->
+                        <Border Background="{StaticResource ControlBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="ANWENDUNGSVERZEICHNISSE"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource GoldBrush}"
+                                           Margin="0,0,0,8" />
+
+                                <Grid Margin="0,2,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Backups"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBox x:Name="BackupDirectory"
+                                             Grid.Column="1"
+                                             Height="34"
+                                             IsReadOnly="True"
+                                             VerticalContentAlignment="Center"
+                                             FontSize="13" />
+                                    <Button Grid.Column="2"
+                                            Content="Öffnen"
+                                            Click="OpenBackupDirectory_Click"
+                                            Style="{StaticResource NormalActionButtonStyle}"
+                                            Width="90"
+                                            Height="38"
+                                            Margin="8,0,0,0" />
+                                </Grid>
+
+                                <Grid Margin="0,2,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Plugins"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBox x:Name="PluginDirectory"
+                                             Grid.Column="1"
+                                             Height="34"
+                                             IsReadOnly="True"
+                                             VerticalContentAlignment="Center"
+                                             FontSize="13" />
+                                    <Button Grid.Column="2"
+                                            Content="Öffnen"
+                                            Click="OpenPluginDirectory_Click"
+                                            Style="{StaticResource NormalActionButtonStyle}"
+                                            Width="90"
+                                            Height="38"
+                                            Margin="8,0,0,0" />
+                                </Grid>
+
+                                <Grid Margin="0,2,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="App-Verzeichnis"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBox x:Name="AppDirectory"
+                                             Grid.Column="1"
+                                             Height="34"
+                                             IsReadOnly="True"
+                                             VerticalContentAlignment="Center"
+                                             FontSize="13" />
+                                    <Button Grid.Column="2"
+                                            Content="Öffnen"
+                                            Click="OpenAppDirectory_Click"
+                                            Style="{StaticResource NormalActionButtonStyle}"
+                                            Width="90"
+                                            Height="38"
+                                            Margin="8,0,0,0" />
+                                </Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <StackPanel Grid.Row="3"
+            <StackPanel Grid.Row="5"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Margin="0,2,0,0">
