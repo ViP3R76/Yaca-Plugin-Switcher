@@ -261,7 +261,12 @@ public partial class MainWindow
         RenderSwitchVersionList(list, current);
 
         PageHost.Content = root;
-        SetGlobalStatus(status ?? (IsGerman ? "Bereit." : "Ready."));
+
+        if (status is not null)
+        {
+            SetGlobalStatus(status);
+        }
+
         _ = RefreshDownloadedFilesAsync();
     }
 
@@ -353,6 +358,7 @@ public partial class MainWindow
                 _service.Settings.AutomaticBackup,
                 _service.Settings.MaxBackups);
 
+            // Die Ansicht darf den erfolgreichen Wechselstatus nicht überschreiben.
             ShowSwitchPage();
             SetPluginSwitchFooterStatus(plugin);
         }
