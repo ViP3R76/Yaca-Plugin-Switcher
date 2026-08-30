@@ -16,13 +16,16 @@ public partial class MainWindow
         NavPanel.Children.Clear();
         _navButtons.Clear();
 
-        AddNav("home", DashboardIconRegistry.IconAssetDashboard, "Dashboard", ShowHome);
+        // Explizite Lambdas vermeiden Method-Group-Konvertierungsprobleme bei
+        // Methoden mit optionalen Parametern und halten alle Navigationseinträge
+        // eindeutig als System.Action.
+        AddNav("home", DashboardIconRegistry.IconAssetDashboard, "Dashboard", () => ShowHome());
         AddNav("refresh", DashboardIconRegistry.IconAssetRefresh, IsGerman ? "Aktualisieren" : "Refresh", () =>
         {
             SetGlobalStatus(IsGerman ? "Aktualisierung wird ausgeführt …" : "Refreshing …");
             RefreshActivePage(false);
         });
-        AddNav("switch", DashboardIconRegistry.IconAssetSync, IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
+        AddNav("switch", DashboardIconRegistry.IconAssetSync, IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
         AddNav("updater", DashboardIconRegistry.IconAssetSync, "YACA Updater", () =>
         {
             ShowSwitchPage();
@@ -35,8 +38,8 @@ public partial class MainWindow
             Background = (Brush)FindResource("AccentSoftBrush")
         });
 
-        AddNav("backup-create", DashboardIconRegistry.IconAssetBackup, IsGerman ? "Backup erstellen" : "Create Backup", CreateBackupFromDashboard);
-        AddNav("backups", DashboardIconRegistry.IconAssetBackups, IsGerman ? "Backup verwalten" : "Manage Backups", ShowBackups);
+        AddNav("backup-create", DashboardIconRegistry.IconAssetBackup, IsGerman ? "Backup erstellen" : "Create Backup", () => CreateBackupFromDashboard());
+        AddNav("backups", DashboardIconRegistry.IconAssetBackups, IsGerman ? "Backup verwalten" : "Manage Backups", () => ShowBackups());
 
         NavPanel.Children.Add(new Separator
         {
@@ -44,7 +47,7 @@ public partial class MainWindow
             Background = (Brush)FindResource("AccentSoftBrush")
         });
 
-        AddNav("info", DashboardIconRegistry.IconAssetInfo, "Info & Links", ShowInfo);
+        AddNav("info", DashboardIconRegistry.IconAssetInfo, "Info & Links", () => ShowInfo());
 
         ExitNavContent.Children.Clear();
         ConfigureNavContent(ExitNavContent, DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit");
