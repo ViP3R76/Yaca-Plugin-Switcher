@@ -55,7 +55,7 @@ public partial class MainWindow
 
     /// <summary>
     /// Erstellt den Inhalt eines Navigationsbuttons.
-    /// Die SVG-Füllfarbe ist an die Foreground-Farbe des übergeordneten Buttons gebunden.
+    /// Die SVG-Füllfarbe folgt zentral dem Foreground des zugehörigen Buttons.
     /// </summary>
     private static void ConfigureNavContent(StackPanel content, string iconAssetKey, string text, Brush? iconBrush = null)
     {
@@ -70,9 +70,13 @@ public partial class MainWindow
         var icon = DashboardIconRegistry.CreateIcon(iconAssetKey, foregroundBrush, 30, 30);
         if (icon is SvgIcon svgIcon)
         {
+            // Die Bindung ist die zentrale Farbquelle für alle SVG-Navigationsicons.
+            // Sie folgt damit automatisch dem globalen Navigation-MouseOver und
+            // verhindert, dass ein SVG mit seiner eigenen Standardfarbe zurückfällt.
             svgIcon.SetBinding(SvgIcon.FillProperty, new Binding("Foreground")
             {
-                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1)
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
+                Mode = BindingMode.OneWay
             });
         }
 
