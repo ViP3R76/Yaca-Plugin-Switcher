@@ -173,10 +173,17 @@ public partial class MainWindow
         if (refreshButton?.Content is not StackPanel panel) return;
         var icon = panel.Children.OfType<Image>().FirstOrDefault();
         if (icon is null) return;
+
         icon.Width = 26;
         icon.Height = 26;
         icon.Margin = new Thickness(0);
         icon.VerticalAlignment = VerticalAlignment.Center;
-        DashboardIconRegistry.SetFill(icon, string.Equals(refreshButton.Tag?.ToString(), _activePage, StringComparison.OrdinalIgnoreCase) ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush"));
+
+        // Hover und aktive Navigation sind beide Gold. LayoutUpdated darf diesen Zustand nicht zurücksetzen.
+        var gold = (Brush)FindResource("GoldBrush");
+        var foreground = (Brush)FindResource("ForegroundBrush");
+        DashboardIconRegistry.SetFill(icon, refreshButton.IsMouseOver || string.Equals(refreshButton.Tag?.ToString(), _activePage, StringComparison.OrdinalIgnoreCase)
+            ? gold
+            : foreground);
     }
 }
