@@ -38,6 +38,8 @@ public partial class MainWindow
             return;
 
         _updaterCts = new CancellationTokenSource();
+        IReadOnlyList<string> missingVersions = [];
+        var downloadAllWithoutPrompt = _service.Settings.DownloadAllPluginsWithoutPrompt;
 
         if (_updaterProgress is not null)
         {
@@ -56,7 +58,7 @@ public partial class MainWindow
         try
         {
             await EnsureStoredDownloadsProcessedAsync();
-            var missingVersions = await _updater.GetMissingVersionsAsync(_updaterCts.Token);
+            missingVersions = await _updater.GetMissingVersionsAsync(_updaterCts.Token);
 
             if (missingVersions.Count == 0)
             {
@@ -67,15 +69,8 @@ public partial class MainWindow
                 return;
             }
 
-            if (_service.Settings.DownloadAllPluginsWithoutPrompt)
-            {
-                // Die Updateprüfung ist beendet. Der Prüf-Token wird anschließend nicht
-                // für den Download wiederverwendet; DownloadUpdaterVersionsAsync erzeugt
-                // dafür einen eigenen Lebenszyklus.
-                return;
-            }
-
-            ShowUpdaterSelection(missingVersions);
+            if (!downloadAllWithoutPrompt)
+                ShowUpdaterSelection(missingVersions);
         }
         catch (OperationCanceledException)
         {
@@ -96,7 +91,7 @@ public partial class MainWindow
             _updaterCts = null;
         }
 
-        if (_service.Settings.DownloadAllPluginsWithoutPrompt)
+        if (downloadAllWithoutPrompt)
             await DownloadUpdaterVersionsAsync(missingVersions);
     }
 
