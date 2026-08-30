@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -45,7 +46,7 @@ public partial class MainWindow
             _service.Backups.Trim(_service.Settings.MaxBackups);
             RefreshHome();
 
-            var build = current.Build?.ToString() ?? "—";
+            var build = current.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
             SetGlobalStatus(
                 IsGerman
                     ? $"Backup erstellt: Yaca {current.Version} · Build: {build}"
