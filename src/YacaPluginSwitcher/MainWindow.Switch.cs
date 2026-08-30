@@ -35,15 +35,30 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Ein gleichmäßiges zweispaltiges Layout: links die Versionsliste über die
-    /// gesamte verfügbare Höhe, rechts zwei gleich große Panels übereinander.
+    /// Erstellt das zweispaltige Seitenlayout. Links steht die Versionsübersicht,
+    /// rechts befindet sich ein eigener Container für Downloader und Downloads.
+    /// Dadurch müssen keine bereits angehängten WPF-Elemente nachträglich umgehängt werden.
     /// </summary>
     private static Grid CreateSwitchPageRoot()
     {
-        var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        var root = new Grid
+        {
+            Margin = new Thickness(0, 4, 0, 0)
+        };
+
+        root.ColumnDefinitions.Add(new ColumnDefinition
+        {
+            Width = new GridLength(1, GridUnitType.Star)
+        });
+        root.ColumnDefinitions.Add(new ColumnDefinition
+        {
+            Width = new GridLength(1, GridUnitType.Star)
+        });
+        root.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+
         return root;
     }
 
@@ -55,20 +70,29 @@ public partial class MainWindow
             Background = (Brush)FindResource("SurfaceBrush"),
             BorderBrush = accent,
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(10),
+            CornerRadius = new CornerRadius(0),
             Padding = new Thickness(20),
             Margin = new Thickness(6)
         };
 
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = GridLength.Auto
+        });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
 
         var header = CreateSwitchHeader(accent);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
 
-        var list = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
+        var list = new StackPanel
+        {
+            Margin = new Thickness(6, 10, 6, 6)
+        };
         var sortButton = CreateSortButton(list, accent);
         header.Children.Add(sortButton);
 
@@ -92,8 +116,14 @@ public partial class MainWindow
     private Grid CreateSwitchHeader(Brush accent)
     {
         var headerHost = new Grid();
-        headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        headerHost.ColumnDefinitions.Add(new ColumnDefinition
+        {
+            Width = new GridLength(1, GridUnitType.Star)
+        });
+        headerHost.ColumnDefinitions.Add(new ColumnDefinition
+        {
+            Width = GridLength.Auto
+        });
 
         var header = CreateDashboardHeader(
             DashboardIconRegistry.IconAssetSync,
@@ -117,7 +147,11 @@ public partial class MainWindow
             BorderBrush = accent,
             Foreground = accent,
             ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
-            Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, accent, 20, 20)
+            Content = DashboardIconRegistry.CreateIcon(
+                DashboardIconRegistry.IconAssetSort,
+                accent,
+                20,
+                20)
         };
         sortButton.Click += (_, _) =>
         {
@@ -129,19 +163,30 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Baut die rechte Spalte als zwei gleich große Bereiche auf. Dadurch entspricht
-    /// die Gesamtfläche exakt der Höhe des linken Versionspanels.
+    /// Erstellt den Downloader als erstes Panel im rechten Container.
     /// </summary>
     private void CreateUpdaterPanel(Grid root)
     {
         var gold = (Brush)FindResource("GoldBrush");
         var updaterCard = CreatePanelCardForSwitch(gold, new Thickness(6, 6, 6, 3));
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = GridLength.Auto
+        });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = GridLength.Auto
+        });
 
-        var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync, "DOWNLOADER", gold);
+        var header = CreateDashboardHeader(
+            DashboardIconRegistry.IconAssetSync,
+            "DOWNLOADER",
+            gold);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
 
@@ -162,9 +207,30 @@ public partial class MainWindow
         panel.Children.Add(_updaterSearchButton);
 
         updaterCard.Child = panel;
-        Grid.SetColumn(updaterCard, 1);
         Grid.SetRow(updaterCard, 0);
-        root.Children.Add(updaterCard);
+        root.Children.Add(CreateRightPanelContainer(updaterCard));
+    }
+
+    /// <summary>
+    /// Erstellt den rechten Container. Beide Panels werden von Anfang an als Kinder
+    /// desselben Grids angelegt; dadurch entsteht kein ungültiger WPF-Reparenting-Vorgang.
+    /// </summary>
+    private static Grid CreateRightPanelContainer(Border updaterCard)
+    {
+        var rightStack = new Grid();
+        rightStack.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+        rightStack.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+
+        Grid.SetColumn(rightStack, 1);
+        Grid.SetRow(updaterCard, 0);
+        rightStack.Children.Add(updaterCard);
+        return rightStack;
     }
 
     private void CreateDownloadedFilesPanel(Grid root)
@@ -172,8 +238,14 @@ public partial class MainWindow
         var gold = (Brush)FindResource("GoldBrush");
         var filesCard = CreatePanelCardForSwitch(gold, new Thickness(6, 3, 6, 6));
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = GridLength.Auto
+        });
+        panel.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
 
         var header = CreateDashboardHeader(
             DashboardIconRegistry.IconAssetBackup,
@@ -182,7 +254,10 @@ public partial class MainWindow
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
 
-        _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
+        _downloadedFilesPanel = new StackPanel
+        {
+            Margin = new Thickness(6, 10, 6, 6)
+        };
         var filesScroll = new ScrollViewer
         {
             Content = _downloadedFilesPanel,
@@ -194,32 +269,27 @@ public partial class MainWindow
         panel.Children.Add(filesScroll);
 
         filesCard.Child = panel;
-        Grid.SetColumn(filesCard, 1);
-        Grid.SetRow(filesCard, 0);
-        Grid.SetRowSpan(filesCard, 1);
-        filesCard.VerticalAlignment = VerticalAlignment.Bottom;
-        filesCard.Height = double.NaN;
 
-        // Das zweite Panel wird über einen separaten Container unterhalb des Downloaders platziert.
-        if (root.Children.OfType<Border>().FirstOrDefault(b => Grid.GetColumn(b) == 1) is { } updater)
+        if (root.Children.OfType<Grid>().FirstOrDefault(grid => Grid.GetColumn(grid) == 1) is { } rightStack)
         {
-            Grid.SetRowSpan(updater, 1);
-            Grid.SetRow(filesCard, 0);
-            var rightStack = new Grid();
-            rightStack.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            rightStack.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            rightStack.Children.Add(updater);
-            rightStack.Children.Add(filesCard);
-            Grid.SetRow(updater, 0);
             Grid.SetRow(filesCard, 1);
-            Grid.SetColumn(rightStack, 1);
-            root.Children.Remove(updater);
-            root.Children.Add(rightStack);
+            rightStack.Children.Add(filesCard);
+            return;
         }
-        else
+
+        var fallbackContainer = new Grid();
+        fallbackContainer.RowDefinitions.Add(new RowDefinition
         {
-            root.Children.Add(filesCard);
-        }
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+        fallbackContainer.RowDefinitions.Add(new RowDefinition
+        {
+            Height = new GridLength(1, GridUnitType.Star)
+        });
+        Grid.SetColumn(fallbackContainer, 1);
+        Grid.SetRow(filesCard, 1);
+        fallbackContainer.Children.Add(filesCard);
+        root.Children.Add(fallbackContainer);
     }
 
     private static Border CreatePanelCardForSwitch(Brush borderBrush, Thickness margin)
@@ -229,7 +299,7 @@ public partial class MainWindow
             Background = new SolidColorBrush(Color.FromRgb(18, 19, 24)),
             BorderBrush = borderBrush,
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(10),
+            CornerRadius = new CornerRadius(0),
             Padding = new Thickness(20),
             Margin = margin
         };
@@ -252,7 +322,9 @@ public partial class MainWindow
         };
         _updaterStatus = new TextBlock
         {
-            Text = IsGerman ? "Neue YACA Versionen können hier heruntergeladen werden." : "New YACA versions can be downloaded here.",
+            Text = IsGerman
+                ? "Neue YACA Versionen können hier heruntergeladen werden."
+                : "New YACA versions can be downloaded here.",
             FontSize = 14,
             Foreground = (Brush)FindResource("SecondaryBrush"),
             TextAlignment = TextAlignment.Center,
@@ -319,7 +391,9 @@ public partial class MainWindow
             var button = new Button
             {
                 Style = (Style)FindResource("TileButtonStyle"),
-                BorderBrush = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("AccentBrush"),
+                BorderBrush = active
+                    ? (Brush)FindResource("SuccessBrush")
+                    : (Brush)FindResource("AccentBrush"),
                 Margin = new Thickness(0, 2, 0, 2),
                 Height = 58,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
@@ -339,7 +413,9 @@ public partial class MainWindow
                 ? $"YACA {plugin.Version} - (Build: {build})   —   {Texts.Active.TrimEnd(':')}"
                 : $"YACA {plugin.Version} - (Build: {build})",
             FontSize = 15,
-            Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush")
+            Foreground = active
+                ? (Brush)FindResource("SuccessBrush")
+                : (Brush)FindResource("ForegroundBrush")
         };
     }
 
@@ -360,14 +436,21 @@ public partial class MainWindow
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            _service.Installer.Install(plugin, _service.TargetFile, current,
-                _service.Settings.AutomaticBackup, _service.Settings.MaxBackups);
+            _service.Installer.Install(
+                plugin,
+                _service.TargetFile,
+                current,
+                _service.Settings.AutomaticBackup,
+                _service.Settings.MaxBackups);
             ShowSwitchPage();
             SetPluginSwitchFooterStatus(plugin);
         }
         catch (Exception ex) when (
-            ex is IOException or UnauthorizedAccessException or InvalidDataException
-            or InvalidOperationException or YacaOperationException)
+            ex is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or YacaOperationException)
         {
             _service.Logger.Error($"YACA switch failed: {ex}");
             ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected));
