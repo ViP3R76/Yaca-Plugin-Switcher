@@ -1,6 +1,6 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
+using YacaPluginSwitcher.Core;
 
 namespace YacaPluginSwitcher;
 
@@ -8,6 +8,8 @@ public partial class MainWindow
 {
     /// <summary>
     /// Startet die Suche und den Download fehlender YACA-Versionen.
+    /// Bereits gespeicherte Downloads werden vor der eigentlichen Suche
+    /// vollständig verarbeitet, damit keine parallele Integration entsteht.
     /// </summary>
     private async Task RunUpdaterAsync()
     {
@@ -37,6 +39,10 @@ public partial class MainWindow
 
         try
         {
+            // Der erste Seitenaufruf kann die Prüfung bereits gestartet haben.
+            // Hier wird derselbe Task abgewartet, bevor der Updater fortfährt.
+            await EnsureStoredDownloadsProcessedAsync();
+
             var before =
                 (await _updater.GetMissingVersionsAsync(_updaterCts.Token)).Count;
 
