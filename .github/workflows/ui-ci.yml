@@ -1,9 +1,9 @@
 name: WPF UI CI
 
 on:
-  push:
-    branches:
-      - feature/wpf-ui-build
+#  push:
+#    branches:
+#      - feature/wpf-ui-build
   pull_request:
     branches:
       - main
