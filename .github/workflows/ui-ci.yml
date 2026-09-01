@@ -1,15 +1,7 @@
 name: WPF UI CI
 
 on:
-#  push:
-#    branches:
-#      - feature/wpf-ui-build
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
-  schedule:
-    - cron: '17 3 * * *'
 
 permissions:
   contents: read
@@ -20,77 +12,176 @@ env:
 
 jobs:
   build:
-    if: github.event_name != 'schedule'
     runs-on: windows-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
+
       - name: Restore
         run: dotnet restore YacaPluginSwitcher.sln
+
       - name: Static preflight
         shell: pwsh
         run: .\scripts\preflight.ps1
+
       - name: Build Release
         shell: pwsh
         run: |
           dotnet build YacaPluginSwitcher.sln -c Release --no-restore --no-incremental *> build.log
           Get-Content build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Verify EXE icon resource
         shell: pwsh
         run: |
           $ico = Join-Path $PWD 'src/YacaPluginSwitcher/Assets/vip3r_76.ico'
-          if (-not (Test-Path -LiteralPath $ico)) { throw "Generated ICO not found: $ico" }
+
+          if (-not (Test-Path -LiteralPath $ico)) {
+            throw "Generated ICO not found: $ico"
+          }
+
           $bytes = [System.IO.File]::ReadAllBytes($ico)
-          if ($bytes.Length -lt 32) { throw "Generated ICO is unexpectedly small: $($bytes.Length) bytes" }
-          if ($bytes[0] -ne 0 -or $bytes[1] -ne 0 -or $bytes[2] -ne 1 -or $bytes[3] -ne 0) { throw 'Generated file is not a valid ICO header.' }
+
+          if ($bytes.Length -lt 32) {
+            throw "Generated ICO is unexpectedly small: $($bytes.Length) bytes"
+          }
+
+          if (
+            $bytes[0] -ne 0 -or
+            $bytes[1] -ne 0 -or
+            $bytes[2] -ne 1 -or
+            $bytes[3] -ne 0
+          ) {
+            throw 'Generated file is not a valid ICO header.'
+          }
+
           $count = [BitConverter]::ToUInt16($bytes, 4)
-          if ($count -lt 5) { throw "ICO must contain multiple resolutions; found $count image(s)." }
+
+          if ($count -lt 5) {
+            throw "ICO must contain multiple resolutions; found $count image(s)."
+          }
+
           Write-Host "Generated ICO is valid and contains $count resolutions ($($bytes.Length) bytes)."
+
       - name: Create UI test package
         shell: pwsh
         run: |
           $publishRoot = Join-Path $PWD 'src/YacaPluginSwitcher/bin'
+
           $publishDir = Get-ChildItem $publishRoot -Directory -Recurse -Filter 'publish' |
-            Where-Object { @(Get-ChildItem $_.FullName -Filter '*.exe' -File).Count -gt 0 } |
+            Where-Object {
+              @(Get-ChildItem $_.FullName -Filter '*.exe' -File).Count -gt 0
+            } |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
-          if ($null -eq $publishDir) { throw "No publish directory containing an EXE found below: $publishRoot" }
+
+          if ($null -eq $publishDir) {
+            throw "No publish directory containing an EXE found below: $publishRoot"
+          }
+
           Write-Host "Using publish directory: $($publishDir.FullName)"
-          $exe = Get-ChildItem $publishDir.FullName -Filter '*.exe' -File | Select-Object -First 1
+
+          $exe = Get-ChildItem $publishDir.FullName -Filter '*.exe' -File |
+            Select-Object -First 1
+
           $releaseDir = Join-Path $PWD 'releases'
           New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
+
           $packageDir = Join-Path $env:RUNNER_TEMP 'YacaPluginSwitcher-ui-package'
-          if (Test-Path $packageDir) { Remove-Item $packageDir -Recurse -Force }
+
+          if (Test-Path $packageDir) {
+            Remove-Item $packageDir -Recurse -Force
+          }
+
           New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+
           Copy-Item $exe.FullName (Join-Path $packageDir $exe.Name)
+
           $zipPath = Join-Path $releaseDir 'YacaPluginSwitcher-v1.0.0-win-x64.zip'
-          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-          Compress-Archive -Path (Join-Path $packageDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
+
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
+          }
+
+          Compress-Archive `
+            -Path (Join-Path $packageDir '*') `
+            -DestinationPath $zipPath `
+            -CompressionLevel Optimal
+
       - name: Validate UI test package
         shell: pwsh
         run: |
           $releaseDir = Join-Path $PWD 'releases'
-          $zip = Get-ChildItem $releaseDir -Filter 'YacaPluginSwitcher-v*-win-x64.zip' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-          if ($null -eq $zip) { throw 'No user-ready UI test ZIP was generated.' }
+
+          $zip = Get-ChildItem $releaseDir -Filter 'YacaPluginSwitcher-v*-win-x64.zip' |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          if ($null -eq $zip) {
+            throw 'No user-ready UI test ZIP was generated.'
+          }
+
           Add-Type -AssemblyName System.IO.Compression
+
           $archive = [System.IO.Compression.ZipFile]::OpenRead($zip.FullName)
+
           try {
-            $files = @($archive.Entries | Where-Object { -not [string]::IsNullOrEmpty($_.Name) })
-            $exe = @($files | Where-Object { $_.Name -match '(?i)\.exe$' })
-            $forbidden = @($files | Where-Object { $_.Name -match '(?i)\.(pdb|dll|deps\.json|runtimeconfig\.json)$' })
-            if ($exe.Count -ne 1) { throw "UI test package must contain exactly one EXE; found $($exe.Count)." }
-            if ($forbidden.Count -ne 0) { throw "Forbidden files in UI test package: $($forbidden.Name -join ', ')" }
-          } finally { $archive.Dispose() }
-          $hash = (Get-FileHash -LiteralPath $zip.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            $files = @(
+              $archive.Entries |
+              Where-Object {
+                -not [string]::IsNullOrEmpty($_.Name)
+              }
+            )
+
+            $exe = @(
+              $files |
+              Where-Object {
+                $_.Name -match '(?i)\.exe$'
+              }
+            )
+
+            $forbidden = @(
+              $files |
+              Where-Object {
+                $_.Name -match '(?i)\.(pdb|dll|deps\.json|runtimeconfig\.json)$'
+              }
+            )
+
+            if ($exe.Count -ne 1) {
+              throw "UI test package must contain exactly one EXE; found $($exe.Count)."
+            }
+
+            if ($forbidden.Count -ne 0) {
+              throw "Forbidden files in UI test package: $($forbidden.Name -join ', ')."
+            }
+          }
+          finally {
+            $archive.Dispose()
+          }
+
+          $hash = (
+            Get-FileHash `
+              -LiteralPath $zip.FullName `
+              -Algorithm SHA256
+          ).Hash.ToLowerInvariant()
+
           $shaPath = "$($zip.FullName).sha256"
-          "$hash  $($zip.Name)" | Set-Content -LiteralPath $shaPath -Encoding ascii
-          "UI_TEST_ZIP=$($zip.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "UI_TEST_SHA=$shaPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+          "$hash  $($zip.Name)" |
+            Set-Content -LiteralPath $shaPath -Encoding ascii
+
+          "UI_TEST_ZIP=$($zip.FullName)" |
+            Out-File -FilePath $env:GITHUB_ENV -Append
+
+          "UI_TEST_SHA=$shaPath" |
+            Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Upload UI test package
         uses: actions/upload-artifact@v6
         with:
@@ -101,6 +192,7 @@ jobs:
           if-no-files-found: error
           retention-days: 10
           compression-level: 6
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v6
@@ -111,8 +203,9 @@ jobs:
           retention-days: 10
 
   cleanup-runs:
-    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+
     steps:
       - name: Keep only the latest 10 runs per workflow
         env:
@@ -121,12 +214,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           keep="${RUN_RETENTION_COUNT}"
+
           for workflow in ui-ci.yml release.yml; do
-            mapfile -t run_ids < <(gh api --paginate -H 'Accept: application/vnd.github+json' "/repos/${REPO}/actions/workflows/${workflow}/runs?per_page=100" --jq '.workflow_runs | .[] | .id')
-            if [ "${#run_ids[@]}" -le "${keep}" ]; then continue; fi
-            printf '%s\n' "${run_ids[@]:${keep}}" | while read -r run_id; do
+            mapfile -t run_ids < <(
+              gh api --paginate \
+                -H 'Accept: application/vnd.github+json' \
+                "/repos/${REPO}/actions/workflows/${workflow}/runs?per_page=100" \
+                --jq '.workflow_runs | .[] | .id'
+            )
+
+            if [ "${#run_ids[@]}" -le "${keep}" ]; then
+              continue
+            fi
+
+            printf '%s\n' "${run_ids[@]:${keep}}" |
+            while read -r run_id; do
               [ -z "${run_id}" ] && continue
-              gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}"
+              gh api --method DELETE \
+                "/repos/${REPO}/actions/runs/${run_id}"
             done
           done
