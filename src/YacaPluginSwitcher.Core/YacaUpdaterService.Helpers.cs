@@ -1,5 +1,3 @@
-using YacaPluginSwitcher.Models;
-
 namespace YacaPluginSwitcher.Core;
 
 public sealed partial class YacaUpdaterService
