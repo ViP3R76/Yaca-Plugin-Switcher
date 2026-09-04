@@ -120,16 +120,65 @@ public sealed class BackupManager
             throw new YacaOperationException(AppErrorCode.BackupTargetDirectoryMissing, "Target directory unavailable.");
 
         Directory.CreateDirectory(targetDirectory);
-        var temp = Path.Combine(targetDirectory, $".yaca_restore_{Guid.NewGuid():N}.tmp");
+
+        var stagedPath = Path.Combine(targetDirectory, $".yaca_restore_{Guid.NewGuid():N}.tmp");
+        var rollbackPath = Path.Combine(targetDirectory, $".yaca_restore_rollback_{Guid.NewGuid():N}.tmp");
+        var hadExistingTarget = File.Exists(targetFile);
+
         try
         {
-            File.Copy(backupFile, temp, false);
-            File.Move(temp, targetFile, true);
+            File.Copy(backupFile, stagedPath, false);
+            ValidateRestoredFile(stagedPath, validation);
+
+            if (hadExistingTarget)
+            {
+                File.Copy(targetFile, rollbackPath, false);
+                var currentValidation = YacaValidator.Validate(rollbackPath);
+                if (!currentValidation.IsValid)
+                    throw new YacaOperationException(AppErrorCode.InvalidYacaDll, currentValidation.Message);
+            }
+
+            File.Move(stagedPath, targetFile, true);
+            ValidateRestoredFile(targetFile, validation);
+
             _logger.Info($"Backup wiederhergestellt: {backup.DisplayName}");
+        }
+        catch
+        {
+            TryDelete(stagedPath);
+
+            try
+            {
+                if (hadExistingTarget && File.Exists(rollbackPath))
+                    File.Move(rollbackPath, targetFile, true);
+                else if (File.Exists(targetFile))
+                    File.Delete(targetFile);
+            }
+            catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
+            {
+                _logger.Error($"Rollback nach fehlgeschlagener Backup-Wiederherstellung fehlgeschlagen: {rollbackException.Message}");
+            }
+
+            throw;
         }
         finally
         {
-            TryDelete(temp);
+            TryDelete(stagedPath);
+            TryDelete(rollbackPath);
+        }
+    }
+
+    private static void ValidateRestoredFile(string path, ValidationResult sourceValidation)
+    {
+        var restoredValidation = YacaValidator.Validate(path);
+        if (!restoredValidation.IsValid
+            || restoredValidation.Version != sourceValidation.Version
+            || restoredValidation.Build != sourceValidation.Build
+            || !string.Equals(restoredValidation.Sha256, sourceValidation.Sha256, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new YacaOperationException(
+                AppErrorCode.InstalledFileVerificationFailed,
+                "Restored YACA DLL verification failed.");
         }
     }
 
