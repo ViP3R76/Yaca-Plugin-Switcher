@@ -8,10 +8,6 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    /// <summary>
-    /// Erstellt den Inhalt eines Navigationsbuttons.
-    /// Die SVG-Füllfarbe folgt zentral dem Foreground des zugehörigen Buttons.
-    /// </summary>
     private static void ConfigureNavContent(StackPanel content, string iconAssetKey, string text, Brush? iconBrush = null)
     {
         content.Orientation = Orientation.Horizontal;
@@ -21,11 +17,9 @@ public partial class MainWindow
         var foregroundBrush = iconBrush
             ?? Application.Current.FindResource("ForegroundBrush") as Brush
             ?? Brushes.White;
-
         var icon = DashboardIconRegistry.CreateIcon(iconAssetKey, foregroundBrush, 30, 30);
         if (icon is SvgIcon svgIcon)
         {
-            // Die Bindung ist die zentrale Farbquelle für alle SVG-Navigationsicons.
             svgIcon.SetBinding(SvgIcon.FillProperty, new Binding("Foreground")
             {
                 RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
@@ -43,14 +37,10 @@ public partial class MainWindow
         });
     }
 
-    /// <summary>
-    /// Fügt einen Eintrag zur linken Navigation hinzu.
-    /// </summary>
     private void AddNav(string key, string iconAssetKey, string text, Action action)
     {
         var content = new StackPanel();
         ConfigureNavContent(content, iconAssetKey, text);
-
         var button = new Button
         {
             Style = (Style)FindResource("NavButtonStyle"),
@@ -58,47 +48,42 @@ public partial class MainWindow
             Tag = key,
             Content = content
         };
-
         button.Click += (_, _) => action();
         NavPanel.Children.Add(button);
         _navButtons.Add((key, button));
     }
 
     /// <summary>
-    /// Aktualisiert den visuellen Zustand aller Navigationseinträge.
+    /// Öffnet den gemeinsamen Switch/Updater-Bereich und markiert ihn als Updater-Seite.
     /// </summary>
+    private void ShowUpdaterPage(string? status = null)
+    {
+        ShowSwitchPage(status);
+        SetActiveNav("updater");
+    }
+
     private void SetActiveNav(string key)
     {
         _activePage = key;
-
         foreach (var item in _navButtons)
         {
             var selected = item.Key.Equals(key, StringComparison.OrdinalIgnoreCase);
-
-            item.Button.Background = selected
-                ? (Brush)FindResource("NavSelectedBrush")
-                : Brushes.Transparent;
-            item.Button.Foreground = selected
-                ? (Brush)FindResource("GoldBrush")
-                : (Brush)FindResource("ForegroundBrush");
-            item.Button.BorderBrush = selected
-                ? (Brush)FindResource("GoldBrush")
-                : Brushes.Transparent;
-            item.Button.BorderThickness = selected
-                ? new Thickness(1)
-                : new Thickness(0);
+            item.Button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
+            item.Button.Foreground = selected ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
+            item.Button.BorderBrush = selected ? (Brush)FindResource("GoldBrush") : Brushes.Transparent;
+            item.Button.BorderThickness = selected ? new Thickness(1) : new Thickness(0);
         }
     }
 
-    /// <summary>
-    /// Zeigt die aktuell ausgewählte Seite nach einem Sprachwechsel erneut an.
-    /// </summary>
     private void ShowCurrentPageAfterLanguageChange()
     {
         switch (_activePage)
         {
             case "switch":
                 ShowSwitchPage();
+                break;
+            case "updater":
+                ShowUpdaterPage();
                 break;
             case "backups":
                 ShowBackups();
