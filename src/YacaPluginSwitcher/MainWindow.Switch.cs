@@ -34,31 +34,12 @@ public partial class MainWindow
         _ = InitializeStoredDownloadsAsync(versionList);
     }
 
-    /// <summary>
-    /// Erstellt das zweispaltige Seitenlayout. Links steht die Versionsübersicht,
-    /// rechts befindet sich ein eigener Container für Downloader und Downloads.
-    /// Dadurch müssen keine bereits angehängten WPF-Elemente nachträglich umgehängt werden.
-    /// </summary>
     private static Grid CreateSwitchPageRoot()
     {
-        var root = new Grid
-        {
-            Margin = new Thickness(0, 4, 0, 0)
-        };
-
-        root.ColumnDefinitions.Add(new ColumnDefinition
-        {
-            Width = new GridLength(1, GridUnitType.Star)
-        });
-        root.ColumnDefinitions.Add(new ColumnDefinition
-        {
-            Width = new GridLength(1, GridUnitType.Star)
-        });
-        root.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
-
+        var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         return root;
     }
 
@@ -76,23 +57,14 @@ public partial class MainWindow
         };
 
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = GridLength.Auto
-        });
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
         var header = CreateSwitchHeader(accent);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
 
-        var list = new StackPanel
-        {
-            Margin = new Thickness(6, 10, 6, 6)
-        };
+        var list = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
         var sortButton = CreateSortButton(list, accent);
         header.Children.Add(sortButton);
 
@@ -116,19 +88,10 @@ public partial class MainWindow
     private Grid CreateSwitchHeader(Brush accent)
     {
         var headerHost = new Grid();
-        headerHost.ColumnDefinitions.Add(new ColumnDefinition
-        {
-            Width = new GridLength(1, GridUnitType.Star)
-        });
-        headerHost.ColumnDefinitions.Add(new ColumnDefinition
-        {
-            Width = GridLength.Auto
-        });
-
-        var header = CreateDashboardHeader(
-            DashboardIconRegistry.IconAssetSync,
-            IsGerman ? "VERFÜGBARE VERSIONEN" : "AVAILABLE VERSIONS",
-            accent);
+        headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync,
+            IsGerman ? "VERFÜGBARE VERSIONEN" : "AVAILABLE VERSIONS", accent);
         Grid.SetColumn(header, 0);
         Grid.SetColumnSpan(header, 2);
         headerHost.Children.Add(header);
@@ -147,11 +110,7 @@ public partial class MainWindow
             BorderBrush = accent,
             Foreground = accent,
             ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
-            Content = DashboardIconRegistry.CreateIcon(
-                DashboardIconRegistry.IconAssetSort,
-                accent,
-                20,
-                20)
+            Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, accent, 20, 20)
         };
         sortButton.Click += (_, _) =>
         {
@@ -162,34 +121,27 @@ public partial class MainWindow
         return sortButton;
     }
 
-    /// <summary>
-    /// Erstellt den Downloader als erstes Panel im rechten Container.
-    /// </summary>
     private void CreateUpdaterPanel(Grid root)
     {
+        // Die Seite wird bei Navigation/Refresh vollständig neu aufgebaut.
+        // Deshalb dürfen dynamische Controls niemals aus der vorherigen Seite wiederverwendet werden.
+        _updaterSelectAll = null;
+        _updaterSelectionList = null;
+        _updaterSelectionPanel = null;
+        _rendererUpdaterStepPanel = null;
+        _rendererUpdaterStatusSource = null;
+        _rendererUpdaterSteps.Clear();
+
         var gold = (Brush)FindResource("GoldBrush");
         var updaterCard = CreatePanelCardForSwitch(gold, new Thickness(6, 6, 6, 3));
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = GridLength.Auto
-        });
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = GridLength.Auto
-        });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-        var header = CreateDashboardHeader(
-            DashboardIconRegistry.IconAssetSync,
-            "DOWNLOADER",
-            gold);
+        var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync, "DOWNLOADER", gold);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
-
         var content = CreateUpdaterContent();
         Grid.SetRow(content, 1);
         panel.Children.Add(content);
@@ -211,22 +163,11 @@ public partial class MainWindow
         root.Children.Add(CreateRightPanelContainer(updaterCard));
     }
 
-    /// <summary>
-    /// Erstellt den rechten Container. Beide Panels werden von Anfang an als Kinder
-    /// desselben Grids angelegt; dadurch entsteht kein ungültiger WPF-Reparenting-Vorgang.
-    /// </summary>
     private static Grid CreateRightPanelContainer(Border updaterCard)
     {
         var rightStack = new Grid();
-        rightStack.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
-        rightStack.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
-
+        rightStack.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        rightStack.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         Grid.SetColumn(rightStack, 1);
         Grid.SetRow(updaterCard, 0);
         rightStack.Children.Add(updaterCard);
@@ -238,26 +179,14 @@ public partial class MainWindow
         var gold = (Brush)FindResource("GoldBrush");
         var filesCard = CreatePanelCardForSwitch(gold, new Thickness(6, 3, 6, 6));
         var panel = new Grid();
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = GridLength.Auto
-        });
-        panel.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        var header = CreateDashboardHeader(
-            DashboardIconRegistry.IconAssetBackup,
-            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES",
-            gold);
+        var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup,
+            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", gold);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
-
-        _downloadedFilesPanel = new StackPanel
-        {
-            Margin = new Thickness(6, 10, 6, 6)
-        };
+        _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
         var filesScroll = new ScrollViewer
         {
             Content = _downloadedFilesPanel,
@@ -267,7 +196,6 @@ public partial class MainWindow
         };
         Grid.SetRow(filesScroll, 1);
         panel.Children.Add(filesScroll);
-
         filesCard.Child = panel;
 
         if (root.Children.OfType<Grid>().FirstOrDefault(grid => Grid.GetColumn(grid) == 1) is { } rightStack)
@@ -278,14 +206,8 @@ public partial class MainWindow
         }
 
         var fallbackContainer = new Grid();
-        fallbackContainer.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
-        fallbackContainer.RowDefinitions.Add(new RowDefinition
-        {
-            Height = new GridLength(1, GridUnitType.Star)
-        });
+        fallbackContainer.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        fallbackContainer.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         Grid.SetColumn(fallbackContainer, 1);
         Grid.SetRow(filesCard, 1);
         fallbackContainer.Children.Add(filesCard);
@@ -322,9 +244,7 @@ public partial class MainWindow
         };
         _updaterStatus = new TextBlock
         {
-            Text = IsGerman
-                ? "Neue YACA Versionen können hier heruntergeladen werden."
-                : "New YACA versions can be downloaded here.",
+            Text = IsGerman ? "Neue YACA Versionen können hier heruntergeladen werden." : "New YACA versions can be downloaded here.",
             FontSize = 14,
             Foreground = (Brush)FindResource("SecondaryBrush"),
             TextAlignment = TextAlignment.Center,
@@ -371,9 +291,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             _service.Logger.Error($"Stored YACA plugin processing failed: {ex}");
-            SetGlobalStatus(IsGerman
-                ? "Gespeicherte YACA Downloads konnten nicht vollständig geprüft werden."
-                : "Stored YACA downloads could not be fully processed.");
+            SetGlobalStatus(IsGerman ? "Gespeicherte YACA Downloads konnten nicht vollständig geprüft werden." : "Stored YACA downloads could not be fully processed.");
         }
     }
 
@@ -391,9 +309,7 @@ public partial class MainWindow
             var button = new Button
             {
                 Style = (Style)FindResource("TileButtonStyle"),
-                BorderBrush = active
-                    ? (Brush)FindResource("SuccessBrush")
-                    : (Brush)FindResource("AccentBrush"),
+                BorderBrush = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("AccentBrush"),
                 Margin = new Thickness(0, 2, 0, 2),
                 Height = 58,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
@@ -409,13 +325,9 @@ public partial class MainWindow
         var build = plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
         return new TextBlock
         {
-            Text = active
-                ? $"YACA {plugin.Version} - (Build: {build})   —   {Texts.Active.TrimEnd(':')}"
-                : $"YACA {plugin.Version} - (Build: {build})",
+            Text = active ? $"YACA {plugin.Version} - (Build: {build})   —   {Texts.Active.TrimEnd(':')}" : $"YACA {plugin.Version} - (Build: {build})",
             FontSize = 15,
-            Foreground = active
-                ? (Brush)FindResource("SuccessBrush")
-                : (Brush)FindResource("ForegroundBrush")
+            Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush")
         };
     }
 
@@ -436,21 +348,11 @@ public partial class MainWindow
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            _service.Installer.Install(
-                plugin,
-                _service.TargetFile,
-                current,
-                _service.Settings.AutomaticBackup,
-                _service.Settings.MaxBackups);
+            _service.Installer.Install(plugin, _service.TargetFile, current, _service.Settings.AutomaticBackup, _service.Settings.MaxBackups);
             ShowSwitchPage();
             SetPluginSwitchFooterStatus(plugin);
         }
-        catch (Exception ex) when (
-            ex is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or InvalidOperationException
-            or YacaOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or YacaOperationException)
         {
             _service.Logger.Error($"YACA switch failed: {ex}");
             ShowError(Localization.GetErrorMessage(ex, text, text.ErrorUnexpected));
