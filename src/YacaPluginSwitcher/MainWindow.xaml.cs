@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using YacaPluginSwitcher.Core;
@@ -18,54 +19,47 @@ public partial class MainWindow : Window
 
     private string _activePage = "home";
 
-    private TextBlock?
-        _currentValue,
-        _currentDetails,
-        _tsStatus,
-        _tsDescription,
-        _backupSummary;
+    private TextBlock? _currentValue;
+    private TextBlock? _currentDetails;
+    private TextBlock? _tsStatus;
+    private TextBlock? _tsDescription;
+    private TextBlock? _backupSummary;
 
     private Button? _tsClose;
 
-    private StackPanel?
-        _versionList,
-        _downloadedFilesPanel;
+    private StackPanel? _versionList;
+    private StackPanel? _downloadedFilesPanel;
 
-    private Border?
-        _currentCard,
-        _backupCard;
+    private Border? _currentCard;
+    private Border? _backupCard;
 
     private ProgressBar? _updaterProgress;
 
-    private TextBlock?
-        _updaterStatus,
-        _updaterVersion,
-        _updaterSize;
+    private TextBlock? _updaterStatus;
+    private TextBlock? _updaterVersion;
+    private TextBlock? _updaterSize;
 
     private CancellationTokenSource? _updaterCts;
 
-    private UiText Texts =>
-        Localization.Get(_service.Settings.Language);
+    private UiText Texts => Localization.Get(_service.Settings.Language);
 
-    private bool IsGerman =>
-        Localization.Normalize(_service.Settings.Language)
-        == Localization.German;
+    private bool IsGerman => Localization.Normalize(_service.Settings.Language) == Localization.German;
 
     private bool _switchSortDescending = true;
 
-    /// <summary>
-    /// Initialisiert das Hauptfenster und die zentralen UI-Komponenten.
-    /// </summary>
     public MainWindow(YacaService service)
     {
-        _service = service
-            ?? throw new ArgumentNullException(nameof(service));
-
+        _service = service ?? throw new ArgumentNullException(nameof(service));
         _updater = new YacaUpdaterService(_service);
 
         InitializeComponent();
 
-        GlobalFooterVersionText.Text = "v1.1.0";
+        var informationalVersion = typeof(MainWindow).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+        GlobalFooterVersionText.Text = string.IsNullOrWhiteSpace(informationalVersion)
+            ? "v1.0.0"
+            : $"v{informationalVersion}";
 
         BuildNavigation();
         LoadLanguageSelector();
