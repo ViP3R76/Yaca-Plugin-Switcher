@@ -6,9 +6,6 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    /// <summary>
-    /// Erstellt die Navigation aus den zentral registrierten Einträgen.
-    /// </summary>
     private void BuildNavigation()
     {
         NavPanel.Children.Clear();
@@ -23,11 +20,7 @@ public partial class MainWindow
             _ = ClearTemporaryRefreshStatusAsync(status);
         });
         AddNav("switch", DashboardIconRegistry.IconAssetSync, IsGerman ? "YACA wechseln" : "Switch YACA", ShowSwitchPage);
-        AddNav("updater", DashboardIconRegistry.IconAssetSync, "YACA Updater", () =>
-        {
-            ShowSwitchPage();
-            Dispatcher.BeginInvoke(new Action(() => SetActiveNav("updater")), System.Windows.Threading.DispatcherPriority.Background);
-        });
+        AddNav("updater", DashboardIconRegistry.IconAssetSync, "YACA Updater", ShowUpdaterPage);
 
         NavPanel.Children.Add(new Separator
         {
