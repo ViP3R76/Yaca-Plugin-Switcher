@@ -79,10 +79,6 @@ public sealed partial class YacaUpdaterService
         return Task.FromResult<IReadOnlyList<(string Version, string FileName, long Size)>>(result);
     }
 
-    /// <summary>
-    /// Ermittelt online verfügbare Versionen, die noch nicht als valide DLL im lokalen Versionsbestand existieren.
-    /// Ein Archiv allein zählt niemals als installierte Version.
-    /// </summary>
     public async Task<IReadOnlyList<string>> GetMissingVersionsAsync(CancellationToken cancellationToken = default)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
@@ -387,31 +383,44 @@ public sealed partial class YacaUpdaterService
         ExtractVersions(document.RootElement, versions);
     }
 
+    /// <summary>
+    /// Liest ausschließlich explizit als Version bezeichnete JSON-Felder.
+    /// Beliebige Stringwerte der API dürfen niemals als YACA-Version interpretiert werden.
+    /// </summary>
     private static void ExtractVersions(JsonElement element, IDictionary<long, string> versions)
     {
         switch (element.ValueKind)
         {
             case JsonValueKind.Object:
                 foreach (var property in element.EnumerateObject())
-                    ExtractVersions(property.Value, versions);
+                {
+                    if (IsVersionProperty(property.Name))
+                        AddVersion(property.Value, versions);
+                    else
+                        ExtractVersions(property.Value, versions);
+                }
                 break;
             case JsonValueKind.Array:
                 foreach (var item in element.EnumerateArray())
                     ExtractVersions(item, versions);
                 break;
-            case JsonValueKind.String:
-                AddVersion(element.GetString(), versions);
-                break;
         }
     }
 
-    private static void AddVersion(string? value, IDictionary<long, string> versions)
+    private static bool IsVersionProperty(string propertyName) =>
+        string.Equals(propertyName, "version", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(propertyName, "yacaVersion", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(propertyName, "yaca_version", StringComparison.OrdinalIgnoreCase);
+
+    private static void AddVersion(JsonElement value, IDictionary<long, string> versions)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (value.ValueKind != JsonValueKind.String)
             return;
 
-        var trimmed = value.Trim();
-        if (!VersionStringRegex.IsMatch(trimmed) || !Version.TryParse(trimmed, out _))
+        var trimmed = value.GetString()?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed)
+            || !VersionStringRegex.IsMatch(trimmed)
+            || !Version.TryParse(trimmed, out _))
             return;
 
         versions[ParseVersion(trimmed)] = trimmed;
@@ -431,70 +440,3 @@ public sealed partial class YacaUpdaterService
         var dllMatch = VersionDigitsRegex.Match(fileName);
         return dllMatch.Success ? DecodeCompactVersion(dllMatch.Groups[1].Value) : null;
     }
-
-    private static string? DecodeCompactVersion(string digits)
-    {
-        if (digits.Length == 3)
-            return $"{digits[0]}.{digits[1]}.{digits[2]}";
-
-        if (digits.Length == 6)
-            return $"{digits[..2]}.{digits[2..4]}.{digits[4..6]}";
-
-        return null;
-    }
-
-    private static long ParseVersion(string version)
-    {
-        if (!Version.TryParse(version, out var parsed))
-            return long.MinValue;
-
-        return parsed.Major * 1_000_000L + parsed.Minor * 1_000L + parsed.Build;
-    }
-
-    private static void Report(
-        IProgress<YacaUpdaterProgress>? progress,
-        string version,
-        string status,
-        bool completed,
-        bool success,
-        string? error)
-    {
-        progress?.Report(new YacaUpdaterProgress(version, 0, null, status, completed, success, error));
-    }
-
-    private void CleanTemporaryUpdaterFiles()
-    {
-        if (!Directory.Exists(TempDirectory))
-            return;
-
-        foreach (var file in Directory.EnumerateFiles(TempDirectory, "yaca_*_3.6.x.ts3_plugin*", SearchOption.TopDirectoryOnly))
-            TryDelete(file);
-
-        foreach (var directory in Directory.EnumerateDirectories(TempDirectory, "validate_*", SearchOption.TopDirectoryOnly))
-            TryDeleteDirectory(directory);
-    }
-
-    private static void TryDelete(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-        catch
-        {
-        }
-    }
-
-    private static void TryDeleteDirectory(string path)
-    {
-        try
-        {
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
-        }
-        catch
-        {
-        }
-    }
-}
