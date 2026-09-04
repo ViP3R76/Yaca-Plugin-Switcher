@@ -17,6 +17,7 @@ public partial class ConfigView : UserControl
     private readonly YacaService _service;
     private readonly MainWindow _owner;
     private bool _loading;
+    private bool _useCustomPath;
 
     private UiText Texts => Localization.Get(_service.Settings.Language);
 
@@ -29,9 +30,6 @@ public partial class ConfigView : UserControl
         LoadSettings();
     }
 
-    /// <summary>
-    /// Überträgt die aktuell gespeicherten Werte in die Steuerelemente.
-    /// </summary>
     private void LoadSettings()
     {
         _loading = true;
@@ -44,12 +42,8 @@ public partial class ConfigView : UserControl
             TitleText.Text = isGerman ? "KONFIGURATION" : "CONFIGURATION";
             AutomaticBackup.Content = text.AutomaticBackup;
             WarnRunning.Content = text.WarnIfTeamSpeakRunningOption;
-            KeepYacaPluginDownloads.Content = isGerman
-                ? "Yaca Plugin Downloads behalten"
-                : "Keep Yaca plugin downloads";
-            DownloadAllWithoutPrompt.Content = isGerman
-                ? "Alle Plugins direkt downloaden, ohne Nachfrage"
-                : "Download all plugins directly without prompting";
+            KeepYacaPluginDownloads.Content = isGerman ? "Yaca Plugin Downloads behalten" : "Keep Yaca plugin downloads";
+            DownloadAllWithoutPrompt.Content = isGerman ? "Alle Plugins direkt downloaden, ohne Nachfrage" : "Download all plugins directly without prompting";
             Expert.Content = text.ExpertSettings;
             MultipleInstances.Content = text.MultipleTeamSpeakInstancesOption;
             GeneralLogging.Content = text.GeneralLogging;
@@ -67,6 +61,7 @@ public partial class ConfigView : UserControl
             DownloadAllWithoutPrompt.IsChecked = _service.Settings.DownloadAllPluginsWithoutPrompt;
             Expert.IsChecked = _service.Settings.ExpertSettings;
             MaxBackups.Text = _service.Settings.MaxBackups.ToString(CultureInfo.InvariantCulture);
+            _useCustomPath = _service.Settings.UseCustomTeamSpeakPluginDirectory;
             ActivePath.Text = _service.Settings.TeamSpeakPluginDirectory
                 ?? YacaService.GetDefaultTeamSpeakPluginDirectory();
             MultipleInstances.IsChecked = _service.Settings.UseMultipleTeamSpeakInstances;
@@ -88,14 +83,9 @@ public partial class ConfigView : UserControl
         }
     }
 
-    /// <summary>
-    /// Blendet den Bereich für Experteneinstellungen ein oder aus.
-    /// </summary>
     private void UpdateExpert()
     {
-        ExpertPanel.Visibility = Expert.IsChecked == true
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        ExpertPanel.Visibility = Expert.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Expert_Changed(object sender, RoutedEventArgs e)
@@ -109,10 +99,7 @@ public partial class ConfigView : UserControl
         if (_loading || LanguageCombo.SelectedIndex < 0)
             return;
 
-        _service.Settings.Language = LanguageCombo.SelectedIndex == 0
-            ? Localization.German
-            : Localization.English;
-
+        _service.Settings.Language = LanguageCombo.SelectedIndex == 0 ? Localization.German : Localization.English;
         _owner.RefreshNavigationLanguage();
         LoadSettings();
     }
@@ -129,10 +116,7 @@ public partial class ConfigView : UserControl
 
     private void AddPath_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = Texts.AddPath
-        };
+        var dialog = new OpenFolderDialog { Title = Texts.AddPath };
 
         if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
         {
@@ -153,12 +137,16 @@ public partial class ConfigView : UserControl
     private void UsePath_Click(object sender, RoutedEventArgs e)
     {
         if (PathsList.SelectedItem is string path)
+        {
             ActivePath.Text = path;
+            _useCustomPath = true;
+        }
     }
 
     private void AutoDetect_Click(object sender, RoutedEventArgs e)
     {
         ActivePath.Text = YacaService.GetDefaultTeamSpeakPluginDirectory();
+        _useCustomPath = false;
     }
 
     private void Browse_Click(object sender, RoutedEventArgs e)
@@ -172,13 +160,12 @@ public partial class ConfigView : UserControl
         };
 
         if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
+        {
             ActivePath.Text = dialog.FolderName;
+            _useCustomPath = true;
+        }
     }
 
-    /// <summary>
-    /// Öffnet ein vorhandenes Verzeichnis über den Windows Explorer.
-    /// Die Prüfung verhindert, dass ungültige Pfade an ShellExecute übergeben werden.
-    /// </summary>
     private static void OpenDirectory(string directory)
     {
         if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
@@ -191,55 +178,27 @@ public partial class ConfigView : UserControl
         });
     }
 
-    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDirectory(_service.Paths.LogDirectory);
-    }
-
-    private void OpenBackupDirectory_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDirectory(_service.Paths.BackupDirectory);
-    }
-
-    private void OpenPluginDirectory_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDirectory(_service.Paths.PluginDirectory);
-    }
-
-    private void OpenAppDirectory_Click(object sender, RoutedEventArgs e)
-    {
-        OpenDirectory(_service.Paths.BaseDirectory);
-    }
+    private void OpenLogDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.LogDirectory);
+    private void OpenBackupDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.BackupDirectory);
+    private void OpenPluginDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.PluginDirectory);
+    private void OpenAppDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.BaseDirectory);
 
     /// <summary>
     /// Validiert und speichert die Einstellungen über AppSettings.Save().
     /// </summary>
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(
-                MaxBackups.Text,
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var max)
-            || max < 1
-            || max > 9)
+        if (!int.TryParse(MaxBackups.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var max)
+            || max < 1 || max > 9)
         {
-            MessageBox.Show(
-                Texts.ErrorInvalidArgument,
-                Texts.ConfigTitle,
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            MessageBox.Show(Texts.ErrorInvalidArgument, Texts.ConfigTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         var path = ActivePath.Text.Trim();
-        if (!Directory.Exists(path))
+        if (_useCustomPath && !Directory.Exists(path))
         {
-            MessageBox.Show(
-                Texts.PathMustBeValid,
-                Texts.ConfigTitle,
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            MessageBox.Show(Texts.PathMustBeValid, Texts.ConfigTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -249,7 +208,8 @@ public partial class ConfigView : UserControl
         _service.Settings.DownloadAllPluginsWithoutPrompt = DownloadAllWithoutPrompt.IsChecked == true;
         _service.Settings.ExpertSettings = Expert.IsChecked == true;
         _service.Settings.MaxBackups = max;
-        _service.Settings.TeamSpeakPluginDirectory = path;
+        _service.Settings.UseCustomTeamSpeakPluginDirectory = _useCustomPath;
+        _service.Settings.TeamSpeakPluginDirectory = _useCustomPath ? path : null;
         _service.Settings.UseMultipleTeamSpeakInstances = MultipleInstances.IsChecked == true;
         _service.Settings.GeneralLogging = GeneralLogging.IsChecked == true;
         _service.Settings.DebugLogging = DebugLogging.IsChecked == true;
@@ -260,8 +220,5 @@ public partial class ConfigView : UserControl
         _owner.ReturnHome();
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        _owner.ReturnHome();
-    }
+    private void Cancel_Click(object sender, RoutedEventArgs e) => _owner.ReturnHome();
 }
