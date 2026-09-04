@@ -1,3 +1,5 @@
+global using System.Text;
+
 using YacaPluginSwitcher.Configuration;
 using YacaPluginSwitcher.Models;
 
@@ -14,10 +16,6 @@ public sealed class YacaService
     public BackupManager Backups { get; }
     public YacaInstaller Installer { get; }
 
-    /// <summary>
-    /// Resolves the target plugin directory. The multiple-instance list is intentionally
-    /// ignored unless the user explicitly enables multiple TeamSpeak installations.
-    /// </summary>
     public string TargetDirectory
     {
         get
@@ -26,8 +24,12 @@ public sealed class YacaService
             if (Settings.UseMultipleTeamSpeakInstances && !string.IsNullOrWhiteSpace(configured))
                 return configured;
 
-            if (!Settings.UseMultipleTeamSpeakInstances && Settings.UseCustomTeamSpeakPluginDirectory && !string.IsNullOrWhiteSpace(configured))
+            if (!Settings.UseMultipleTeamSpeakInstances
+                && Settings.UseCustomTeamSpeakPluginDirectory
+                && !string.IsNullOrWhiteSpace(configured))
+            {
                 return configured;
+            }
 
             return GetDefaultTeamSpeakPluginDirectory();
         }
@@ -39,10 +41,8 @@ public sealed class YacaService
     {
         Paths = new AppPaths(AppContext.BaseDirectory);
         Paths.EnsureDirectories();
-
         Settings = AppSettings.Load(Paths.SettingsFilePath);
         InitializeTeamSpeakPathSettings();
-
         Logger = new Logger(Paths.LogDirectory, Settings.GeneralLogging, Settings.DebugLogging);
         Scanner = new YacaScanner(Logger);
         Backups = new BackupManager(Paths.BackupDirectory, Logger);
@@ -60,15 +60,7 @@ public sealed class YacaService
         if (!validation.IsValid || validation.Version is null || string.IsNullOrWhiteSpace(validation.Sha256))
             return null;
 
-        return new YacaPluginInfo(
-            TargetFile,
-            TargetFileName,
-            validation.Version,
-            validation.Build,
-            validation.FileSize,
-            validation.Sha256,
-            true,
-            validation.Message);
+        return new YacaPluginInfo(TargetFile, TargetFileName, validation.Version, validation.Build, validation.FileSize, validation.Sha256, true, validation.Message);
     }
 
     public void SetTargetDirectory(string directory)
@@ -78,6 +70,7 @@ public sealed class YacaService
         Directory.CreateDirectory(fullPath);
         Settings.AddTeamSpeakPluginDirectory(fullPath);
         Settings.TeamSpeakPluginDirectory = fullPath;
+        Settings.UseCustomTeamSpeakPluginDirectory = true;
         Settings.Save();
     }
 
@@ -102,17 +95,13 @@ public sealed class YacaService
         if (!string.IsNullOrWhiteSpace(localAppData))
             candidates.Add(Path.Combine(localAppData, "TS3Client", "plugins"));
 
-        return candidates
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return candidates.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private void InitializeTeamSpeakPathSettings()
     {
         var defaultPath = GetDefaultTeamSpeakPluginDirectory();
 
-        // A null TeamSpeakPluginDirectory means "automatic detection" in single-instance mode.
-        // Do not persist the detected path; this keeps the default genuinely automatic.
         if (Settings.UseMultipleTeamSpeakInstances)
         {
             Settings.AddTeamSpeakPluginDirectory(defaultPath);
@@ -126,7 +115,6 @@ public sealed class YacaService
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // The app can still operate if the portable config cannot currently be written.
         }
     }
 }
