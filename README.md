@@ -11,6 +11,10 @@ A lightweight Windows application for managing, validating, backing up and switc
 
 [Download the latest release](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 
+## Screenshot
+
+![YACA Plugin Switcher Dashboard](docs/dashboard.png)
+
 ## Features
 
 - Automatic discovery of YACA DLLs in the local `Plugins` folder
@@ -53,7 +57,7 @@ The release is self-contained. No separate .NET runtime installation is required
 2. Extract it to a folder of your choice.
 3. Start `YacaPluginSwitcher.exe`.
 4. Place the YACA Windows x64 DLLs you are licensed to use into the local `Plugins` folder.
-5. Use **Plugins Folder** in the application to open that folder when needed.
+5. Use the application to select, switch and manage installed YACA versions.
 
 YACA binaries and TeamSpeak software are **not** distributed with this project.
 
@@ -130,6 +134,8 @@ YacaPluginSwitcher/
 │       ├── Styles/
 │       ├── Views/
 │       └── MainWindow.*
+├── docs/
+│   └── dashboard.png
 ├── scripts/
 ├── Build/
 ├── .github/workflows/
