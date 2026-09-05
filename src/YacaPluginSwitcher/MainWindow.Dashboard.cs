@@ -71,9 +71,11 @@ public partial class MainWindow
 
             if (_tsClose is not null)
             {
+                // A stopped TeamSpeak must not reserve the close-button's space;
+                // otherwise the remaining status content is visually shifted upward.
                 _tsClose.Visibility = teamSpeakRunning
                     ? Visibility.Visible
-                    : Visibility.Hidden;
+                    : Visibility.Collapsed;
             }
 
             UpdateBackupSummary(_service.Backups.ListBackups().FirstOrDefault());
