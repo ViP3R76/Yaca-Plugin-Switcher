@@ -6,8 +6,8 @@ namespace YacaPluginSwitcher.Configuration;
 /// </summary>
 public static class SettingsLocalization
 {
-    private static readonly IReadOnlyDictionary<string, (string German, string English)> Texts =
-        new Dictionary<string, (string German, string English)>(StringComparer.Ordinal)
+    private static readonly Dictionary<string, (string German, string English)> Texts =
+        new(StringComparer.Ordinal)
         {
             ["Configuration"] = ("KONFIGURATION", "CONFIGURATION"),
             ["General"] = ("ALLGEMEIN", "GENERAL"),
