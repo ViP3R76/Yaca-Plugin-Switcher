@@ -88,8 +88,11 @@ public partial class ConfigView : UserControl
             LogDirectoryLabel.Text = SettingsText("LogDirectory");
             OpenLogButton.Content = SettingsText("Open");
             DeleteLogsLabel.Text = SettingsText("DeleteLogs");
+            DeleteLogsLabel.HorizontalAlignment = HorizontalAlignment.Center;
             DeleteLogsButton.Content = SettingsText("Delete");
             CancelDeleteLogsButton.Content = SettingsText("Cancel");
+            DeleteLogsButton.Width = 110;
+            CancelDeleteLogsButton.Width = 125;
             ApplicationDirectoriesHeader.Text = SettingsText("ApplicationDirectories");
             BackupsDirectoryLabel.Text = SettingsText("Backups");
             PluginsDirectoryLabel.Text = SettingsText("Plugins");
