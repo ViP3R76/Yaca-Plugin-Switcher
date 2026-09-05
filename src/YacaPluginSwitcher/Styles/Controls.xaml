@@ -162,6 +162,15 @@
         <Style.Triggers><Trigger Property="Orientation" Value="Horizontal"><Setter Property="Height" Value="10" /><Setter Property="Width" Value="Auto" /></Trigger></Style.Triggers>
     </Style>
     <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
+
+    <!-- DataGrid creates its own ScrollBar scope inside its default template.
+         Keep the same central DarkScrollBarStyle there instead of styling each view separately. -->
+    <Style TargetType="DataGrid">
+        <Style.Resources>
+            <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
+        </Style.Resources>
+    </Style>
+
     <Style TargetType="TextBlock"><Setter Property="FontFamily" Value="Segoe UI" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /></Style>
 
     <Style TargetType="ComboBox"><Setter Property="Template" Value="{StaticResource DarkComboBoxTemplate}" /><Setter Property="Background" Value="{StaticResource ControlBrush}" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="Padding" Value="9,0,34,0" /><Setter Property="FontFamily" Value="Segoe UI" /><Setter Property="FontSize" Value="13" /><Setter Property="HorizontalContentAlignment" Value="Left" /><Setter Property="VerticalContentAlignment" Value="Center" /></Style>
