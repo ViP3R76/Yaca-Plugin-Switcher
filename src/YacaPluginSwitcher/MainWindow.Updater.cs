@@ -14,6 +14,8 @@ public partial class MainWindow
     private Button? _updaterDownloadButton;
     private Button? _updaterCancelButton;
     private string[] _pendingUpdaterDownloads = [];
+    private CancellationTokenSource? _updaterNoUpdatesMessageCts;
+    private bool _updaterDownloadInProgress;
 
     private async Task RunUpdaterActionAsync()
     {
@@ -44,14 +46,6 @@ public partial class MainWindow
             _updaterProgress.Value = 0;
         }
 
-        if (_updaterStatus is not null)
-        {
-            _updaterStatus.Text = IsGerman
-                ? "Suche nach verfügbaren YACA Versionen …"
-                : "Checking for available YACA versions …";
-            SetGlobalStatus(_updaterStatus.Text);
-        }
-
         try
         {
             await EnsureStoredDownloadsProcessedAsync();
@@ -59,10 +53,10 @@ public partial class MainWindow
 
             if (missingVersions.Count == 0)
             {
+                ShowNoUpdatesMessage();
                 SetGlobalStatus(IsGerman
                     ? "Keine neuen YACA Downloads verfügbar"
                     : "No new YACA downloads available");
-                ShowUpdaterReadyState();
                 return;
             }
 
@@ -92,6 +86,65 @@ public partial class MainWindow
         }
     }
 
+    private void ShowNoUpdatesMessage()
+    {
+        _updaterNoUpdatesMessageCts?.Cancel();
+
+        var cts = new CancellationTokenSource();
+        _updaterNoUpdatesMessageCts = cts;
+
+        if (_updaterProgress is not null)
+        {
+            _updaterProgress.Visibility = Visibility.Collapsed;
+            _updaterProgress.Value = 0;
+        }
+
+        var successBrush = (Brush)FindResource("SuccessBrush");
+        if (_updaterVersion is not null)
+        {
+            _updaterVersion.Text = IsGerman
+                ? "Keine neuen YACA Versionen verfügbar"
+                : "No new YACA versions available";
+            _updaterVersion.Foreground = successBrush;
+        }
+
+        if (_updaterStatus is not null)
+        {
+            _updaterStatus.Text = IsGerman
+                ? "Die Updateprüfung ist abgeschlossen."
+                : "The update check is complete.";
+            _updaterStatus.Foreground = successBrush;
+        }
+
+        _ = RestoreUpdaterReadyStateAfterNoUpdatesAsync(cts);
+    }
+
+    private async Task RestoreUpdaterReadyStateAfterNoUpdatesAsync(CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(4), cts.Token);
+            if (cts.IsCancellationRequested
+                || !ReferenceEquals(_updaterNoUpdatesMessageCts, cts)
+                || _updaterCts is not null
+                || _updaterDownloadInProgress)
+            {
+                return;
+            }
+
+            ShowUpdaterReadyState();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (ReferenceEquals(_updaterNoUpdatesMessageCts, cts))
+                _updaterNoUpdatesMessageCts = null;
+            cts.Dispose();
+        }
+    }
+
     private void ShowBulkDownloadReadyState(int count)
     {
         if (_updaterProgress is not null)
@@ -101,11 +154,17 @@ public partial class MainWindow
         }
 
         if (_updaterVersion is not null)
+        {
             _updaterVersion.Text = IsGerman ? $"{count} Downloads verfügbar" : $"{count} downloads available";
+            _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
+        }
         if (_updaterStatus is not null)
+        {
             _updaterStatus.Text = IsGerman
                 ? "Alle fehlenden oder neuen YACA Plugins sind bereit zum Download."
                 : "All missing or new YACA plugins are ready to download.";
+            _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+        }
         if (_updaterSearchButton is not null)
         {
             _updaterSearchButton.Content = IsGerman ? "DOWNLOAD STARTEN" : "START DOWNLOAD";
@@ -164,11 +223,17 @@ public partial class MainWindow
         _updaterSelectionPanel.Visibility = Visibility.Visible;
 
         if (_updaterVersion is not null)
+        {
             _updaterVersion.Text = IsGerman ? $"{versions.Count} Updates gefunden" : $"{versions.Count} updates found";
+            _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
+        }
         if (_updaterStatus is not null)
+        {
             _updaterStatus.Text = IsGerman
                 ? "Versionen auswählen und anschließend DOWNLOADEN drücken."
                 : "Select versions and then press DOWNLOAD.";
+            _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+        }
         UpdateUpdaterActionButtonState();
     }
 
@@ -190,6 +255,8 @@ public partial class MainWindow
             return;
 
         _updaterCts = new CancellationTokenSource();
+        _updaterDownloadInProgress = true;
+        _updaterNoUpdatesMessageCts?.Cancel();
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.IsEnabled = false;
         if (_updaterProgress is not null)
@@ -224,6 +291,7 @@ public partial class MainWindow
         {
             if (_updaterSelectionPanel is not null)
                 _updaterSelectionPanel.IsEnabled = true;
+            _updaterDownloadInProgress = false;
             _updaterCts.Dispose();
             _updaterCts = null;
         }
@@ -317,11 +385,17 @@ public partial class MainWindow
             _updaterProgress.Value = 0;
         }
         if (_updaterVersion is not null)
+        {
             _updaterVersion.Text = IsGerman ? "Bereit für Updates" : "Ready for updates";
+            _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
+        }
         if (_updaterStatus is not null)
+        {
             _updaterStatus.Text = IsGerman
                 ? "Neue YACA Versionen können hier gesucht werden."
                 : "New YACA versions can be searched here.";
+            _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+        }
         if (_updaterSearchButton is not null)
         {
             _updaterSearchButton.Content = IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES";
@@ -333,9 +407,15 @@ public partial class MainWindow
     private void UpdateUpdaterProgress(YacaUpdaterProgress progress)
     {
         if (_updaterVersion is not null)
+        {
             _updaterVersion.Text = $"YACA {progress.Version}";
+            _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
+        }
         if (_updaterStatus is not null)
+        {
             _updaterStatus.Text = progress.Status;
+            _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+        }
         if (_updaterProgress is not null && progress.TotalBytes is > 0)
         {
             _updaterProgress.Value = Math.Min(100, progress.BytesReceived * 100d / progress.TotalBytes.Value);
