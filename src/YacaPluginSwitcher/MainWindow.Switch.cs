@@ -11,8 +11,6 @@ public partial class MainWindow
 {
     private Task? _storedDownloadsInitializationTask;
     private Button? _downloadManagementButton;
-    private Button? _updaterDownloadButton;
-    private Button? _updaterCancelButton;
 
     private void ShowSwitchPage(string? status = null)
     {
