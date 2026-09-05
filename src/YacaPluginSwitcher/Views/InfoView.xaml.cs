@@ -92,7 +92,4 @@ public partial class InfoView : UserControl
         if (sender is Button { Tag: string url })
             Open(url);
     }
-
-    private void Discord_Click(object sender, RoutedEventArgs e) => Open("https://discord.gg/9AxuZkyU7P");
-    private void GitHub_Click(object sender, RoutedEventArgs e) => Open("https://github.com/ViP3R76/Yaca-Plugin-Switcher");
 }
