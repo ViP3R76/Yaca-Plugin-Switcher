@@ -9,46 +9,6 @@
                 <ResourceDictionary Source="Styles/DarkModeInputs.xaml" />
                 <ResourceDictionary Source="Styles/Navigation.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <Style TargetType="ScrollBar">
-                <Setter Property="Width" Value="10" />
-                <Setter Property="Background" Value="#111217" />
-                <Setter Property="Foreground" Value="#3A3D45" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="ScrollBar">
-                            <Grid Background="{TemplateBinding Background}">
-                                <Track x:Name="PART_Track"
-                                       Minimum="{TemplateBinding Minimum}"
-                                       Maximum="{TemplateBinding Maximum}"
-                                       Value="{TemplateBinding Value}"
-                                       ViewportSize="{TemplateBinding ViewportSize}"
-                                       IsDirectionReversed="True">
-                                    <Track.Thumb>
-                                        <Thumb Background="#3A3D45"
-                                               BorderBrush="#24262D"
-                                               BorderThickness="1" />
-                                    </Track.Thumb>
-                                </Track>
-                            </Grid>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="Orientation" Value="Horizontal">
-                                    <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="#4A4D56" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Style.Triggers>
-                    <Trigger Property="Orientation" Value="Horizontal">
-                        <Setter Property="Height" Value="10" />
-                        <Setter Property="Width" Value="Auto" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
