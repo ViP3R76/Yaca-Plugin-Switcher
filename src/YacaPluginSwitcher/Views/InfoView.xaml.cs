@@ -38,7 +38,6 @@ public partial class InfoView : UserControl
         DiscordLinkText.Text = _german ? "Discord Community" : "Discord Community";
         TwitchLinkText.Text = _german ? "Twitch Stream" : "Twitch Stream";
         GitHubLinkText.Text = _german ? "Projekt auf GitHub" : "Project on GitHub";
-        KofiLinkText.Text = _german ? "Ko-fi Unterstützung" : "Ko-fi Support";
         TwitchIconHost.Content = DashboardIconRegistry.CreateNaturalIcon(DashboardIconRegistry.IconAssetTwitch, 28, 28);
 
         YacaLinks.ItemsSource = _german
