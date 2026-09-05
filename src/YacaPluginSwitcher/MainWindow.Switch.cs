@@ -93,9 +93,7 @@ public partial class MainWindow
         {
             content.Children.Add(new TextBlock
             {
-                Text = current.Build?.ToString(CultureInfo.InvariantCulture) is { } build
-                    ? $"Build: {build}"
-                    : "Build: —",
+                Text = current.Build?.ToString(CultureInfo.InvariantCulture) is { } build ? $"Build: {build}" : "Build: —",
                 FontSize = 14,
                 Foreground = (Brush)FindResource("SecondaryBrush"),
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -205,7 +203,6 @@ public partial class MainWindow
         };
         Grid.SetRow(hint, 1);
         panel.Children.Add(hint);
-        hint.Visibility = Visibility.Visible;
         _updaterSelectionPanel.IsVisibleChanged += (_, _) => hint.Visibility =
             _updaterSelectionPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
@@ -366,7 +363,6 @@ public partial class MainWindow
             await RefreshDownloadedFilesAsync();
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
-            UpdateAvailableDownloadsHint();
         }
         catch (OperationCanceledException)
         {
@@ -376,69 +372,6 @@ public partial class MainWindow
             _service.Logger.Error($"Stored YACA plugin processing failed: {ex}");
             SetGlobalStatus(IsGerman ? "Gespeicherte YACA Downloads konnten nicht vollständig geprüft werden." : "Stored YACA downloads could not be fully processed.");
         }
-    }
-
-    private void UpdateAvailableDownloadsHint()
-    {
-        if (_updaterSelectionPanel is null)
-            return;
-
-        if (_updaterSelectionPanel.Visibility == Visibility.Visible)
-            return;
-    }
-
-    private void ShowUpdaterSelection(IReadOnlyList<string> versions)
-    {
-        if (_updaterSelectionPanel is null || _updaterSelectionList is null || _updaterSelectAll is null)
-            return;
-
-        _updaterSelectionList.Children.Clear();
-        for (var index = 0; index < versions.Count; index++)
-        {
-            var version = versions[index];
-            var row = new Border
-            {
-                Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush"),
-                BorderBrush = (Brush)FindResource("AccentSoftBrush"),
-                BorderThickness = new Thickness(0, 0, 0, 1),
-                Padding = new Thickness(8, 5, 8, 5),
-                MinWidth = 300
-            };
-            var checkBox = new CheckBox
-            {
-                Content = $"YACA {version}",
-                IsChecked = true,
-                FontSize = 14,
-                Foreground = (Brush)FindResource("ForegroundBrush")
-            };
-            checkBox.Checked += UpdaterVersionSelectionChanged;
-            checkBox.Unchecked += UpdaterVersionSelectionChanged;
-            row.Child = checkBox;
-            _updaterSelectionList.Children.Add(row);
-        }
-
-        _updaterSelectAll.IsChecked = true;
-        _updaterSelectionPanel.Visibility = Visibility.Visible;
-
-        if (_updaterVersion is not null)
-            _updaterVersion.Text = IsGerman ? $"{versions.Count} Updates gefunden" : $"{versions.Count} updates found";
-        if (_updaterStatus is not null)
-            _updaterStatus.Text = IsGerman
-                ? "Versionen auswählen und anschließend JETZT DOWNLOADEN drücken."
-                : "Select versions and then press DOWNLOAD NOW.";
-        UpdateUpdaterActionButtonState();
-    }
-
-    private async Task DownloadSelectedUpdaterVersionsAsync()
-    {
-        var selectedVersions = GetSelectedUpdaterVersions();
-        if (selectedVersions.Count == 0)
-        {
-            SetGlobalStatus(IsGerman ? "Bitte mindestens eine YACA Version auswählen." : "Please select at least one YACA version.");
-            return;
-        }
-
-        await DownloadUpdaterVersionsAsync(selectedVersions);
     }
 
     private void RenderSwitchVersionList(StackPanel list, YacaPluginInfo? currentForSort)
