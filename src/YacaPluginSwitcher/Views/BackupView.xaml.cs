@@ -24,21 +24,35 @@ public partial class BackupView : UserControl
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         InitializeComponent();
+        ApplyLocalizedColumnHeaders();
         LoadBackups();
         LoadPluginDownloads();
     }
 
     private bool SelectiveDeletionEnabled => _service.Settings.ExpertSettings && _service.Settings.SelectableBackupsForDeletion;
 
+    private void ApplyLocalizedColumnHeaders()
+    {
+        Grid.Columns[1].Header = SettingsLocalization.Get(_service.Settings.Language, "BackupColumn");
+        Grid.Columns[2].Header = SettingsLocalization.Get(_service.Settings.Language, "DateColumn");
+        Grid.Columns[3].Header = SettingsLocalization.Get(_service.Settings.Language, "SizeColumn");
+        Grid.Columns[4].Header = SettingsLocalization.Get(_service.Settings.Language, "HashColumn");
+        PluginDownloadsGrid.Columns[1].Header = SettingsLocalization.Get(_service.Settings.Language, "FileColumn");
+        PluginDownloadsGrid.Columns[2].Header = SettingsLocalization.Get(_service.Settings.Language, "DateColumn");
+        PluginDownloadsGrid.Columns[3].Header = SettingsLocalization.Get(_service.Settings.Language, "SizeColumn");
+        PluginDownloadsGrid.Columns[4].Header = SettingsLocalization.Get(_service.Settings.Language, "VersionColumn");
+    }
+
     private void LoadBackups()
     {
         PageHeaderText.Text = IsGerman() ? "BACKUPS VERWALTEN" : "MANAGE BACKUPS";
         TitleText.Text = Texts.BackupTitle;
-        BackupSectionHeader.Text = "YACA Plugin Backups";
+        BackupSectionHeader.Text = IsGerman() ? "YACA Plugin Backups" : "YACA Plugin Backups";
         BackupReplacementText.Text = SettingsLocalization.Get(_service.Settings.Language, "BackupReplacementNotice");
         RestoreButton.Content = Texts.Restore;
         CloseButton.Content = Texts.Close;
         DeleteButton.Content = Texts.Delete.ToUpperInvariant();
+        ApplyLocalizedColumnHeaders();
 
         _rows.Clear();
         foreach (var backup in _service.Backups.ListBackups().OrderByDescending(backup => backup.Timestamp))
@@ -47,20 +61,42 @@ public partial class BackupView : UserControl
         Grid.ItemsSource = _rows;
         BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
 
-        var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
-        BackupCard.Height = 99 + maximumBackups * 44;
+        UpdateBackupPanelLayout(_service.Settings.KeepYacaPluginDownloads);
         DeleteButton.Visibility = Visibility.Visible;
+    }
+
+    private void UpdateBackupPanelLayout(bool pluginDownloadsEnabled)
+    {
+        BackupPanelRow.Height = pluginDownloadsEnabled
+            ? GridLength.Auto
+            : new GridLength(1, GridUnitType.Star);
+        PluginDownloadsPanelRow.Height = pluginDownloadsEnabled
+            ? new GridLength(1, GridUnitType.Star)
+            : new GridLength(0);
+
+        if (BackupCard.Parent is Grid outerGrid && outerGrid.RowDefinitions.Count > 1)
+            outerGrid.RowDefinitions[1].Height = pluginDownloadsEnabled ? new GridLength(12) : new GridLength(0);
+
+        if (BackupCard.Child is Grid backupGrid && backupGrid.RowDefinitions.Count > 2)
+            backupGrid.RowDefinitions[2].Height = pluginDownloadsEnabled
+                ? GridLength.Auto
+                : new GridLength(1, GridUnitType.Star);
+
+        BackupCard.Height = pluginDownloadsEnabled
+            ? 99 + Math.Max(1, _service.Settings.MaxBackups) * 44
+            : double.NaN;
     }
 
     private void LoadPluginDownloads()
     {
         var enabled = _service.Settings.KeepYacaPluginDownloads;
         PluginDownloadsCard.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        UpdateBackupPanelLayout(enabled);
 
         if (!enabled)
             return;
 
-        PluginDownloadsTitle.Text = "YACA Plugin Downloads";
+        PluginDownloadsTitle.Text = IsGerman() ? "YACA Plugin Downloads" : "YACA Plugin Downloads";
         PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
             DashboardIconRegistry.IconAssetSort,
             (Brush)FindResource("GoldBrush"),
