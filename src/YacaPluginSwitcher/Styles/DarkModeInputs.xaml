@@ -59,6 +59,18 @@
         </Style.Triggers>
     </Style>
 
+    <Style TargetType="ComboBox">
+        <Setter Property="Template" Value="{StaticResource DarkComboBoxTemplate}" />
+        <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="DarkScrollBarStyle" TargetType="ScrollBar">
         <Setter Property="Width" Value="10" />
         <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
