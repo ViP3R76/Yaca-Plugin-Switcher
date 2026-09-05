@@ -38,13 +38,68 @@ public partial class MainWindow
         if (_activePage == "home")
             ApplyTeamSpeakVisualState();
         else if (_activePage == "switch")
-            ApplySwitchPageRenderer();
+        {
+            ApplySwitchLayout();
+            UpdateUpdaterCopy();
+            EnsureUpdaterStepPanel();
+            ApplyUpdaterStatusVisibility();
+        }
     }
 
-    /// <summary>
-    /// Aktualisiert ausschließlich den dynamischen TeamSpeak-Status.
-    /// Layout und Styling werden beim Aufbau des Dashboards festgelegt.
-    /// </summary>
+    private void ApplySwitchLayout()
+    {
+        if (PageHost.Content is not Grid root)
+            return;
+
+        var panels = root.Children.OfType<Border>().ToList();
+        if (panels.Count < 4)
+            return;
+
+        var installed = panels[0];
+        var available = panels[1];
+        var updater = panels[2];
+        var downloaded = panels[3];
+
+        if (_service.Settings.DownloadAllPluginsWithoutPrompt)
+        {
+            available.Visibility = Visibility.Collapsed;
+
+            Grid.SetColumn(installed, 0);
+            Grid.SetRow(installed, 0);
+            Grid.SetRowSpan(installed, 2);
+
+            updater.Visibility = Visibility.Visible;
+            Grid.SetColumn(updater, 1);
+            Grid.SetRow(updater, 0);
+            Grid.SetRowSpan(updater, 1);
+
+            downloaded.Visibility = Visibility.Visible;
+            Grid.SetColumn(downloaded, 1);
+            Grid.SetRow(downloaded, 1);
+            Grid.SetRowSpan(downloaded, 1);
+            return;
+        }
+
+        available.Visibility = Visibility.Visible;
+        Grid.SetColumn(installed, 0);
+        Grid.SetRow(installed, 0);
+        Grid.SetRowSpan(installed, 1);
+
+        Grid.SetColumn(available, 1);
+        Grid.SetRow(available, 1);
+        Grid.SetRowSpan(available, 1);
+
+        updater.Visibility = Visibility.Visible;
+        Grid.SetColumn(updater, 1);
+        Grid.SetRow(updater, 0);
+        Grid.SetRowSpan(updater, 1);
+
+        downloaded.Visibility = Visibility.Visible;
+        Grid.SetColumn(downloaded, 0);
+        Grid.SetRow(downloaded, 1);
+        Grid.SetRowSpan(downloaded, 1);
+    }
+
     private void ApplyTeamSpeakVisualState()
     {
         if (_tsStatus is null || _teamSpeakStatusIcon is null)
@@ -87,13 +142,6 @@ public partial class MainWindow
         parent.Children.RemoveAt(index);
         parent.Children.Insert(index, replacement);
         _teamSpeakStatusIcon = replacement;
-    }
-
-    private void ApplySwitchPageRenderer()
-    {
-        UpdateUpdaterCopy();
-        EnsureUpdaterStepPanel();
-        ApplyUpdaterStatusVisibility();
     }
 
     private void UpdateUpdaterCopy()
