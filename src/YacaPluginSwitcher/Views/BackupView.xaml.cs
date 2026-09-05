@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using YacaPluginSwitcher.Configuration;
 using YacaPluginSwitcher.Core;
 using YacaPluginSwitcher.Models;
 
@@ -77,10 +78,7 @@ public partial class BackupView : UserControl
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
 
-        var files = Directory.EnumerateFiles(
-                PluginDownloadDirectory,
-                "*.ts3_plugin",
-                SearchOption.TopDirectoryOnly)
+        var files = Directory.EnumerateFiles(PluginDownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
             .Select(file => new PluginDownloadRow(file))
             .OrderByDescending(row => ParseVersion(row.Version));
 
@@ -97,8 +95,7 @@ public partial class BackupView : UserControl
         LoadPluginDownloads();
     }
 
-    private static Version ParseVersion(string version) =>
-        Version.TryParse(version, out var parsed) ? parsed : new Version(0, 0, 0);
+    private static Version ParseVersion(string version) => Version.TryParse(version, out var parsed) ? parsed : new Version(0, 0, 0);
 
     private void BackupSelection_Changed(object sender, RoutedEventArgs e)
     {
@@ -120,38 +117,25 @@ public partial class BackupView : UserControl
     {
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
-        var backupsToDelete = SelectiveDeletionEnabled
-            ? selectedBackups
-            : _rows.Select(row => row.Info).ToList();
+        var backupsToDelete = SelectiveDeletionEnabled ? selectedBackups : _rows.Select(row => row.Info).ToList();
 
         if (backupsToDelete.Count == 0 && selectedDownloads.Count == 0)
         {
-            SetFooter(
-                SelectiveDeletionEnabled
-                    ? (IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.")
-                    : (IsGerman() ? "Keine Backups oder Plugin-Downloads zum Löschen vorhanden." : "No backups or plugin downloads available for deletion."),
-                false);
+            SetFooter(SelectiveDeletionEnabled
+                ? (IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.")
+                : (IsGerman() ? "Keine Backups oder Plugin-Downloads zum Löschen vorhanden." : "No backups or plugin downloads available for deletion."), false);
             return;
         }
 
-        var deletedBackups = backupsToDelete.Count > 0
-            ? DeleteBackups(backupsToDelete, false)
-            : 0;
-        var deletedDownloads = selectedDownloads.Count > 0
-            ? DeletePluginDownloads(selectedDownloads, false)
-            : 0;
-
+        var deletedBackups = backupsToDelete.Count > 0 ? DeleteBackups(backupsToDelete, false) : 0;
+        var deletedDownloads = selectedDownloads.Count > 0 ? DeletePluginDownloads(selectedDownloads, false) : 0;
         var parts = new List<string>();
-        if (deletedBackups > 0)
-            parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
-        if (deletedDownloads > 0)
-            parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
+        if (deletedBackups > 0) parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
+        if (deletedDownloads > 0) parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
 
-        SetFooter(
-            parts.Count > 0
-                ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.")
-                : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."),
-            parts.Count > 0);
+        SetFooter(parts.Count > 0
+            ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.")
+            : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."), parts.Count > 0);
     }
 
     private int DeleteBackups(List<BackupInfo> backups, bool updateFooter = true)
@@ -160,17 +144,13 @@ public partial class BackupView : UserControl
         {
             _service.Backups.DeleteBackups(backups);
             LoadBackups();
-
-            if (updateFooter)
-                SetFooter(IsGerman() ? $"{backups.Count} Backup(s) wurden gelöscht." : $"{backups.Count} backup(s) deleted.", true);
-
+            if (updateFooter) SetFooter(IsGerman() ? $"{backups.Count} Backup(s) wurden gelöscht." : $"{backups.Count} backup(s) deleted.", true);
             return backups.Count;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or YacaOperationException)
         {
             _service.Logger.Error($"Backup deletion failed: {ex}");
-            if (updateFooter)
-                SetFooter(Localization.GetErrorMessage(ex, Texts, Texts.ErrorUnexpected), false);
+            if (updateFooter) SetFooter(Localization.GetErrorMessage(ex, Texts, Texts.ErrorUnexpected), false);
             return 0;
         }
     }
@@ -195,9 +175,7 @@ public partial class BackupView : UserControl
         }
 
         LoadPluginDownloads();
-        if (updateFooter)
-            SetFooter(IsGerman() ? $"{deleted} Plugin-Download(s) wurden gelöscht." : $"{deleted} plugin download(s) deleted.", deleted > 0);
-
+        if (updateFooter) SetFooter(IsGerman() ? $"{deleted} Plugin-Download(s) wurden gelöscht." : $"{deleted} plugin download(s) deleted.", deleted > 0);
         return deleted;
     }
 
@@ -237,9 +215,7 @@ public partial class BackupView : UserControl
     private void SetFooter(string message, bool success)
     {
         var footer = _owner.FindName("GlobalFooterStatusText") as TextBlock;
-        if (footer is null)
-            return;
-
+        if (footer is null) return;
         footer.Text = message;
         footer.Foreground = (Brush)_owner.FindResource(success ? "SuccessBrush" : "ForegroundBrush");
         footer.FontWeight = success ? FontWeights.Bold : FontWeights.Normal;
@@ -252,29 +228,14 @@ public partial class BackupView : UserControl
     {
         public BackupInfo Info { get; }
         private bool _selected;
-        public bool Selected
-        {
-            get => _selected;
-            set
-            {
-                if (_selected == value)
-                    return;
-                _selected = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
-            }
-        }
+        public bool Selected { get => _selected; set { if (_selected == value) return; _selected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected))); } }
         public bool CanSelect { get; }
         public string DisplayName => Info.DisplayName;
         public DateTime Timestamp => Info.Timestamp;
         public string Sha256 => Info.Sha256;
         public string FileSizeDisplay => $"{Info.FileSize / 1024d / 1024d:0.00} MB";
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        public BackupRow(BackupInfo info, bool canSelect)
-        {
-            Info = info ?? throw new ArgumentNullException(nameof(info));
-            CanSelect = canSelect;
-        }
+        public BackupRow(BackupInfo info, bool canSelect) { Info = info ?? throw new ArgumentNullException(nameof(info)); CanSelect = canSelect; }
     }
 
     private sealed class PluginDownloadRow : INotifyPropertyChanged
@@ -287,19 +248,8 @@ public partial class BackupView : UserControl
         public long FileSize { get; }
         public string FileSizeDisplay => $"{FileSize / 1024d / 1024d:0.00} MB";
         private bool _selected;
-        public bool Selected
-        {
-            get => _selected;
-            set
-            {
-                if (_selected == value)
-                    return;
-                _selected = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
-            }
-        }
+        public bool Selected { get => _selected; set { if (_selected == value) return; _selected = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected))); } }
         public event PropertyChangedEventHandler? PropertyChanged;
-
         public PluginDownloadRow(string filePath)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -310,28 +260,16 @@ public partial class BackupView : UserControl
             Timestamp = File.GetLastWriteTime(filePath);
             FileSize = new FileInfo(filePath).Length;
         }
-
         private static string? ExtractVersion(string fileName)
         {
-            var match = System.Text.RegularExpressions.Regex.Match(
-                fileName,
-                @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-            if (!match.Success || match.Groups[1].Value.Length != 3)
-                return null;
-
+            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"yaca_(\d+)(?:_3\.6\.x)?\.ts3_plugin", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!match.Success || match.Groups[1].Value.Length != 3) return null;
             var digits = match.Groups[1].Value;
             return $"{digits[0]}.{digits[1]}.{digits[2]}";
         }
-
         private static string? ExtractBuildVersion(string fileName)
         {
-            var match = System.Text.RegularExpressions.Regex.Match(
-                fileName,
-                @"yaca_\d+_(?<build>[^.]+(?:\.[^.]+)*?)\.ts3_plugin$",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
+            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"yaca_\d+_(?<build>[^.]+(?:\.[^.]+)*?)\.ts3_plugin$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             return match.Success ? match.Groups["build"].Value : null;
         }
     }
