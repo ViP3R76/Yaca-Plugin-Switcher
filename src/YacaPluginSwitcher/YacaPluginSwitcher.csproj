@@ -11,6 +11,7 @@
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>$(MSBuildProjectDirectory)\Assets\branding_icon.ico</ApplicationIcon>
+    <UseAppHost>true</UseAppHost>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
