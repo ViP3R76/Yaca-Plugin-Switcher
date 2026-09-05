@@ -63,6 +63,54 @@ public sealed class YacaService
         return new YacaPluginInfo(TargetFile, TargetFileName, validation.Version, validation.Build, validation.FileSize, validation.Sha256, true, validation.Message);
     }
 
+    public bool EnsureCurrentPluginAvailable()
+    {
+        var current = DetectCurrent();
+        if (current is null)
+            return false;
+
+        var existing = ScanPlugins().FirstOrDefault(plugin =>
+            plugin.Version == current.Version
+            && plugin.Sha256.Equals(current.Sha256, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+            return false;
+
+        Directory.CreateDirectory(Paths.PluginDirectory);
+        var tag = current.Version.ToString().Replace(".", string.Empty, StringComparison.Ordinal);
+        var target = Path.Combine(Paths.PluginDirectory, $"yaca_{tag}_win64.dll");
+        var staged = Path.Combine(Paths.PluginDirectory, $".yaca_protect_{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            File.Copy(TargetFile, staged, true);
+            var stagedValidation = YacaValidator.Validate(staged);
+            if (!stagedValidation.IsValid
+                || stagedValidation.Version != current.Version
+                || !string.Equals(stagedValidation.Sha256, current.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("Die installierte YACA-DLL konnte nicht sicher in den Plugins-Ordner übernommen werden.");
+            }
+
+            File.Move(staged, target, true);
+
+            var finalValidation = YacaValidator.Validate(target);
+            if (!finalValidation.IsValid
+                || finalValidation.Version != current.Version
+                || !string.Equals(finalValidation.Sha256, current.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                TryDelete(target);
+                throw new InvalidDataException("Die geschützte YACA-DLL konnte nach dem Kopieren nicht validiert werden.");
+            }
+
+            Logger.Info($"Installierte YACA-Version geschützt: {current.Version} -> {target}");
+            return true;
+        }
+        finally
+        {
+            TryDelete(staged);
+        }
+    }
+
     public void SetTargetDirectory(string directory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
@@ -114,6 +162,21 @@ public sealed class YacaService
             Settings.Save();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
         {
         }
     }
