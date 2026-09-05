@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,12 +54,16 @@ public partial class ConfigView : UserControl
             LanguageCombo.Items.Add(text.LanguageEnglish);
             LanguageCombo.SelectedIndex = isGerman ? 0 : 1;
 
+            MaxBackups.Items.Clear();
+            for (var value = 1; value <= 9; value++)
+                MaxBackups.Items.Add(value);
+
             AutomaticBackup.IsChecked = _service.Settings.AutomaticBackup;
             WarnRunning.IsChecked = _service.Settings.WarnIfTeamSpeakRunning;
             KeepYacaPluginDownloads.IsChecked = _service.Settings.KeepYacaPluginDownloads;
             DownloadAllWithoutPrompt.IsChecked = _service.Settings.DownloadAllPluginsWithoutPrompt;
             Expert.IsChecked = _service.Settings.ExpertSettings;
-            MaxBackups.Text = _service.Settings.MaxBackups.ToString(CultureInfo.InvariantCulture);
+            MaxBackups.SelectedItem = Math.Clamp(_service.Settings.MaxBackups, 1, 9);
             _useCustomPath = _service.Settings.UseCustomTeamSpeakPluginDirectory;
             ActivePath.Text = _service.Settings.TeamSpeakPluginDirectory
                 ?? YacaService.GetDefaultTeamSpeakPluginDirectory();
@@ -85,13 +88,21 @@ public partial class ConfigView : UserControl
 
     private void UpdateExpert()
     {
-        ExpertPanel.Visibility = Expert.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        var expertEnabled = Expert.IsChecked == true;
+        ExpertPanel.Visibility = expertEnabled ? Visibility.Visible : Visibility.Collapsed;
+        TeamSpeakInstancesPanel.Visibility = expertEnabled && MultipleInstances.IsChecked == true
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void Expert_Changed(object sender, RoutedEventArgs e)
     {
-        if (!_loading)
-            UpdateExpert();
+        UpdateExpert();
+    }
+
+    private void MultipleInstances_Changed(object sender, RoutedEventArgs e)
+    {
+        UpdateExpert();
     }
 
     private void Language_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -188,8 +199,7 @@ public partial class ConfigView : UserControl
     /// </summary>
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(MaxBackups.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var max)
-            || max < 1 || max > 9)
+        if (MaxBackups.SelectedItem is not int max || max is < 1 or > 9)
         {
             MessageBox.Show(Texts.ErrorInvalidArgument, Texts.ConfigTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
