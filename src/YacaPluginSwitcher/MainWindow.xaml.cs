@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private TextBlock? _currentDetails;
     private TextBlock? _tsStatus;
     private TextBlock? _tsDescription;
+    private TextBlock? _tsInstruction;
     private TextBlock? _backupSummary;
 
     private Button? _tsClose;
