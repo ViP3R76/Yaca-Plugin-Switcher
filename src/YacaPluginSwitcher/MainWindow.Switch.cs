@@ -392,8 +392,9 @@ public partial class MainWindow
                 Style = (Style)FindResource("TileButtonStyle"),
                 BorderBrush = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("AccentBrush"),
                 Margin = new Thickness(0, 2, 0, 2),
-                Height = 58,
-                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Height = 50,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Center,
                 Content = CreateVersionButtonContent(plugin, active)
             };
             button.Click += (_, _) => Activate(plugin);
@@ -401,15 +402,53 @@ public partial class MainWindow
         }
     }
 
-    private TextBlock CreateVersionButtonContent(YacaPluginInfo plugin, bool active)
+    private Grid CreateVersionButtonContent(YacaPluginInfo plugin, bool active)
     {
         var build = plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
-        return new TextBlock
+        var content = new Grid
         {
-            Text = active ? $"YACA {plugin.Version} - (Build: {build})   —   {Texts.Active.TrimEnd(':')}" : $"YACA {plugin.Version} - (Build: {build})",
-            FontSize = 15,
-            Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush")
+            VerticalAlignment = VerticalAlignment.Center
         };
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var versionText = new TextBlock
+        {
+            Text = $"YACA {plugin.Version} - (Build: {build})",
+            FontSize = 15,
+            Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush"),
+            VerticalAlignment = VerticalAlignment.Center,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        Grid.SetColumn(versionText, 0);
+        content.Children.Add(versionText);
+
+        if (active)
+        {
+            var badge = new Border
+            {
+                Background = (Brush)FindResource("GoldBrush"),
+                BorderBrush = (Brush)FindResource("GoldBrush"),
+                BorderThickness = new Thickness(1),
+                Padding = new Thickness(9, 3, 9, 3),
+                Margin = new Thickness(12, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            badge.Child = new TextBlock
+            {
+                Text = "INSTALLIERT",
+                Foreground = Brushes.Black,
+                FontSize = 11,
+                FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            Grid.SetColumn(badge, 1);
+            content.Children.Add(badge);
+        }
+
+        return content;
     }
 
     private void Activate(YacaPluginInfo plugin)
