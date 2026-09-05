@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -58,28 +59,13 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = "YACA Plugin Downloads";
-
-        var sortButton = new Button
-        {
-            Width = 34,
-            Height = 30,
-            Background = Brushes.Transparent,
-            BorderBrush = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Foreground = (Brush)FindResource("GoldBrush"),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Content = DashboardIconRegistry.CreateIcon(
-                DashboardIconRegistry.IconAssetSort,
-                (Brush)FindResource("GoldBrush"),
-                20,
-                20),
-            Style = (Style)FindResource("HeaderSortButtonStyle")
-        };
-        sortButton.Click += PluginDownloadsSort_Click;
-        var versionColumn = PluginDownloadsGrid.Columns.OfType<DataGridTextColumn>().LastOrDefault();
-        if (versionColumn is not null)
-            versionColumn.Header = sortButton;
+        PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
+            DashboardIconRegistry.IconAssetSort,
+            (Brush)FindResource("GoldBrush"),
+            20,
+            20);
+        PluginDownloadsSortButton.Click -= PluginDownloadsSort_Click;
+        PluginDownloadsSortButton.Click += PluginDownloadsSort_Click;
 
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
@@ -118,9 +104,6 @@ public partial class BackupView : UserControl
 
         foreach (var pluginRow in _pluginDownloadRows)
             pluginRow.Selected = false;
-
-        PluginDownloadsGrid.Items.Refresh();
-        Grid.Items.Refresh();
     }
 
     private void PluginDownloadSelection_Changed(object sender, RoutedEventArgs e)
@@ -134,9 +117,6 @@ public partial class BackupView : UserControl
 
         foreach (var backupRow in _rows)
             backupRow.Selected = false;
-
-        Grid.Items.Refresh();
-        PluginDownloadsGrid.Items.Refresh();
     }
 
     private void Delete_Click(object sender, RoutedEventArgs e)
@@ -287,15 +267,27 @@ public partial class BackupView : UserControl
     private void Close_Click(object sender, RoutedEventArgs e) => _owner.ReturnHome();
     private bool IsGerman() => Localization.Normalize(_service.Settings.Language) == Localization.German;
 
-    private sealed class BackupRow
+    private sealed class BackupRow : INotifyPropertyChanged
     {
         public BackupInfo Info { get; }
-        public bool Selected { get; set; }
+        private bool _selected;
+        public bool Selected
+        {
+            get => _selected;
+            set
+            {
+                if (_selected == value)
+                    return;
+                _selected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
+            }
+        }
         public bool CanSelect { get; }
         public string DisplayName => Info.DisplayName;
         public DateTime Timestamp => Info.Timestamp;
         public string Sha256 => Info.Sha256;
         public string FileSizeDisplay => $"{Info.FileSize / 1024d / 1024d:0.00} MB";
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public BackupRow(BackupInfo info, bool canSelect)
         {
@@ -304,7 +296,7 @@ public partial class BackupView : UserControl
         }
     }
 
-    private sealed class PluginDownloadRow
+    private sealed class PluginDownloadRow : INotifyPropertyChanged
     {
         public string FilePath { get; }
         public string FileName { get; }
@@ -313,7 +305,19 @@ public partial class BackupView : UserControl
         public DateTime Timestamp { get; }
         public long FileSize { get; }
         public string FileSizeDisplay => $"{FileSize / 1024d / 1024d:0.00} MB";
-        public bool Selected { get; set; }
+        private bool _selected;
+        public bool Selected
+        {
+            get => _selected;
+            set
+            {
+                if (_selected == value)
+                    return;
+                _selected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
+            }
+        }
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public PluginDownloadRow(string filePath)
         {
