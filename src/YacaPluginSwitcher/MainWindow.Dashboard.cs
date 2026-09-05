@@ -54,19 +54,26 @@ public partial class MainWindow
             if (_tsDescription is not null)
             {
                 _tsDescription.Text = teamSpeakRunning
+                    ? (IsGerman ? "TeamSpeak 3 ist aktiv!" : "TeamSpeak 3 is active!")
+                    : (IsGerman ? "TeamSpeak 3 ist nicht aktiv!" : "TeamSpeak 3 is not active!");
+            }
+
+            if (_tsInstruction is not null)
+            {
+                _tsInstruction.Text = teamSpeakRunning
                     ? (IsGerman
-                        ? "TeamSpeak 3 ist aktiv!\nFür einen sicheren Wechsel bitte zuerst schliessen."
-                        : "TeamSpeak 3 is active!\nFor a safe switch, please close it first.")
+                        ? "Wechsel nur bei geschlossenem TeamSpeak möglich"
+                        : "Switching is only possible when TeamSpeak is closed")
                     : (IsGerman
-                        ? "TeamSpeak 3 ist nicht aktiv.\nWechsel jederzeit möglich."
-                        : "TeamSpeak 3 is not active.\nSwitching is ready.");
+                        ? "Wechsel jederzeit möglich"
+                        : "Switching is ready");
             }
 
             if (_tsClose is not null)
             {
                 _tsClose.Visibility = teamSpeakRunning
                     ? Visibility.Visible
-                    : Visibility.Collapsed;
+                    : Visibility.Hidden;
             }
 
             UpdateBackupSummary(_service.Backups.ListBackups().FirstOrDefault());
