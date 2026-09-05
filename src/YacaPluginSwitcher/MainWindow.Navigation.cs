@@ -41,7 +41,8 @@ public partial class MainWindow
         AddNav("info", DashboardIconRegistry.IconAssetInfo, "Info & Links", () => ShowInfo());
 
         ExitNavContent.Children.Clear();
-        ConfigureNavContent(ExitNavContent, DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit");
+        if (ExitNavContent.Parent is StackPanel exitHost && exitHost.Children.OfType<Button>().FirstOrDefault() is { } exitButton)
+            ConfigureNavContent(ExitNavContent, exitButton, DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit");
     }
 
     private async Task ClearTemporaryRefreshStatusAsync(string expectedStatus)
