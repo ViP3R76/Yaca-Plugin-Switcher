@@ -1,13 +1,49 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Canonical application-wide ScrollBar theme.
+        The thumb deliberately uses ControlBrush instead of BorderBrush so the
+        scrollbar never renders as a light/white block in the dark UI.
+    -->
+    <Style x:Key="DarkScrollBarStyle" TargetType="ScrollBar">
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ControlBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Track x:Name="PART_Track"
+                               Minimum="{TemplateBinding Minimum}"
+                               Maximum="{TemplateBinding Maximum}"
+                               Value="{TemplateBinding Value}"
+                               ViewportSize="{TemplateBinding ViewportSize}"
+                               IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb Background="{StaticResource ControlBrush}"
+                                       BorderBrush="Transparent"
+                                       BorderThickness="0" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="10" />
+                <Setter Property="Width" Value="Auto" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Central fallback for ScrollBar instances created by WPF templates. -->
     <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
-
-    <!--
-        ScrollViewer/DataGrid templates are framework-owned and may resolve
-        their ScrollBars through theme resources rather than the implicit
-        application style. App.xaml.cs therefore applies DarkScrollBarStyle
-        centrally when every ScrollBar is loaded. No view-specific override
-        is required.
-    -->
 </ResourceDictionary>
