@@ -13,9 +13,18 @@ public partial class MainWindow
     private StackPanel? _updaterSelectionPanel;
     private Button? _updaterDownloadButton;
     private Button? _updaterCancelButton;
+    private IReadOnlyList<string> _pendingUpdaterDownloads = [];
 
     private async Task RunUpdaterActionAsync()
     {
+        if (_service.Settings.DownloadAllPluginsWithoutPrompt && _pendingUpdaterDownloads.Count > 0)
+        {
+            var pending = _pendingUpdaterDownloads;
+            _pendingUpdaterDownloads = [];
+            await DownloadUpdaterVersionsAsync(pending);
+            return;
+        }
+
         await RunUpdaterAsync();
     }
 
@@ -27,6 +36,7 @@ public partial class MainWindow
         _updaterCts = new CancellationTokenSource();
         IReadOnlyList<string> missingVersions = [];
         var downloadAllWithoutPrompt = _service.Settings.DownloadAllPluginsWithoutPrompt;
+        _pendingUpdaterDownloads = [];
 
         if (_updaterProgress is not null)
         {
@@ -56,8 +66,15 @@ public partial class MainWindow
                 return;
             }
 
-            if (!downloadAllWithoutPrompt)
+            if (downloadAllWithoutPrompt)
+            {
+                _pendingUpdaterDownloads = missingVersions.ToArray();
+                ShowBulkDownloadReadyState(missingVersions.Count);
+            }
+            else
+            {
                 ShowUpdaterSelection(missingVersions);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -73,9 +90,27 @@ public partial class MainWindow
             _updaterCts.Dispose();
             _updaterCts = null;
         }
+    }
 
-        if (downloadAllWithoutPrompt)
-            await DownloadUpdaterVersionsAsync(missingVersions);
+    private void ShowBulkDownloadReadyState(int count)
+    {
+        if (_updaterProgress is not null)
+        {
+            _updaterProgress.Visibility = Visibility.Collapsed;
+            _updaterProgress.Value = 0;
+        }
+
+        if (_updaterVersion is not null)
+            _updaterVersion.Text = IsGerman ? $"{count} Downloads verfügbar" : $"{count} downloads available";
+        if (_updaterStatus is not null)
+            _updaterStatus.Text = IsGerman
+                ? "Alle fehlenden oder neuen YACA Plugins sind bereit zum Download."
+                : "All missing or new YACA plugins are ready to download.";
+        if (_updaterSearchButton is not null)
+        {
+            _updaterSearchButton.Content = IsGerman ? "DOWNLOAD STARTEN" : "START DOWNLOAD";
+            _updaterSearchButton.IsEnabled = true;
+        }
     }
 
     private void ShowUpdaterSelection(IReadOnlyList<string> versions)
@@ -274,6 +309,7 @@ public partial class MainWindow
 
     private void ShowUpdaterReadyState()
     {
+        _pendingUpdaterDownloads = [];
         HideUpdaterSelection();
         if (_updaterProgress is not null)
         {
@@ -286,6 +322,11 @@ public partial class MainWindow
             _updaterStatus.Text = IsGerman
                 ? "Neue YACA Versionen können hier gesucht werden."
                 : "New YACA versions can be searched here.";
+        if (_updaterSearchButton is not null)
+        {
+            _updaterSearchButton.Content = IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES";
+            _updaterSearchButton.IsEnabled = true;
+        }
         UpdateUpdaterActionButtonState();
     }
 
