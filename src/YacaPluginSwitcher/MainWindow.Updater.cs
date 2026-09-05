@@ -15,6 +15,8 @@ public partial class MainWindow
     private Button? _updaterCancelButton;
     private TextBlock? _updaterFoundVersionsSummary;
     private string[] _pendingUpdaterDownloads = [];
+    private string[] _cachedUpdaterVersions = [];
+    private string[] _cachedUpdaterSelection = [];
     private CancellationTokenSource? _updaterNoUpdatesMessageCts;
     private bool _updaterDownloadInProgress;
 
@@ -40,6 +42,8 @@ public partial class MainWindow
         IReadOnlyList<string> missingVersions = [];
         var downloadAllWithoutPrompt = _service.Settings.DownloadAllPluginsWithoutPrompt;
         _pendingUpdaterDownloads = [];
+        _cachedUpdaterVersions = [];
+        _cachedUpdaterSelection = [];
 
         if (_updaterProgress is not null)
         {
@@ -54,12 +58,15 @@ public partial class MainWindow
 
             if (missingVersions.Count == 0)
             {
+                ClearCachedUpdaterResults();
                 ShowNoUpdatesMessage();
                 SetGlobalStatus(IsGerman
                     ? "Keine neuen YACA Downloads verfügbar"
                     : "No new YACA downloads available");
                 return;
             }
+
+            _cachedUpdaterVersions = missingVersions.ToArray();
 
             if (downloadAllWithoutPrompt)
             {
@@ -188,7 +195,7 @@ public partial class MainWindow
         }
     }
 
-    private void ShowUpdaterSelection(IReadOnlyList<string> versions)
+    private void ShowUpdaterSelection(IReadOnlyList<string> versions, IReadOnlyCollection<string>? selectedVersions = null)
     {
         if (_updaterSelectionPanel is null || _updaterSelectionList is null || _updaterSelectAll is null)
             return;
@@ -210,7 +217,7 @@ public partial class MainWindow
             var checkBox = new CheckBox
             {
                 Content = $"YACA {versions[index]}",
-                IsChecked = true,
+                IsChecked = selectedVersions is null || selectedVersions.Contains(versions[index], StringComparer.OrdinalIgnoreCase),
                 FontSize = 14,
                 Foreground = (Brush)FindResource("ForegroundBrush"),
                 Padding = new Thickness(8, 6, 8, 6),
@@ -238,8 +245,15 @@ public partial class MainWindow
             _updaterSelectionList.Children.Add(row);
         }
 
-        _updaterSelectAll.IsChecked = true;
+        _updaterSelectAll.IsChecked = _updaterSelectionList.Children
+            .OfType<Border>()
+            .Select(border => border.Child)
+            .OfType<CheckBox>()
+            .All(checkBox => checkBox.IsChecked == true);
         _updaterSelectionPanel.Visibility = Visibility.Visible;
+
+        _cachedUpdaterVersions = versions.ToArray();
+        _cachedUpdaterSelection = GetSelectedUpdaterVersions().ToArray();
 
         if (_updaterVersion is not null)
         {
@@ -254,6 +268,30 @@ public partial class MainWindow
             _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
         }
         UpdateUpdaterActionButtonState();
+    }
+
+    private void RestoreCachedUpdaterState()
+    {
+        if (_cachedUpdaterVersions.Length == 0)
+            return;
+
+        if (_service.Settings.DownloadAllPluginsWithoutPrompt)
+        {
+            _pendingUpdaterDownloads = _cachedUpdaterVersions.ToArray();
+            ShowBulkDownloadReadyState(_cachedUpdaterVersions);
+            return;
+        }
+
+        ShowUpdaterSelection(
+            _cachedUpdaterVersions,
+            _cachedUpdaterSelection.Length == 0 ? _cachedUpdaterVersions : _cachedUpdaterSelection);
+    }
+
+    private void ClearCachedUpdaterResults()
+    {
+        _pendingUpdaterDownloads = [];
+        _cachedUpdaterVersions = [];
+        _cachedUpdaterSelection = [];
     }
 
     private async Task DownloadSelectedUpdaterVersionsAsync()
@@ -295,8 +333,11 @@ public partial class MainWindow
             await RefreshDownloadedFilesAsync();
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
+            if (_versionList is not null)
+                RenderSwitchVersionList(_versionList, _service.DetectCurrent());
             HideUpdaterSelection();
-            ShowSwitchPage();
+            ClearCachedUpdaterResults();
+            ShowUpdaterReadyState();
             SetGlobalStatus(IsGerman ? "YACA Downloads aktualisiert." : "YACA downloads refreshed.", true);
         }
         catch (OperationCanceledException)
@@ -346,6 +387,7 @@ public partial class MainWindow
                      .Select(border => border.Child)
                      .OfType<CheckBox>())
             checkBox.IsChecked = isSelected;
+        _cachedUpdaterSelection = GetSelectedUpdaterVersions().ToArray();
         UpdateUpdaterActionButtonState();
     }
 
@@ -360,6 +402,7 @@ public partial class MainWindow
             .OfType<CheckBox>()
             .ToList();
         _updaterSelectAll.IsChecked = boxes.Count > 0 && boxes.All(box => box.IsChecked == true);
+        _cachedUpdaterSelection = GetSelectedUpdaterVersions().ToArray();
         UpdateUpdaterActionButtonState();
     }
 
@@ -380,6 +423,7 @@ public partial class MainWindow
 
     private void CancelUpdaterSelection_Click(object? sender, RoutedEventArgs e)
     {
+        ClearCachedUpdaterResults();
         HideUpdaterSelection();
         ShowUpdaterReadyState();
         SetGlobalStatus(IsGerman ? "YACA Downloadauswahl verworfen." : "YACA download selection cancelled.");
