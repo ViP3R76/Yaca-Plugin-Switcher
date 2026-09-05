@@ -34,6 +34,37 @@ public sealed class Logger
         _debugLogging = debugLogging;
     }
 
+    public int DeleteLogs()
+    {
+        lock (_sync)
+        {
+            var root = Path.GetFullPath(_directory);
+            var deleted = 0;
+
+            foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.TopDirectoryOnly))
+            {
+                if (!IsOwnedLogFile(file, root))
+                    continue;
+
+                try
+                {
+                    File.Delete(file);
+                    deleted++;
+                }
+                catch (IOException)
+                {
+                    // A log may be locked by another process; leave it untouched.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // A log may not be deletable; leave it untouched.
+                }
+            }
+
+            return deleted;
+        }
+    }
+
     public void Info(string message)
     {
         if (_generalLogging)
@@ -71,6 +102,27 @@ public sealed class Logger
     {
         var fileName = $"{LogFilePrefix}{timestamp:yyyy-MM-dd}{LogFileExtension}";
         return Path.Combine(_directory, fileName);
+    }
+
+    private static bool IsOwnedLogFile(string filePath, string root)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+        var relative = Path.GetRelativePath(root, fullPath);
+
+        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
+            return false;
+
+        var fileName = Path.GetFileName(fullPath);
+        return fileName.StartsWith(LogFilePrefix, StringComparison.Ordinal)
+               && fileName.EndsWith(LogFileExtension, StringComparison.Ordinal)
+               && fileName.Length == LogFilePrefix.Length + 10 + LogFileExtension.Length
+               && DateTime.TryParseExact(
+                   fileName.AsSpan(LogFilePrefix.Length, 10),
+                   "yyyy-MM-dd",
+                   CultureInfo.InvariantCulture,
+                   DateTimeStyles.None,
+                   out _)
+               || string.Equals(fileName, LegacyLogFileName, StringComparison.Ordinal);
     }
 
     private void CleanupOldLogs(DateTime utcNow)
