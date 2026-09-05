@@ -53,7 +53,92 @@ public partial class MainWindow
 
     private void BuildTeamSpeakPanel(Grid host, int column)
     {
-        var gold = (Brush)FindResource("GoldBrush"); var card = CreatePanelCard(gold); var panel = new Grid(); AddAutoRow(panel); panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); AddAutoRow(panel); var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetTeamSpeakStatus, "TEAMSPEAK STATUS", gold); Grid.SetRow(header, 0); panel.Children.Add(header); var content = new Grid { HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 8, 0) }; content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(58) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); _teamSpeakStatusIcon = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetTeamSpeakStopped, (Brush)FindResource("GoldBrush"), 44, 44); _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Left; _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(_teamSpeakStatusIcon, 0); content.Children.Add(_teamSpeakStatusIcon); var textPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left }; _tsStatus = new TextBlock { Text = "—", FontSize = 28, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Left, Foreground = gold }; _tsDescription = new TextBlock { FontSize = 14, Foreground = (Brush)FindResource("SecondaryBrush"), TextWrapping = TextWrapping.NoWrap, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 10, 0, 0), MaxWidth = 420 }; textPanel.Children.Add(_tsStatus); textPanel.Children.Add(_tsDescription); Grid.SetColumn(textPanel, 1); content.Children.Add(textPanel); Grid.SetRow(content, 1); panel.Children.Add(content); _tsClose = new Button { Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3", Visibility = Visibility.Collapsed, Background = (Brush)FindResource("ErrorBrush"), Foreground = Brushes.White, BorderBrush = (Brush)FindResource("ErrorBrush"), BorderThickness = new Thickness(0), Padding = new Thickness(18, 8, 18, 8), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0), Cursor = System.Windows.Input.Cursors.Hand, FontSize = 17, FontWeight = FontWeights.Bold }; _tsClose.Template = CreateSquareButtonTemplate(); _tsClose.Click += (_, _) => CloseTeamSpeak(); Grid.SetRow(_tsClose, 2); panel.Children.Add(_tsClose); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
+        var gold = (Brush)FindResource("GoldBrush");
+        var card = CreatePanelCard(gold);
+        var panel = new Grid();
+        AddAutoRow(panel);
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        AddAutoRow(panel);
+
+        var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetTeamSpeakStatus, "TEAMSPEAK STATUS", gold);
+        Grid.SetRow(header, 0);
+        panel.Children.Add(header);
+
+        var content = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(8, 4, 8, 4)
+        };
+
+        _teamSpeakStatusIcon = DashboardIconRegistry.CreateIcon(
+            DashboardIconRegistry.IconAssetTeamSpeakStopped,
+            (Brush)FindResource("GoldBrush"),
+            44,
+            44);
+        _teamSpeakStatusIcon.HorizontalAlignment = HorizontalAlignment.Center;
+        _teamSpeakStatusIcon.VerticalAlignment = VerticalAlignment.Center;
+        content.Children.Add(_teamSpeakStatusIcon);
+
+        _tsStatus = new TextBlock
+        {
+            Text = "—",
+            FontSize = 16,
+            FontWeight = FontWeights.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            Foreground = gold,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        content.Children.Add(_tsStatus);
+
+        _tsDescription = new TextBlock
+        {
+            FontSize = 14,
+            Foreground = (Brush)FindResource("ForegroundBrush"),
+            TextWrapping = TextWrapping.NoWrap,
+            TextAlignment = TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 7, 0, 0)
+        };
+        content.Children.Add(_tsDescription);
+
+        _tsInstruction = new TextBlock
+        {
+            FontSize = 13,
+            Foreground = (Brush)FindResource("SecondaryBrush"),
+            TextWrapping = TextWrapping.NoWrap,
+            TextAlignment = TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 5, 0, 0)
+        };
+        content.Children.Add(_tsInstruction);
+
+        _tsClose = new Button
+        {
+            Content = IsGerman ? "TeamSpeak 3 schließen" : "Close TeamSpeak 3",
+            Visibility = Visibility.Hidden,
+            Background = (Brush)FindResource("ErrorBrush"),
+            Foreground = Brushes.White,
+            BorderBrush = (Brush)FindResource("ErrorBrush"),
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(18, 8, 18, 8),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 10, 0, 0),
+            Cursor = System.Windows.Input.Cursors.Hand,
+            FontSize = 15,
+            FontWeight = FontWeights.Bold,
+            MinWidth = 190
+        };
+        _tsClose.Template = CreateSquareButtonTemplate();
+        _tsClose.Click += (_, _) => CloseTeamSpeak();
+        content.Children.Add(_tsClose);
+
+        Grid.SetRow(content, 1);
+        panel.Children.Add(content);
+        card.Child = panel;
+        Grid.SetColumn(card, column);
+        host.Children.Add(card);
     }
 
     private void BuildAvailableVersionsPanel(Grid host, int column)
