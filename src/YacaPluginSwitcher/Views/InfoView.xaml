@@ -20,6 +20,12 @@
                             <Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" />
                             <TextBlock x:Name="YacaDescription" Margin="0,0,0,14" Foreground="{StaticResource SecondaryBrush}" FontSize="14" TextWrapping="Wrap" />
                             <ItemsControl x:Name="YacaLinks">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch" /></Style>
+                                </ItemsControl.ItemContainerStyle>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Tag="{Binding Url}"
@@ -29,28 +35,14 @@
                                                 BorderBrush="{StaticResource AccentBrush}"
                                                 BorderThickness="1"
                                                 Foreground="{StaticResource ForegroundBrush}"
-                                                HorizontalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
                                                 HorizontalContentAlignment="Center"
                                                 VerticalContentAlignment="Center"
-                                                MaxWidth="520"
-                                                MinWidth="280"
                                                 Padding="14,7"
-                                                Margin="0,2,0,3">
+                                                Margin="3,2">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding Text}"
-                                                           FontSize="14"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{StaticResource AccentBrush}"
-                                                           TextAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           HorizontalAlignment="Center" />
-                                                <TextBlock Text="{Binding Url}"
-                                                           Margin="0,2,0,0"
-                                                           FontSize="11"
-                                                           Foreground="{StaticResource SecondaryBrush}"
-                                                           TextAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding Text}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding Url}" Margin="0,2,0,0" FontSize="11" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Button>
                                     </DataTemplate>
@@ -64,6 +56,9 @@
                             <Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" />
                             <TextBlock x:Name="TsDescription" Margin="0,0,0,14" Foreground="{StaticResource SecondaryBrush}" FontSize="14" TextWrapping="Wrap" />
                             <ItemsControl x:Name="TsLinks">
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter"><Setter Property="HorizontalAlignment" Value="Stretch" /></Style>
+                                </ItemsControl.ItemContainerStyle>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Tag="{Binding Url}"
@@ -73,28 +68,14 @@
                                                 BorderBrush="{StaticResource AccentBrush}"
                                                 BorderThickness="1"
                                                 Foreground="{StaticResource ForegroundBrush}"
-                                                HorizontalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
                                                 HorizontalContentAlignment="Center"
                                                 VerticalContentAlignment="Center"
-                                                MaxWidth="520"
-                                                MinWidth="280"
                                                 Padding="14,7"
-                                                Margin="0,2,0,3">
+                                                Margin="3,2">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding Text}"
-                                                           FontSize="14"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{StaticResource AccentBrush}"
-                                                           TextAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           HorizontalAlignment="Center" />
-                                                <TextBlock Text="{Binding Url}"
-                                                           Margin="0,2,0,0"
-                                                           FontSize="11"
-                                                           Foreground="{StaticResource SecondaryBrush}"
-                                                           TextAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding Text}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding Url}" Margin="0,2,0,0" FontSize="11" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
                                             </StackPanel>
                                         </Button>
                                     </DataTemplate>
@@ -103,13 +84,22 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                <Border Grid.Row="1" Margin="6,6,6,0" Style="{StaticResource CardStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="18"><StackPanel><TextBlock x:Name="CommunityHeader" Text="SNAKENEST COMMUNITY" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" HorizontalAlignment="Center" TextAlignment="Center" /><Border Height="1" Background="{StaticResource GoldBrush}" Opacity="0.65" Margin="0,8,0,8" /><TextBlock x:Name="CommunityDescription" Margin="0,0,0,12" FontSize="14" Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" /><UniformGrid x:Name="CommunityLinksGrid" Columns="4" Rows="1">
-                    <Button Tag="https://discord.gg/9AxuZkyU7P" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="0,0,5,0" HorizontalContentAlignment="Stretch"><Grid><Image Source="/YacaPluginSwitcher;component/Assets/discord_icon.png" Width="25" Height="25" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="SNAKENEST COMMUNITY" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="DiscordLinkText" Text="Discord Community" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
-                    <Button Tag="https://twitch.tv/vip3r_76" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="2.5,0,2.5,0" HorizontalContentAlignment="Stretch"><Grid><ContentControl x:Name="TwitchIconHost" Width="28" Height="28" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="ViP3R_76" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="TwitchLinkText" Text="Twitch Stream" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
-                    <Button Tag="https://github.com/ViP3R76/Yaca-Plugin-Switcher" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="2.5,0,2.5,0" HorizontalContentAlignment="Stretch"><Grid><Image Source="/YacaPluginSwitcher;component/Assets/github_icon.png" Width="25" Height="25" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="YACA Plugin Switcher" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="GitHubLinkText" Text="Projekt auf GitHub" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
-                    <Button Tag="https://ko-fi.com/vip3r76" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="5,0,0,0" HorizontalContentAlignment="Stretch"><Image Source="/YacaPluginSwitcher;component/Assets/kofi.png" Width="44" Height="28" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" /></Button>
-                </UniformGrid></StackPanel></Border>
-                <Border Grid.Row="3" Margin="6,12,6,12" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Padding="18"><StackPanel><TextBlock x:Name="LegalHeader" Text="DISCLAIMER" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" TextAlignment="Center" /><Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" /><TextBlock x:Name="LegalText" Foreground="{StaticResource ForegroundBrush}" FontSize="13" FontWeight="SemiBold" LineHeight="20" TextWrapping="Wrap" /></StackPanel></Border>
+                <Border Grid.Row="1" Margin="6,6,6,0" Style="{StaticResource CardStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="18">
+                    <StackPanel>
+                        <TextBlock x:Name="CommunityHeader" Text="SNAKENEST COMMUNITY" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                        <Border Height="1" Background="{StaticResource GoldBrush}" Opacity="0.65" Margin="0,8,0,8" />
+                        <TextBlock x:Name="CommunityDescription" Margin="0,0,0,12" FontSize="14" Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+                        <UniformGrid x:Name="CommunityLinksGrid" Columns="4" Rows="1">
+                            <Button Tag="https://discord.gg/9AxuZkyU7P" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="0,0,5,0" HorizontalContentAlignment="Stretch"><Grid><Image Source="/YacaPluginSwitcher;component/Assets/discord_icon.png" Width="25" Height="25" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="SNAKENEST COMMUNITY" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="DiscordLinkText" Text="Discord Community" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
+                            <Button Tag="https://twitch.tv/vip3r_76" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="2.5,0,2.5,0" HorizontalContentAlignment="Stretch"><Grid><ContentControl x:Name="TwitchIconHost" Width="28" Height="28" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="ViP3R_76" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="TwitchLinkText" Text="Twitch Stream" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
+                            <Button Tag="https://github.com/ViP3R76/Yaca-Plugin-Switcher" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="2.5,0,2.5,0" HorizontalContentAlignment="Stretch"><Grid><Image Source="/YacaPluginSwitcher;component/Assets/github_icon.png" Width="25" Height="25" Margin="0,0,9,0" HorizontalAlignment="Left" VerticalAlignment="Center" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="YACA Plugin Switcher" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock x:Name="GitHubLinkText" Text="Projekt auf GitHub" FontSize="12" Foreground="{StaticResource SecondaryBrush}" TextAlignment="Center" /></StackPanel></Grid></Button>
+                            <Button Tag="https://ko-fi.com/vip3r76" Click="Link_Click" Style="{DynamicResource LinkButtonStyle}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Padding="10,7" Margin="5,0,0,0" HorizontalContentAlignment="Stretch"><Image Source="/YacaPluginSwitcher;component/Assets/kofi.png" Width="44" Height="28" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" /></Button>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Row="3" Margin="6,12,6,12" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Padding="18">
+                    <StackPanel><TextBlock x:Name="LegalHeader" Text="DISCLAIMER" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" TextAlignment="Center" /><Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" /><TextBlock x:Name="LegalText" Foreground="{StaticResource ForegroundBrush}" FontSize="13" FontWeight="SemiBold" LineHeight="20" TextWrapping="Wrap" /></StackPanel>
+                </Border>
             </Grid>
         </ScrollViewer>
     </Grid>
