@@ -11,7 +11,7 @@ public partial class MainWindow
     {
         var card = new Border
         {
-            Background = (Brush)FindResource("SurfaceBrush"),
+            Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
             Padding = new Thickness(8),
             Margin = new Thickness(6)
