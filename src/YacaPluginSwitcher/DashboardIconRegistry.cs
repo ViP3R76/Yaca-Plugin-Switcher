@@ -7,11 +7,8 @@ using SharpVectors.Converters;
 
 namespace YacaPluginSwitcher;
 
-/// <summary>
-/// Single source of truth for all dashboard/navigation and branded link icon assets.
-/// The registry owns asset names and resource locations. The central renderer remains
-/// responsible for size, placement, color and context.
-/// </summary>
+// Central registry for dashboard, navigation and branded link icon assets.
+// The renderer remains responsible for size, placement, color and context.
 internal static class DashboardIconRegistry
 {
     internal const string IconAssetDashboard = "icon_asset_dashboard";
