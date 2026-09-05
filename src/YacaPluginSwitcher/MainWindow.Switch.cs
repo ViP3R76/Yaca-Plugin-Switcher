@@ -11,6 +11,8 @@ public partial class MainWindow
 {
     private Task? _storedDownloadsInitializationTask;
     private Button? _downloadManagementButton;
+    private Button? _updaterDownloadButton;
+    private Button? _updaterCancelButton;
 
     private void ShowSwitchPage(string? status = null)
     {
@@ -64,8 +66,8 @@ public partial class MainWindow
 
     private StackPanel CreateInstalledVersionsPanel(Grid root)
     {
-        var gold = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(gold, new Thickness(6, 6, 6, 3));
+        var purple = (Brush)FindResource("AccentBrush");
+        var card = CreatePanelCardForSwitch(purple, new Thickness(6, 6, 6, 3));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -74,7 +76,7 @@ public partial class MainWindow
         headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetInstalled,
-            IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED", gold);
+            IsGerman ? "AKTUELL INSTALLIERT" : "CURRENTLY INSTALLED", purple);
         Grid.SetColumn(header, 0);
         Grid.SetColumnSpan(header, 2);
         headerHost.Children.Add(header);
@@ -87,10 +89,10 @@ public partial class MainWindow
             Margin = new Thickness(8, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Top,
             Background = Brushes.Transparent,
-            BorderBrush = gold,
-            Foreground = gold,
+            BorderBrush = purple,
+            Foreground = purple,
             ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
-            Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, gold, 20, 20)
+            Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, purple, 20, 20)
         };
         sortButton.Click += (_, _) =>
         {
@@ -121,14 +123,15 @@ public partial class MainWindow
 
     private void CreateAvailableDownloadsPanel(Grid root)
     {
-        var purple = (Brush)FindResource("AccentBrush");
-        var card = CreatePanelCardForSwitch(purple, new Thickness(6, 3, 6, 6));
+        var yellow = (Brush)FindResource("GoldBrush");
+        var card = CreatePanelCardForSwitch(yellow, new Thickness(6, 3, 6, 6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync,
-            IsGerman ? "VERFÜGBARE DOWNLOADS" : "AVAILABLE DOWNLOADS", purple);
+            IsGerman ? "VERFÜGBARE DOWNLOADS" : "AVAILABLE DOWNLOADS", yellow);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
 
@@ -145,18 +148,40 @@ public partial class MainWindow
             Content = IsGerman ? "Alle Versionen auswählen" : "Select all versions",
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)FindResource("GoldBrush"),
+            Foreground = yellow,
             Margin = new Thickness(4, 4, 4, 5)
         };
         _updaterSelectAll.Click += UpdaterSelectAll_Click;
-        var cancelButton = new Button
+
+        _updaterDownloadButton = new Button
+        {
+            Content = IsGerman ? "DOWNLOADEN" : "DOWNLOAD",
+            Height = 36,
+            Style = (Style)FindResource("UpdateSearchButtonStyle"),
+            Margin = new Thickness(4, 6, 4, 0),
+            Visibility = Visibility.Collapsed,
+            Cursor = Cursors.Hand
+        };
+        _updaterDownloadButton.Click += async (_, _) => await DownloadSelectedUpdaterVersionsAsync();
+
+        _updaterCancelButton = new Button
         {
             Content = IsGerman ? "ABBRECHEN" : "CANCEL",
             Height = 36,
             Style = (Style)FindResource("NormalActionButtonStyle"),
-            Margin = new Thickness(4, 6, 0, 0)
+            Margin = new Thickness(4, 6, 4, 0),
+            Cursor = Cursors.Hand
         };
-        cancelButton.Click += CancelUpdaterSelection_Click;
+        _updaterCancelButton.Click += CancelUpdaterSelection_Click;
+
+        var actions = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        actions.Children.Add(_updaterDownloadButton);
+        actions.Children.Add(_updaterCancelButton);
+
         _updaterSelectionPanel = new StackPanel
         {
             Visibility = Visibility.Collapsed,
@@ -164,7 +189,7 @@ public partial class MainWindow
         };
         _updaterSelectionPanel.Children.Add(_updaterSelectAll);
         _updaterSelectionPanel.Children.Add(versionScroll);
-        _updaterSelectionPanel.Children.Add(cancelButton);
+        _updaterSelectionPanel.Children.Add(actions);
         Grid.SetRow(_updaterSelectionPanel, 1);
         panel.Children.Add(_updaterSelectionPanel);
 
@@ -185,7 +210,7 @@ public partial class MainWindow
             _updaterSelectionPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
 
         card.Child = panel;
-        Grid.SetColumn(card, 0);
+        Grid.SetColumn(card, 1);
         Grid.SetRow(card, 1);
         root.Children.Add(card);
     }
@@ -231,15 +256,15 @@ public partial class MainWindow
 
     private void CreateDownloadedFilesPanel(Grid root)
     {
-        var gold = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(gold, new Thickness(6, 3, 6, 6));
+        var purple = (Brush)FindResource("AccentBrush");
+        var card = CreatePanelCardForSwitch(purple, new Thickness(6, 3, 6, 6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup,
-            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", gold);
+            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", purple);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
         _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
@@ -267,7 +292,7 @@ public partial class MainWindow
         panel.Children.Add(_downloadManagementButton);
 
         card.Child = panel;
-        Grid.SetColumn(card, 1);
+        Grid.SetColumn(card, 0);
         Grid.SetRow(card, 1);
         root.Children.Add(card);
     }
