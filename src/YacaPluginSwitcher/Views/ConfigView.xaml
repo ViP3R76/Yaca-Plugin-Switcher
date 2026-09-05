@@ -31,7 +31,11 @@
                     <CheckBox x:Name="AutomaticBackup" Margin="0,5" FontSize="15" />
                     <CheckBox x:Name="WarnRunning" Margin="0,5" FontSize="15" />
                     <TextBlock x:Name="MaxBackupsLabel" Text="Maximale Backups" Margin="0,12,0,5" FontSize="15" Foreground="{StaticResource SecondaryBrush}" />
-                    <ComboBox x:Name="MaxBackups" Width="58" Height="34" HorizontalAlignment="Left" />
+                    <ComboBox x:Name="MaxBackups" Width="58" Height="34" HorizontalAlignment="Left">
+                        <ComboBox.Resources>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
+                        </ComboBox.Resources>
+                    </ComboBox>
                 </StackPanel>
             </Border>
             <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,10">
