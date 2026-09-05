@@ -15,6 +15,7 @@ public partial class MainWindow
     private StackPanel? _rendererUpdaterStepPanel;
     private TextBlock? _rendererUpdaterStatusSource;
     private TextBlock? _rendererTeamSpeakStatusSource;
+    private string? _rendererUpdaterStepVersion;
     private bool _rendererInitialized;
 
     protected override void OnContentRendered(EventArgs e)
@@ -273,24 +274,6 @@ public partial class MainWindow
             };
 
             _rendererUpdaterSteps.Clear();
-            var names = IsGerman
-                ? new[] { "Download", "Extraktion", "Prüfung", "Validierung", "Verschieben", "Download löschen" }
-                : new[] { "Download", "Extraction", "Check", "Validation", "Move", "Delete download" };
-
-            foreach (var name in names)
-            {
-                var label = new TextBlock
-                {
-                    Text = "○  " + name,
-                    FontSize = 12,
-                    Foreground = (Brush)FindResource("SecondaryBrush"),
-                    Margin = new Thickness(8, 1, 8, 1),
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
-                _rendererUpdaterSteps.Add(label);
-                _rendererUpdaterStepPanel.Children.Add(label);
-            }
-
             var progressIndex = parent.Children.IndexOf(_updaterProgress);
             parent.Children.Insert(Math.Max(0, progressIndex + 1), _rendererUpdaterStepPanel);
 
@@ -300,15 +283,82 @@ public partial class MainWindow
                 typeof(TextBlock));
             descriptor?.AddValueChanged(
                 _updaterStatus,
-                (_, _) =>
-                {
-                    UpdateUpdaterSteps(_updaterStatus.Text);
-                    ApplyUpdaterStatusVisibility();
-                });
+                (_, _) => ApplyUpdaterStatusVisibility());
         }
 
-        UpdateUpdaterSteps(_updaterStatus.Text);
         ApplyUpdaterStatusVisibility();
+    }
+
+    private void ResetUpdaterSteps(string version)
+    {
+        EnsureUpdaterStepPanel();
+        _rendererUpdaterStepVersion = version;
+        _rendererUpdaterSteps.Clear();
+        _rendererUpdaterStepPanel?.Children.Clear();
+        ApplyUpdaterStatusVisibility();
+    }
+
+    private void AddCompletedUpdaterStep(string name)
+    {
+        if (_rendererUpdaterStepPanel is null
+            || _rendererUpdaterSteps.Any(step => string.Equals(GetUpdaterStepName(step), name, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var label = new TextBlock
+        {
+            Text = "✓  " + name,
+            FontSize = 12,
+            Foreground = (Brush)FindResource("SuccessBrush"),
+            Margin = new Thickness(8, 1, 8, 1),
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        _rendererUpdaterSteps.Add(label);
+        _rendererUpdaterStepPanel.Children.Add(label);
+    }
+
+    private static string GetUpdaterStepName(TextBlock label) =>
+        label.Text.Length > 3 ? label.Text[3..] : label.Text;
+
+    private void UpdateUpdaterSteps(YacaUpdaterProgress progress)
+    {
+        EnsureUpdaterStepPanel();
+
+        if (string.Equals(progress.Status, "Download", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(_rendererUpdaterStepVersion, progress.Version, StringComparison.OrdinalIgnoreCase))
+        {
+            ResetUpdaterSteps(progress.Version);
+        }
+
+        if (string.Equals(progress.Status, "Extraktion", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(IsGerman ? "Download" : "Download");
+        else if (string.Equals(progress.Status, "Prüfung", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(progress.Status, "Archiv wird geprüft", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(IsGerman ? "Extraktion" : "Extraction");
+        else if (string.Equals(progress.Status, "Validierung", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(progress.Status, "DLL wird validiert", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(IsGerman ? "Prüfung" : "Check");
+        else if (string.Equals(progress.Status, "Verschieben", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(IsGerman ? "Validierung" : "Validation");
+        else if (string.Equals(progress.Status, "Download löschen", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(progress.Status, "Download behalten", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(IsGerman ? "Verschieben" : "Move");
+        else if (string.Equals(progress.Status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(progress.Status, "Erfolgreich hinzugefügt", StringComparison.OrdinalIgnoreCase))
+            AddCompletedUpdaterStep(_service.Settings.KeepYacaPluginDownloads
+                ? (IsGerman ? "Download behalten" : "Keep download")
+                : (IsGerman ? "Download löschen" : "Delete download"));
+
+        ApplyUpdaterStatusVisibility();
+
+        if (progress.Completed
+            && progress.Success
+            && (string.Equals(progress.Status, "Abgeschlossen", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(progress.Status, "Erfolgreich hinzugefügt", StringComparison.OrdinalIgnoreCase))
+            && _activePage == "switch"
+            && _installedVersionList is not null)
+        {
+            RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
+        }
     }
 
     private void ApplyUpdaterStatusVisibility()
@@ -323,66 +373,11 @@ public partial class MainWindow
                       || status.Contains("Check for newer Yaca Plugin versions", StringComparison.OrdinalIgnoreCase);
 
         var active = _updaterDownloadInProgress
+                     && _rendererUpdaterSteps.Count > 0
                      && status.Length > 0
-                     && !preview
-                     && !status.Equals("Abgeschlossen", StringComparison.OrdinalIgnoreCase)
-                     && !status.Equals("Completed", StringComparison.OrdinalIgnoreCase);
+                     && !preview;
         _rendererUpdaterStepPanel.Visibility = active
             ? Visibility.Visible
             : Visibility.Collapsed;
-    }
-
-    private void UpdateUpdaterSteps(string status)
-    {
-        if (_rendererUpdaterSteps.Count == 0)
-            return;
-
-        var current = status switch
-        {
-            "Download" or "Download wird vorbereitet" or "Download läuft" => 0,
-            "Extraktion" => 1,
-            "Prüfung" or "Archiv wird geprüft" => 2,
-            "Validierung" or "DLL wird validiert" => 3,
-            "Verschieben" => 4,
-            "Download löschen" or "Download behalten" => 5,
-            "Abgeschlossen" or "Erfolgreich hinzugefügt" => 6,
-            _ => -1
-        };
-
-        var keep = _service.Settings.KeepYacaPluginDownloads;
-        for (var i = 0; i < _rendererUpdaterSteps.Count; i++)
-        {
-            var label = _rendererUpdaterSteps[i];
-            var name = label.Text.Length > 3 ? label.Text[3..] : label.Text;
-
-            if (i == 5 && keep)
-            {
-                label.Text = IsGerman ? "○  Download behalten" : "○  Keep download";
-                label.Foreground = (Brush)FindResource("SecondaryBrush");
-                continue;
-            }
-
-            if (current > i || current == 6)
-            {
-                label.Text = "✓  " + name;
-                label.Foreground = (Brush)FindResource("SuccessBrush");
-            }
-            else if (current == i)
-            {
-                label.Text = "●  " + name;
-                label.Foreground = (Brush)FindResource("GoldBrush");
-            }
-            else
-            {
-                label.Text = "○  " + name;
-                label.Foreground = (Brush)FindResource("SecondaryBrush");
-            }
-        }
-
-        // The updater reports "Abgeschlossen" only after the DLL has been
-        // validated and moved into Plugins. Refresh the active list at that
-        // authoritative point instead of waiting for the batch task to return.
-        if (current == 6 && _activePage == "switch" && _installedVersionList is not null)
-            RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
     }
 }
