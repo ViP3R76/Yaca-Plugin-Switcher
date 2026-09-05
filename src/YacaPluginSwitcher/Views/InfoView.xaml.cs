@@ -39,37 +39,38 @@ public partial class InfoView : UserControl
         TwitchLinkText.Text = _german ? "Twitch Stream" : "Twitch Stream";
         GitHubLinkText.Text = _german ? "Projekt auf GitHub" : "Project on GitHub";
         KofiLinkText.Text = _german ? "Ko-fi Unterstützung" : "Ko-fi Support";
+        TwitchIconHost.Content = DashboardIconRegistry.CreateNaturalIcon(DashboardIconRegistry.IconAssetTwitch, 28, 28);
 
         YacaLinks.ItemsSource = _german
             ? new[]
             {
-                ("YACA Homepage", "https://yaca.systems/"),
-                ("YACA Downloads", "https://yaca.systems/download"),
-                ("YACA Lizenzen", "https://yaca.systems/licenses"),
-                ("YACA FAQ", "https://yaca.systems/faq"),
-                ("YACA Discord", "https://discord.yaca.systems/")
+                new LinkItem("YACA Homepage", "https://yaca.systems/"),
+                new LinkItem("YACA Downloads", "https://yaca.systems/download"),
+                new LinkItem("YACA Lizenzen", "https://yaca.systems/licenses"),
+                new LinkItem("YACA FAQ", "https://yaca.systems/faq"),
+                new LinkItem("YACA Discord", "https://discord.yaca.systems/")
             }
             : new[]
             {
-                ("YACA Homepage", "https://yaca.systems/"),
-                ("YACA Downloads", "https://yaca.systems/download"),
-                ("YACA Licenses", "https://yaca.systems/licenses"),
-                ("YACA FAQ", "https://yaca.systems/faq"),
-                ("YACA Discord", "https://discord.yaca.systems/")
+                new LinkItem("YACA Homepage", "https://yaca.systems/"),
+                new LinkItem("YACA Downloads", "https://yaca.systems/download"),
+                new LinkItem("YACA Licenses", "https://yaca.systems/licenses"),
+                new LinkItem("YACA FAQ", "https://yaca.systems/faq"),
+                new LinkItem("YACA Discord", "https://discord.yaca.systems/")
             };
 
         TsLinks.ItemsSource = _german
             ? new[]
             {
-                ("TeamSpeak Homepage", "https://www.teamspeak.com/de/"),
-                ("TeamSpeak 3 Downloads", "https://www.teamspeak.com/de/downloads/?product=ts3"),
-                ("TeamSpeak Support", "https://support.teamspeak.com/hc/de")
+                new LinkItem("TeamSpeak Homepage", "https://www.teamspeak.com/de/"),
+                new LinkItem("TeamSpeak 3 Downloads", "https://www.teamspeak.com/de/downloads/?product=ts3"),
+                new LinkItem("TeamSpeak Support", "https://support.teamspeak.com/hc/de")
             }
             : new[]
             {
-                ("TeamSpeak Homepage", "https://www.teamspeak.com/en/"),
-                ("TeamSpeak 3 Downloads", "https://www.teamspeak.com/en/downloads/?product=ts3"),
-                ("TeamSpeak Support", "https://support.teamspeak.com/hc/en-us")
+                new LinkItem("TeamSpeak Homepage", "https://www.teamspeak.com/en/"),
+                new LinkItem("TeamSpeak 3 Downloads", "https://www.teamspeak.com/en/downloads/?product=ts3"),
+                new LinkItem("TeamSpeak Support", "https://support.teamspeak.com/hc/en-us")
             };
 
         LegalHeader.Text = _german ? "DISCLAIMER" : "DISCLAIMER";
@@ -108,4 +109,6 @@ public partial class InfoView : UserControl
         if (sender is Button { Tag: string url })
             Open(url);
     }
+
+    private sealed record LinkItem(string Text, string Url);
 }
