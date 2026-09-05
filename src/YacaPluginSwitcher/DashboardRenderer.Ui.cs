@@ -143,7 +143,7 @@ public partial class MainWindow
                 button.Style = (Style)FindResource("NormalActionButtonStyle");
                 button.Background = normalBackground;
                 button.Foreground = gold;
-                button.BorderBrush = gold;
+                button.BorderBrush = purple;
             }
 
             break;
