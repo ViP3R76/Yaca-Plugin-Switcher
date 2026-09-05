@@ -111,11 +111,13 @@ public partial class MainWindow
             return;
         }
 
+        var sizeCulture = IsGerman ? CultureInfo.GetCultureInfo("de-DE") : CultureInfo.GetCultureInfo("en-US");
+        var sizeLabel = IsGerman ? "Größe" : "Size";
         _currentDetails.Text = current is null
             ? string.Empty
             : $"Build: YACA {current.Version} - " +
               $"{current.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"}\n" +
-              $"{(IsGerman ? "Größe" : "Size")}: {current.FileSize.ToString("N0", CultureInfo.InvariantCulture)} Bytes\n" +
+              $"{sizeLabel}: {current.FileSize.ToString("N0", sizeCulture)} Bytes\n" +
               "SHA-256\n" +
               "────────────────────\n" +
               current.Sha256;
