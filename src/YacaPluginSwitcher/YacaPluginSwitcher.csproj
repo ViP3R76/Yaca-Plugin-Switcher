@@ -10,12 +10,11 @@
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>$(MSBuildProjectDirectory)\Assets\branding_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\branding_icon.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <ReleasePackageName>YacaPluginSwitcher-v$(InformationalVersion)-win-x64</ReleasePackageName>
-    <EnableDefaultApplicationIcon>false</EnableDefaultApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\YacaPluginSwitcher.Core\YacaPluginSwitcher.Core.csproj" />
