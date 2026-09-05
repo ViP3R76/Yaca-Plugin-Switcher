@@ -38,6 +38,7 @@ public partial class MainWindow
         var top = new Grid();
         AddStarColumns(top, 3);
         BuildCurrentInstalledPanel(top, 0);
+        BuildBrandingPanel(top, 1);
         BuildTeamSpeakPanel(top, 2);
         Grid.SetRow(top, 0);
         root.Children.Add(top);
