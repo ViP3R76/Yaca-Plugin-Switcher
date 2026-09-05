@@ -1,0 +1,42 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        WPF ScrollViewer does not resolve the scrollbar through the implicit
+        ScrollBar style. Its default template requests these two theme keys
+        explicitly. Bind both keys to the central DarkScrollBarStyle so every
+        ScrollViewer, including DataGrid's internal ScrollViewer, uses the
+        same dark scrollbar template.
+    -->
+    <Style x:Key="{x:Static ScrollBar.VerticalScrollBarStyleKey}"
+           TargetType="ScrollBar"
+           BasedOn="{StaticResource DarkScrollBarStyle}" />
+    <Style x:Key="{x:Static ScrollBar.HorizontalScrollBarStyleKey}"
+           TargetType="ScrollBar"
+           BasedOn="{StaticResource DarkScrollBarStyle}" />
+
+    <Style TargetType="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Style.Resources>
+            <Style x:Key="{x:Static ScrollBar.VerticalScrollBarStyleKey}"
+                   TargetType="ScrollBar"
+                   BasedOn="{StaticResource DarkScrollBarStyle}" />
+            <Style x:Key="{x:Static ScrollBar.HorizontalScrollBarStyleKey}"
+                   TargetType="ScrollBar"
+                   BasedOn="{StaticResource DarkScrollBarStyle}" />
+        </Style.Resources>
+    </Style>
+
+    <Style TargetType="DataGrid">
+        <Style.Resources>
+            <Style x:Key="{x:Static ScrollBar.VerticalScrollBarStyleKey}"
+                   TargetType="ScrollBar"
+                   BasedOn="{StaticResource DarkScrollBarStyle}" />
+            <Style x:Key="{x:Static ScrollBar.HorizontalScrollBarStyleKey}"
+                   TargetType="ScrollBar"
+                   BasedOn="{StaticResource DarkScrollBarStyle}" />
+        </Style.Resources>
+    </Style>
+</ResourceDictionary>
