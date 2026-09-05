@@ -11,6 +11,15 @@
                 <ResourceDictionary Source="Styles/SortButton.xaml" />
                 <ResourceDictionary Source="Styles/Navigation.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!--
+                These implicit application-level styles are the authoritative
+                defaults for framework-created scrolling controls. Keeping the
+                implicit keys directly in Application.Resources avoids relying on
+                template/runtime event ordering.
+            -->
+            <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
+            <Style TargetType="ScrollViewer" BasedOn="{StaticResource DarkScrollViewerStyle}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
