@@ -70,7 +70,11 @@ public partial class BackupView : UserControl
         PluginDownloadsSortButton.BorderBrush = (Brush)FindResource("GoldBrush");
         PluginDownloadsSortButton.Foreground = (Brush)FindResource("GoldBrush");
         PluginDownloadsSortButton.Padding = new Thickness(0);
+        PluginDownloadsSortButton.Width = 32;
+        PluginDownloadsSortButton.Height = 30;
         PluginDownloadsSortButton.MinHeight = 0;
+        PluginDownloadsSortButton.VerticalAlignment = VerticalAlignment.Center;
+        PluginDownloadsSortButton.Margin = new Thickness(0, 0, 0, 3);
         PluginDownloadsSortButton.Style = (Style)FindResource("NormalActionButtonStyle");
         PluginDownloadsSortButton.Click -= PluginDownloadsSort_Click;
         PluginDownloadsSortButton.Click += PluginDownloadsSort_Click;
@@ -101,7 +105,6 @@ public partial class BackupView : UserControl
     {
         if (sender is not CheckBox checkBox || checkBox.DataContext is not BackupRow row)
             return;
-
         row.Selected = checkBox.IsChecked == true;
     }
 
@@ -109,7 +112,6 @@ public partial class BackupView : UserControl
     {
         if (sender is not CheckBox checkBox || checkBox.DataContext is not PluginDownloadRow row)
             return;
-
         row.Selected = checkBox.IsChecked == true;
     }
 
