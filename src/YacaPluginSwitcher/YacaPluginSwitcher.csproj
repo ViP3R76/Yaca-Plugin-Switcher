@@ -38,9 +38,9 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
-    <PublishDir>$(SolutionDir)releases</PublishDir>
+    <PublishDir>$(MSBuildProjectDirectory)\..\..\releases\</PublishDir>
   </PropertyGroup>
-  <Target Name="PublishReleaseFromBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true' and '$(YacaLocalBuild)' != 'true'">
-    <Exec Command="dotnet publish &quot;$(MSBuildProjectFullPath)&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:YacaReleasePackaging=true --no-restore" />
+  <Target Name="PublishReleaseFromBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true'">
+    <Exec Command="dotnet publish &quot;$(MSBuildProjectFullPath)&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=false -p:PublishDir=&quot;$(MSBuildProjectDirectory)\..\..\releases\&quot; -p:YacaReleasePackaging=true --no-restore" />
   </Target>
 </Project>
