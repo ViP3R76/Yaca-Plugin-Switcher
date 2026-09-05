@@ -11,15 +11,11 @@ public partial class MainWindow
     private Button? _updaterSearchButton;
     private StackPanel? _updaterSelectionList;
     private StackPanel? _updaterSelectionPanel;
+    private Button? _updaterDownloadButton;
+    private Button? _updaterCancelButton;
 
     private async Task RunUpdaterActionAsync()
     {
-        if (_updaterSelectionPanel?.Visibility == Visibility.Visible)
-        {
-            await DownloadSelectedUpdaterVersionsAsync();
-            return;
-        }
-
         await RunUpdaterAsync();
     }
 
@@ -82,69 +78,51 @@ public partial class MainWindow
             await DownloadUpdaterVersionsAsync(missingVersions);
     }
 
-    private void EnsureUpdaterSelectionControls()
-    {
-        if (_updaterSelectionPanel is not null)
-            return;
-
-        if (_updaterStatus?.Parent is not StackPanel parent)
-            return;
-
-        _updaterSelectionList = new StackPanel { Margin = new Thickness(6, 2, 6, 2) };
-        var versionScroll = new ScrollViewer
-        {
-            Content = _updaterSelectionList,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Background = (Brush)FindResource("ControlBrush")
-        };
-        _updaterSelectAll = new CheckBox
-        {
-            Content = IsGerman ? "Alle Versionen auswählen" : "Select all versions",
-            FontSize = 13,
-            FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)FindResource("GoldBrush"),
-            Margin = new Thickness(4, 4, 4, 5)
-        };
-        _updaterSelectAll.Click += UpdaterSelectAll_Click;
-        _updaterSelectionPanel = new StackPanel
-        {
-            Visibility = Visibility.Collapsed,
-            Background = (Brush)FindResource("ControlBrush"),
-            Margin = new Thickness(0, 8, 0, 0)
-        };
-        _updaterSelectionPanel.Children.Add(_updaterSelectAll);
-        _updaterSelectionPanel.Children.Add(versionScroll);
-        parent.Children.Add(_updaterSelectionPanel);
-    }
-
     private void ShowUpdaterSelection(IReadOnlyList<string> versions)
     {
-        EnsureUpdaterSelectionControls();
-
         if (_updaterSelectionPanel is null || _updaterSelectionList is null || _updaterSelectAll is null)
             return;
 
         _updaterSelectionList.Children.Clear();
         for (var index = 0; index < versions.Count; index++)
         {
+            var row = new Border
+            {
+                Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush"),
+                BorderBrush = (Brush)FindResource("AccentSoftBrush"),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                MinHeight = 38,
+                Margin = new Thickness(0)
+            };
             var checkBox = new CheckBox
             {
                 Content = $"YACA {versions[index]}",
                 IsChecked = true,
                 FontSize = 14,
                 Foreground = (Brush)FindResource("ForegroundBrush"),
-                Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush"),
-                BorderBrush = (Brush)FindResource("AccentSoftBrush"),
-                BorderThickness = new Thickness(0, 0, 0, 1),
                 Padding = new Thickness(8, 6, 8, 6),
                 MinWidth = 300,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
                 Margin = new Thickness(0)
             };
             checkBox.Checked += UpdaterVersionSelectionChanged;
             checkBox.Unchecked += UpdaterVersionSelectionChanged;
-            _updaterSelectionList.Children.Add(checkBox);
+            checkBox.MouseEnter += (_, _) =>
+            {
+                row.Background = (Brush)FindResource("ControlHoverBrush");
+                checkBox.Foreground = (Brush)FindResource("GoldBrush");
+            };
+            checkBox.MouseLeave += (_, _) =>
+            {
+                row.Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush");
+                checkBox.Foreground = (Brush)FindResource("ForegroundBrush");
+            };
+            row.Child = checkBox;
+            _updaterSelectionList.Children.Add(row);
         }
 
         _updaterSelectAll.IsChecked = true;
@@ -154,8 +132,8 @@ public partial class MainWindow
             _updaterVersion.Text = IsGerman ? $"{versions.Count} Updates gefunden" : $"{versions.Count} updates found";
         if (_updaterStatus is not null)
             _updaterStatus.Text = IsGerman
-                ? "Versionen auswählen und anschließend JETZT DOWNLOADEN drücken."
-                : "Select versions and then press DOWNLOAD NOW.";
+                ? "Versionen auswählen und anschließend DOWNLOADEN drücken."
+                : "Select versions and then press DOWNLOAD.";
         UpdateUpdaterActionButtonState();
     }
 
@@ -222,6 +200,8 @@ public partial class MainWindow
             return [];
 
         return _updaterSelectionList.Children
+            .OfType<Border>()
+            .Select(border => border.Child)
             .OfType<CheckBox>()
             .Where(checkBox => checkBox.IsChecked == true)
             .Select(checkBox => checkBox.Content?.ToString())
@@ -237,7 +217,10 @@ public partial class MainWindow
             return;
 
         var isSelected = _updaterSelectAll.IsChecked == true;
-        foreach (var checkBox in _updaterSelectionList.Children.OfType<CheckBox>())
+        foreach (var checkBox in _updaterSelectionList.Children
+                     .OfType<Border>()
+                     .Select(border => border.Child)
+                     .OfType<CheckBox>())
             checkBox.IsChecked = isSelected;
         UpdateUpdaterActionButtonState();
     }
@@ -247,22 +230,28 @@ public partial class MainWindow
         if (_updaterSelectAll is null || _updaterSelectionList is null)
             return;
 
-        var boxes = _updaterSelectionList.Children.OfType<CheckBox>().ToList();
+        var boxes = _updaterSelectionList.Children
+            .OfType<Border>()
+            .Select(border => border.Child)
+            .OfType<CheckBox>()
+            .ToList();
         _updaterSelectAll.IsChecked = boxes.Count > 0 && boxes.All(box => box.IsChecked == true);
         UpdateUpdaterActionButtonState();
     }
 
     private void UpdateUpdaterActionButtonState()
     {
-        if (_updaterSearchButton is null)
+        if (_updaterDownloadButton is null || _updaterCancelButton is null)
             return;
 
         var selectionVisible = _updaterSelectionPanel?.Visibility == Visibility.Visible;
         var hasSelection = GetSelectedUpdaterVersions().Count > 0;
-        _updaterSearchButton.Content = selectionVisible
-            ? (IsGerman ? "JETZT DOWNLOADEN" : "DOWNLOAD NOW")
-            : (IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES");
-        _updaterSearchButton.IsEnabled = !selectionVisible || hasSelection;
+        _updaterDownloadButton.Visibility = selectionVisible && hasSelection
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        _updaterCancelButton.HorizontalAlignment = selectionVisible && hasSelection
+            ? HorizontalAlignment.Left
+            : HorizontalAlignment.Center;
     }
 
     private void CancelUpdaterSelection_Click(object? sender, RoutedEventArgs e)
