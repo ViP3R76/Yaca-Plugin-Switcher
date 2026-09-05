@@ -32,10 +32,14 @@ public partial class MainWindow
 
         var root = CreateSwitchPageRoot();
         var current = _service.DetectCurrent();
-        var installedList = CreateInstalledVersionsPanel(root);
-        CreateAvailableDownloadsPanel(root);
+        var automaticDownloads = _service.Settings.DownloadAllPluginsWithoutPrompt;
+        var installedList = CreateInstalledVersionsPanel(root, automaticDownloads);
+
+        if (!automaticDownloads)
+            CreateAvailableDownloadsPanel(root);
+
         CreateUpdaterPanel(root);
-        CreateDownloadedFilesPanel(root);
+        CreateDownloadedFilesPanel(root, automaticDownloads);
         PageHost.Content = root;
         RenderSwitchVersionList(installedList, current);
 
@@ -57,18 +61,18 @@ public partial class MainWindow
         var root = new Grid { Margin = new Thickness(0, 4, 0, 0) };
         root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
         return root;
     }
 
-    private StackPanel CreateInstalledVersionsPanel(Grid root)
+    private StackPanel CreateInstalledVersionsPanel(Grid root, bool automaticDownloads)
     {
         var purple = (Brush)FindResource("AccentBrush");
-        var card = CreatePanelCardForSwitch(purple, new Thickness(6, 6, 6, 3));
+        var card = CreatePanelCardForSwitch(purple, new Thickness(6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
 
         var headerHost = new Grid();
         headerHost.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -115,6 +119,7 @@ public partial class MainWindow
         card.Child = panel;
         Grid.SetColumn(card, 0);
         Grid.SetRow(card, 0);
+        Grid.SetRowSpan(card, automaticDownloads ? 2 : 1);
         root.Children.Add(card);
         return list;
     }
@@ -122,10 +127,10 @@ public partial class MainWindow
     private void CreateAvailableDownloadsPanel(Grid root)
     {
         var yellow = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(yellow, new Thickness(6, 3, 6, 6));
+        var card = CreatePanelCardForSwitch(yellow, new Thickness(6, 6, 6, 3));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync,
@@ -224,7 +229,7 @@ public partial class MainWindow
         var card = CreatePanelCardForSwitch(gold, new Thickness(6, 6, 6, 3));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetSync, "DOWNLOADER", gold);
@@ -252,17 +257,19 @@ public partial class MainWindow
         root.Children.Add(card);
     }
 
-    private void CreateDownloadedFilesPanel(Grid root)
+    private void CreateDownloadedFilesPanel(Grid root, bool automaticDownloads)
     {
-        var purple = (Brush)FindResource("AccentBrush");
-        var card = CreatePanelCardForSwitch(purple, new Thickness(6, 3, 6, 6));
+        var yellow = (Brush)FindResource("GoldBrush");
+        var card = CreatePanelCardForSwitch(yellow, automaticDownloads
+            ? new Thickness(6, 3, 6, 6)
+            : new Thickness(6, 3, 6, 6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup,
-            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", purple);
+            IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", yellow);
         Grid.SetRow(header, 0);
         panel.Children.Add(header);
         _downloadedFilesPanel = new StackPanel { Margin = new Thickness(6, 10, 6, 6) };
@@ -280,7 +287,7 @@ public partial class MainWindow
         {
             Content = IsGerman ? "DOWNLOADS VERWALTEN" : "MANAGE DOWNLOADS",
             Height = 40,
-            Style = (Style)FindResource("NormalActionButtonStyle"),
+            Style = (Style)FindResource("UpdateSearchButtonStyle"),
             Margin = new Thickness(6, 4, 6, 0),
             Visibility = Visibility.Collapsed,
             Cursor = Cursors.Hand
@@ -290,8 +297,8 @@ public partial class MainWindow
         panel.Children.Add(_downloadManagementButton);
 
         card.Child = panel;
-        Grid.SetColumn(card, 0);
-        Grid.SetRow(card, 1);
+        Grid.SetColumn(card, automaticDownloads ? 1 : 0);
+        Grid.SetRow(card, automaticDownloads ? 1 : 1);
         root.Children.Add(card);
     }
 
@@ -317,7 +324,7 @@ public partial class MainWindow
         };
         _updaterVersion = new TextBlock
         {
-            Text = IsGerman ? "Bereit für Updates" : "Ready for updates",
+            Text = IsGerman ? "Bereit auf Updates zu prüfen" : "Ready to check for updates",
             FontSize = 22,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)FindResource("ForegroundBrush"),
@@ -325,12 +332,22 @@ public partial class MainWindow
         };
         _updaterStatus = new TextBlock
         {
-            Text = IsGerman ? "Neue YACA Versionen können hier gesucht werden." : "New YACA versions can be searched here.",
+            Text = IsGerman ? "Updateprüfung für neuere Yaca Plugin Versionen" : "Check for newer Yaca Plugin versions",
             FontSize = 14,
             Foreground = (Brush)FindResource("SecondaryBrush"),
             TextAlignment = TextAlignment.Center,
             Margin = new Thickness(0, 8, 0, 12),
             TextWrapping = TextWrapping.Wrap
+        };
+        _updaterFoundVersionsSummary = new TextBlock
+        {
+            Visibility = Visibility.Collapsed,
+            FontSize = 13,
+            Foreground = (Brush)FindResource("SuccessBrush"),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 8, 0, 0)
         };
         _updaterProgress = new ProgressBar
         {
@@ -348,6 +365,7 @@ public partial class MainWindow
         };
         content.Children.Add(_updaterVersion);
         content.Children.Add(_updaterStatus);
+        content.Children.Add(_updaterFoundVersionsSummary);
         content.Children.Add(_updaterProgress);
         content.Children.Add(_updaterSize);
         return content;
@@ -438,7 +456,7 @@ public partial class MainWindow
             badge.Child = new TextBlock
             {
                 Text = "INSTALLIERT",
-                Foreground = Brushes.White,
+                Foreground = Brushes.Black,
                 FontSize = 11,
                 FontWeight = FontWeights.Bold,
                 VerticalAlignment = VerticalAlignment.Center,
