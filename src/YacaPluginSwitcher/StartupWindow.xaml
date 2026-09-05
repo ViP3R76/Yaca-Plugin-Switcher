@@ -9,7 +9,7 @@
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <TextBlock Text="YACA Plugin Switcher" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
             <TextBlock x:Name="StatusText" Grid.Row="1" Margin="0,18,0,14" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap"/>
-            <ProgressBar Grid.Row="2" Height="5" IsIndeterminate="True"/>
+            <ProgressBar x:Name="StartupProgressBar" Grid.Row="2" Height="5" Minimum="0" Maximum="100" Value="0" IsIndeterminate="False"/>
         </Grid>
     </Border>
 </Window>
