@@ -29,31 +29,55 @@ public partial class ConfigView : UserControl
         LoadSettings();
     }
 
+    private string SettingsText(string key) => SettingsLocalization.Get(_service.Settings.Language, key);
+
     private void LoadSettings()
     {
         _loading = true;
 
         try
         {
-            var text = Texts;
+            TitleText.Text = SettingsText("Configuration");
+            GeneralHeader.Text = SettingsText("General");
+            LanguageLabel.Text = SettingsText("Language");
+            YacaDownloaderHeader.Text = SettingsText("YacaDownloader");
+            TeamSpeakHeader.Text = SettingsText("TeamSpeak");
+            ActiveTeamSpeakPathLabel.Text = SettingsText("ActiveTeamSpeakPath");
+            ActivePath.ToolTip = SettingsText("TeamSpeakPathTooltip");
+            BrowseButton.Content = SettingsText("Browse");
+            Expert.Content = SettingsText("ExpertSettings");
+            MultipleInstances.Content = SettingsText("MultipleInstances");
+            TeamSpeakInstancesHeader.Text = SettingsText("TeamSpeakInstances");
+            AvailableTeamSpeakPathsLabel.Text = SettingsText("AvailableTeamSpeakPaths");
+            AddPathButton.Content = SettingsText("AddPath");
+            RemovePathButton.Content = SettingsText("Remove");
+            UsePathButton.Content = SettingsText("UseSelectedPath");
+            AutoDetectButton.Content = SettingsText("AutoDetect");
+            LoggingBackupsHeader.Text = SettingsText("LoggingBackups");
+            LogDirectoryLabel.Text = SettingsText("LogDirectory");
+            OpenLogButton.Content = SettingsText("Open");
+            ApplicationDirectoriesHeader.Text = SettingsText("ApplicationDirectories");
+            BackupsDirectoryLabel.Text = SettingsText("Backups");
+            PluginsDirectoryLabel.Text = SettingsText("Plugins");
+            ApplicationDirectoryLabel.Text = SettingsText("ApplicationDirectory");
+            OpenBackupButton.Content = SettingsText("Open");
+            OpenPluginButton.Content = SettingsText("Open");
+            OpenAppButton.Content = SettingsText("Open");
+            SaveButton.Content = SettingsText("Save");
+            CancelButton.Content = SettingsText("Cancel");
+            MaxBackupsLabel.Text = SettingsText("MaximumBackups");
+            AutomaticBackup.Content = SettingsText("AutomaticBackup");
+            WarnRunning.Content = SettingsText("WarnRunning");
+            KeepYacaPluginDownloads.Content = SettingsText("KeepDownloads");
+            DownloadAllWithoutPrompt.Content = SettingsText("DownloadAll");
+            GeneralLogging.Content = Texts.GeneralLogging;
+            DebugLogging.Content = Texts.DebugLogging;
+            SelectableBackups.Content = SettingsText("SelectableBackups");
+
             var isGerman = Localization.Normalize(_service.Settings.Language) == Localization.German;
-
-            TitleText.Text = isGerman ? "KONFIGURATION" : "CONFIGURATION";
-            AutomaticBackup.Content = text.AutomaticBackup;
-            WarnRunning.Content = text.WarnIfTeamSpeakRunningOption;
-            KeepYacaPluginDownloads.Content = isGerman ? "Yaca Plugin Downloads behalten" : "Keep Yaca plugin downloads";
-            DownloadAllWithoutPrompt.Content = isGerman ? "Alle Plugins direkt downloaden, ohne Nachfrage" : "Download all plugins directly without prompting";
-            Expert.Content = text.ExpertSettings;
-            MultipleInstances.Content = isGerman
-                ? "Mehrere TeamSpeak-3-Installationen verwenden (Experten-Einstellungen)"
-                : "Use multiple TeamSpeak 3 installations (Expert settings)";
-            GeneralLogging.Content = text.GeneralLogging;
-            DebugLogging.Content = text.DebugLogging;
-            SelectableBackups.Content = text.SelectableBackups;
-
             LanguageCombo.Items.Clear();
-            LanguageCombo.Items.Add(text.LanguageGerman);
-            LanguageCombo.Items.Add(text.LanguageEnglish);
+            LanguageCombo.Items.Add(textsForLanguage(Localization.German, "LanguageGerman"));
+            LanguageCombo.Items.Add(textsForLanguage(Localization.English, "LanguageEnglish"));
             LanguageCombo.SelectedIndex = isGerman ? 0 : 1;
 
             MaxBackups.Items.Clear();
@@ -88,6 +112,14 @@ public partial class ConfigView : UserControl
         }
     }
 
+    private static string textsForLanguage(string language, string property) =>
+        property switch
+        {
+            "LanguageGerman" => Localization.Get(language).LanguageGerman,
+            "LanguageEnglish" => Localization.Get(language).LanguageEnglish,
+            _ => throw new ArgumentOutOfRangeException(nameof(property), property, null)
+        };
+
     private void UpdateExpert()
     {
         var expertEnabled = Expert.IsChecked == true;
@@ -97,24 +129,19 @@ public partial class ConfigView : UserControl
             : Visibility.Collapsed;
     }
 
-    private void Expert_Changed(object sender, RoutedEventArgs e)
-    {
-        UpdateExpert();
-    }
+    private void Expert_Changed(object sender, RoutedEventArgs e) => UpdateExpert();
 
-    private void MultipleInstances_Changed(object sender, RoutedEventArgs e)
-    {
-        UpdateExpert();
-    }
+    private void MultipleInstances_Changed(object sender, RoutedEventArgs e) => UpdateExpert();
 
     private void Language_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_loading || LanguageCombo.SelectedIndex < 0)
             return;
 
-        _service.Settings.Language = LanguageCombo.SelectedIndex == 0 ? Localization.German : Localization.English;
-        _owner.RefreshNavigationLanguage();
-        LoadSettings();
+        var language = LanguageCombo.SelectedIndex == 0
+            ? Localization.German
+            : Localization.English;
+        _owner.ChangeLanguage(language);
     }
 
     private void LanguageCombo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -196,9 +223,6 @@ public partial class ConfigView : UserControl
     private void OpenPluginDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.PluginDirectory);
     private void OpenAppDirectory_Click(object sender, RoutedEventArgs e) => OpenDirectory(_service.Paths.BaseDirectory);
 
-    /// <summary>
-    /// Validiert und speichert die Einstellungen über AppSettings.Save().
-    /// </summary>
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         if (MaxBackups.SelectedItem is not int max || max is < 1 or > 9)
