@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using YacaPluginSwitcher.Core;
 
 namespace YacaPluginSwitcher;
@@ -12,8 +10,6 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        RegisterCentralScrollBarTheme();
 
         if (e.Args.Any(arg => string.Equals(arg, "--close-teamspeak", StringComparison.OrdinalIgnoreCase)))
         {
@@ -43,45 +39,6 @@ public partial class App : Application
                 ShowFatalError(ex);
         };
         new StartupWindow().Show();
-    }
-
-    private static void RegisterCentralScrollBarTheme()
-    {
-        EventManager.RegisterClassHandler(
-            typeof(ScrollBar),
-            FrameworkElement.LoadedEvent,
-            new RoutedEventHandler(ApplyDarkScrollBarStyle),
-            true);
-
-        EventManager.RegisterClassHandler(
-            typeof(ScrollViewer),
-            FrameworkElement.LoadedEvent,
-            new RoutedEventHandler(ApplyDarkScrollViewerStyle),
-            true);
-    }
-
-    private static void ApplyDarkScrollBarStyle(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ScrollBar scrollBar)
-            return;
-
-        var darkStyle = Current.TryFindResource("DarkScrollBarStyle") as Style;
-        if (darkStyle is null || ReferenceEquals(scrollBar.Style, darkStyle))
-            return;
-
-        scrollBar.Style = darkStyle;
-    }
-
-    private static void ApplyDarkScrollViewerStyle(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ScrollViewer scrollViewer)
-            return;
-
-        var darkStyle = Current.TryFindResource("DarkScrollViewerStyle") as Style;
-        if (darkStyle is null || ReferenceEquals(scrollViewer.Style, darkStyle))
-            return;
-
-        scrollViewer.Style = darkStyle;
     }
 
     protected override void OnExit(ExitEventArgs e)
