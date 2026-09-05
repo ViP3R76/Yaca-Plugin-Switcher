@@ -133,6 +133,7 @@ public partial class MainWindow
             }
 
             ShowUpdaterReadyState();
+            UpdateUpdaterCopy();
         }
         catch (OperationCanceledException)
         {
@@ -386,14 +387,14 @@ public partial class MainWindow
         }
         if (_updaterVersion is not null)
         {
-            _updaterVersion.Text = IsGerman ? "Bereit für Updates" : "Ready for updates";
+            _updaterVersion.Text = IsGerman ? "Bereit auf Updates zu prüfen" : "Ready to check for updates";
             _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
         }
         if (_updaterStatus is not null)
         {
             _updaterStatus.Text = IsGerman
-                ? "Neue YACA Versionen können hier gesucht werden."
-                : "New YACA versions can be searched here.";
+                ? "Updateprüfung für neuere Yaca Plugin Versionen"
+                : "Check for newer Yaca Plugin versions";
             _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
         }
         if (_updaterSearchButton is not null)
