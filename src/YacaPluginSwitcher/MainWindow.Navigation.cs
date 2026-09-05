@@ -38,10 +38,7 @@ public partial class MainWindow
 
         AddNav("config", DashboardIconRegistry.IconAssetSettings, IsGerman ? "Einstellungen" : "Settings", () => ShowConfig());
         AddNav("info", DashboardIconRegistry.IconAssetInfo, "Info & Links", () => ShowInfo());
-
-        ExitNavContent.Children.Clear();
-        if (ExitNavContent.Parent is StackPanel exitHost && exitHost.Children.OfType<Button>().FirstOrDefault() is { } exitButton)
-            ConfigureNavContent(ExitNavContent, exitButton, DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit");
+        AddNav("exit", DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit", Close_Click);
     }
 
     private async Task ClearTemporaryRefreshStatusAsync(string expectedStatus)
