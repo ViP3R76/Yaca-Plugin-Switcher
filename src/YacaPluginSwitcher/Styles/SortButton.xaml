@@ -17,7 +17,7 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource BackgroundBrush}" />
                 <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
@@ -58,7 +58,22 @@
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     </Style>
 
+    <ControlTemplate x:Key="DarkToolTipTemplate" TargetType="ToolTip">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{TemplateBinding Padding}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}" />
+        </Border>
+    </ControlTemplate>
+
     <Style TargetType="ToolTip">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template" Value="{StaticResource DarkToolTipTemplate}" />
         <Setter Property="Background" Value="{StaticResource ControlBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -66,6 +81,19 @@
         <Setter Property="Padding" Value="8,5" />
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style x:Key="SortButtonStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource SortButtonTemplate}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     </Style>
 
     <Style TargetType="Button">
