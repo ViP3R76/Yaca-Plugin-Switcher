@@ -108,6 +108,7 @@ public partial class MainWindow
         var gold = (Brush)FindResource("GoldBrush");
         var purple = (Brush)FindResource("AccentBrush");
         var normalBackground = (Brush)FindResource("BackgroundBrush");
+        var downloadedBrush = _service.Settings.DownloadAllPluginsWithoutPrompt ? gold : purple;
 
         foreach (var button in FindVisualChildren<Button>(root))
         {
@@ -134,7 +135,15 @@ public partial class MainWindow
             if (FindVisualParent<Border>(headerText) is not Border panel)
                 continue;
 
-            panel.BorderBrush = gold;
+            panel.BorderBrush = downloadedBrush;
+            headerText.Foreground = downloadedBrush;
+
+            foreach (var separator in FindVisualChildren<Border>(panel).Where(border => border.Height == 1))
+                separator.Background = downloadedBrush;
+
+            foreach (var icon in FindVisualChildren<Image>(panel))
+                DashboardIconRegistry.SetFill(icon, downloadedBrush);
+
             foreach (var button in FindVisualChildren<Button>(panel))
             {
                 if (!string.Equals(button.Content?.ToString(), IsGerman ? "DOWNLOADS VERWALTEN" : "MANAGE DOWNLOADS", StringComparison.OrdinalIgnoreCase))
