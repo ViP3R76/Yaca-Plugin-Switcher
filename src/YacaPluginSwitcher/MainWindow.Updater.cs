@@ -12,10 +12,6 @@ public partial class MainWindow
     private StackPanel? _updaterSelectionList;
     private StackPanel? _updaterSelectionPanel;
 
-    /// <summary>
-    /// Führt die Updateprüfung aus oder startet den Download der zuvor ausgewählten Versionen.
-    /// Der gleiche zentrale Button übernimmt damit beide Schritte des Workflows.
-    /// </summary>
     private async Task RunUpdaterActionAsync()
     {
         if (_updaterSelectionPanel?.Visibility == Visibility.Visible)
@@ -27,11 +23,6 @@ public partial class MainWindow
         await RunUpdaterAsync();
     }
 
-    /// <summary>
-    /// Startet die Updateprüfung. Standardmäßig wird anschließend die Auswahl angezeigt.
-    /// Ist der Direktdownload aktiviert, werden alle gefundenen fehlenden Versionen ohne
-    /// weitere Nachfrage über den zentralen Updater heruntergeladen.
-    /// </summary>
     private async Task RunUpdaterAsync()
     {
         if (_updaterCts is not null)
@@ -74,16 +65,12 @@ public partial class MainWindow
         }
         catch (OperationCanceledException)
         {
-            SetGlobalStatus(IsGerman
-                ? "YACA Updateprüfung abgebrochen."
-                : "YACA update check cancelled.");
+            SetGlobalStatus(IsGerman ? "YACA Updateprüfung abgebrochen." : "YACA update check cancelled.");
         }
         catch (Exception ex)
         {
             _service.Logger.Error($"YACA updater check failed: {ex}");
-            SetGlobalStatus(IsGerman
-                ? "YACA Updateprüfung fehlgeschlagen."
-                : "YACA update check failed.");
+            SetGlobalStatus(IsGerman ? "YACA Updateprüfung fehlgeschlagen." : "YACA update check failed.");
         }
         finally
         {
@@ -95,9 +82,6 @@ public partial class MainWindow
             await DownloadUpdaterVersionsAsync(missingVersions);
     }
 
-    /// <summary>
-    /// Erstellt die kompakte Auswahloberfläche einmalig.
-    /// </summary>
     private void EnsureUpdaterSelectionControls()
     {
         if (_updaterSelectionPanel is not null)
@@ -106,20 +90,14 @@ public partial class MainWindow
         if (_updaterStatus?.Parent is not StackPanel parent)
             return;
 
-        _updaterSelectionList = new StackPanel
-        {
-            Margin = new Thickness(6, 2, 6, 2)
-        };
-
+        _updaterSelectionList = new StackPanel { Margin = new Thickness(6, 2, 6, 2) };
         var versionScroll = new ScrollViewer
         {
             Content = _updaterSelectionList,
-            MaxHeight = 118,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             Background = (Brush)FindResource("ControlBrush")
         };
-
         _updaterSelectAll = new CheckBox
         {
             Content = IsGerman ? "Alle Versionen auswählen" : "Select all versions",
@@ -129,174 +107,110 @@ public partial class MainWindow
             Margin = new Thickness(4, 4, 4, 5)
         };
         _updaterSelectAll.Click += UpdaterSelectAll_Click;
-
-        var cancelButton = new Button
-        {
-            Content = IsGerman ? "ABBRECHEN" : "CANCEL",
-            Height = 38,
-            Style = (Style)FindResource("NormalActionButtonStyle"),
-            Margin = new Thickness(4, 6, 0, 0)
-        };
-        cancelButton.Click += CancelUpdaterSelection_Click;
-
-        var selectionButtons = new Grid();
-        selectionButtons.ColumnDefinitions.Add(new ColumnDefinition());
-        Grid.SetColumn(cancelButton, 0);
-        selectionButtons.Children.Add(cancelButton);
-
         _updaterSelectionPanel = new StackPanel
         {
             Visibility = Visibility.Collapsed,
             Background = (Brush)FindResource("ControlBrush"),
             Margin = new Thickness(0, 8, 0, 0)
         };
-
-        _updaterSelectionPanel.Children.Add(new Border
-        {
-            Height = 1,
-            Background = (Brush)FindResource("AccentSoftBrush"),
-            Margin = new Thickness(0, 0, 0, 5)
-        });
-        _updaterSelectionPanel.Children.Add(new TextBlock
-        {
-            Text = IsGerman ? "DOWNLOAD AUSWAHL" : "DOWNLOAD SELECTION",
-            FontSize = 12,
-            FontWeight = FontWeights.Bold,
-            Foreground = (Brush)FindResource("GoldBrush"),
-            Margin = new Thickness(4, 0, 4, 0)
-        });
         _updaterSelectionPanel.Children.Add(_updaterSelectAll);
         _updaterSelectionPanel.Children.Add(versionScroll);
-        _updaterSelectionPanel.Children.Add(selectionButtons);
-
         parent.Children.Add(_updaterSelectionPanel);
     }
 
-    /// <summary>
-    /// Zeigt die gefundenen fehlenden Versionen zur expliziten Auswahl an.
-    /// Bei vielen Treffern bleibt die Liste kompakt und wird innerhalb der Liste gescrollt.
-    /// </summary>
     private void ShowUpdaterSelection(IReadOnlyList<string> versions)
     {
         EnsureUpdaterSelectionControls();
 
-        if (_updaterSelectionPanel is null || _updaterSelectionList is null)
+        if (_updaterSelectionPanel is null || _updaterSelectionList is null || _updaterSelectAll is null)
             return;
 
         _updaterSelectionList.Children.Clear();
-
-        foreach (var version in versions)
+        for (var index = 0; index < versions.Count; index++)
         {
             var checkBox = new CheckBox
             {
-                Content = $"YACA {version}",
+                Content = $"YACA {versions[index]}",
                 IsChecked = true,
-                FontSize = 13,
-                Margin = new Thickness(4, 2, 4, 2),
-                Foreground = (Brush)FindResource("ForegroundBrush")
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundBrush"),
+                Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush"),
+                BorderBrush = (Brush)FindResource("AccentSoftBrush"),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(8, 6, 8, 6),
+                MinWidth = 300,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(0)
             };
             checkBox.Checked += UpdaterVersionSelectionChanged;
             checkBox.Unchecked += UpdaterVersionSelectionChanged;
             _updaterSelectionList.Children.Add(checkBox);
         }
 
-        if (_updaterSelectAll is not null)
-            _updaterSelectAll.IsChecked = true;
-
+        _updaterSelectAll.IsChecked = true;
         _updaterSelectionPanel.Visibility = Visibility.Visible;
 
         if (_updaterVersion is not null)
-        {
-            _updaterVersion.Text = IsGerman
-                ? $"{versions.Count} Updates gefunden"
-                : $"{versions.Count} updates found";
-        }
-
+            _updaterVersion.Text = IsGerman ? $"{versions.Count} Updates gefunden" : $"{versions.Count} updates found";
         if (_updaterStatus is not null)
-        {
             _updaterStatus.Text = IsGerman
                 ? "Versionen auswählen und anschließend JETZT DOWNLOADEN drücken."
                 : "Select versions and then press DOWNLOAD NOW.";
-        }
-
         UpdateUpdaterActionButtonState();
     }
 
-    /// <summary>
-    /// Lädt die vom Benutzer ausgewählten Versionen über den zentralen Updater herunter.
-    /// </summary>
     private async Task DownloadSelectedUpdaterVersionsAsync()
     {
         var selectedVersions = GetSelectedUpdaterVersions();
-
         if (selectedVersions.Count == 0)
         {
-            SetGlobalStatus(IsGerman
-                ? "Bitte mindestens eine YACA Version auswählen."
-                : "Please select at least one YACA version.");
+            SetGlobalStatus(IsGerman ? "Bitte mindestens eine YACA Version auswählen." : "Please select at least one YACA version.");
             return;
         }
 
         await DownloadUpdaterVersionsAsync(selectedVersions);
     }
 
-    /// <summary>
-    /// Führt einen vollständigen Downloadlauf für die angegebenen Versionen aus.
-    /// Diese Methode ist der gemeinsame Einstiegspunkt für manuelle und automatische Downloads.
-    /// </summary>
     private async Task DownloadUpdaterVersionsAsync(IReadOnlyList<string> versions)
     {
         if (versions.Count == 0 || _updaterCts is not null)
             return;
 
         _updaterCts = new CancellationTokenSource();
-
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.IsEnabled = false;
-
         if (_updaterProgress is not null)
         {
             _updaterProgress.Visibility = Visibility.Visible;
             _updaterProgress.Value = 0;
         }
-
         if (_updaterSearchButton is not null)
             _updaterSearchButton.IsEnabled = false;
 
         var progress = new Progress<YacaUpdaterProgress>(UpdateUpdaterProgress);
-
         try
         {
             await _updater.DownloadSelectedAsync(versions, progress, _updaterCts.Token);
             await RefreshDownloadedFilesAsync();
-
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
-
             HideUpdaterSelection();
             ShowSwitchPage();
-            SetGlobalStatus(IsGerman
-                ? "YACA Downloads aktualisiert."
-                : "YACA downloads refreshed.", true);
+            SetGlobalStatus(IsGerman ? "YACA Downloads aktualisiert." : "YACA downloads refreshed.", true);
         }
         catch (OperationCanceledException)
         {
-            SetGlobalStatus(IsGerman
-                ? "YACA Download abgebrochen."
-                : "YACA download cancelled.");
+            SetGlobalStatus(IsGerman ? "YACA Download abgebrochen." : "YACA download cancelled.");
         }
         catch (Exception ex)
         {
             _service.Logger.Error($"YACA updater download failed: {ex}");
-            SetGlobalStatus(IsGerman
-                ? "YACA Download fehlgeschlagen."
-                : "YACA download failed.");
+            SetGlobalStatus(IsGerman ? "YACA Download fehlgeschlagen." : "YACA download failed.");
         }
         finally
         {
             if (_updaterSelectionPanel is not null)
                 _updaterSelectionPanel.IsEnabled = true;
-
             _updaterCts.Dispose();
             _updaterCts = null;
         }
@@ -325,7 +239,6 @@ public partial class MainWindow
         var isSelected = _updaterSelectAll.IsChecked == true;
         foreach (var checkBox in _updaterSelectionList.Children.OfType<CheckBox>())
             checkBox.IsChecked = isSelected;
-
         UpdateUpdaterActionButtonState();
     }
 
@@ -339,9 +252,6 @@ public partial class MainWindow
         UpdateUpdaterActionButtonState();
     }
 
-    /// <summary>
-    /// Der zentrale Button ist während der Auswahl der eigentliche Download-Auslöser.
-    /// </summary>
     private void UpdateUpdaterActionButtonState()
     {
         if (_updaterSearchButton is null)
@@ -349,7 +259,6 @@ public partial class MainWindow
 
         var selectionVisible = _updaterSelectionPanel?.Visibility == Visibility.Visible;
         var hasSelection = GetSelectedUpdaterVersions().Count > 0;
-
         _updaterSearchButton.Content = selectionVisible
             ? (IsGerman ? "JETZT DOWNLOADEN" : "DOWNLOAD NOW")
             : (IsGerman ? "NACH UPDATES SUCHEN" : "CHECK FOR UPDATES");
@@ -360,45 +269,34 @@ public partial class MainWindow
     {
         HideUpdaterSelection();
         ShowUpdaterReadyState();
-        SetGlobalStatus(IsGerman
-            ? "YACA Downloadauswahl verworfen."
-            : "YACA download selection cancelled.");
+        SetGlobalStatus(IsGerman ? "YACA Downloadauswahl verworfen." : "YACA download selection cancelled.");
     }
 
     private void HideUpdaterSelection()
     {
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.Visibility = Visibility.Collapsed;
-
         if (_updaterSelectionList is not null)
             _updaterSelectionList.Children.Clear();
-
         if (_updaterSelectAll is not null)
             _updaterSelectAll.IsChecked = false;
-
         UpdateUpdaterActionButtonState();
     }
 
     private void ShowUpdaterReadyState()
     {
         HideUpdaterSelection();
-
         if (_updaterProgress is not null)
         {
             _updaterProgress.Visibility = Visibility.Collapsed;
             _updaterProgress.Value = 0;
         }
-
         if (_updaterVersion is not null)
             _updaterVersion.Text = IsGerman ? "Bereit für Updates" : "Ready for updates";
-
         if (_updaterStatus is not null)
-        {
             _updaterStatus.Text = IsGerman
-                ? "Neue YACA Versionen können hier heruntergeladen werden."
-                : "New YACA versions can be downloaded here.";
-        }
-
+                ? "Neue YACA Versionen können hier gesucht werden."
+                : "New YACA versions can be searched here.";
         UpdateUpdaterActionButtonState();
     }
 
@@ -406,31 +304,21 @@ public partial class MainWindow
     {
         if (_updaterVersion is not null)
             _updaterVersion.Text = $"YACA {progress.Version}";
-
         if (_updaterStatus is not null)
             _updaterStatus.Text = progress.Status;
-
         if (_updaterProgress is not null && progress.TotalBytes is > 0)
         {
-            _updaterProgress.Value = Math.Min(
-                100,
-                progress.BytesReceived * 100d / progress.TotalBytes.Value);
+            _updaterProgress.Value = Math.Min(100, progress.BytesReceived * 100d / progress.TotalBytes.Value);
         }
-
         if (_updaterSize is not null)
         {
             _updaterSize.Text = progress.TotalBytes is > 0
-                ? $"{progress.BytesReceived / 1024d / 1024d:0.00} MB / " +
-                  $"{progress.TotalBytes.Value / 1024d / 1024d:0.00} MB"
+                ? $"{progress.BytesReceived / 1024d / 1024d:0.00} MB / {progress.TotalBytes.Value / 1024d / 1024d:0.00} MB"
                 : string.Empty;
         }
-
         if (!progress.Completed)
             return;
-
-        SetGlobalStatus(
-            $"YACA {progress.Version}: {progress.Status}",
-            progress.Success);
+        SetGlobalStatus($"YACA {progress.Version}: {progress.Status}", progress.Success);
     }
 
     private async Task RefreshDownloadedFilesAsync()
@@ -449,36 +337,40 @@ public partial class MainWindow
                 Foreground = (Brush)FindResource("SecondaryBrush"),
                 FontSize = 14
             });
+            if (_downloadManagementButton is not null)
+                _downloadManagementButton.Visibility = Visibility.Collapsed;
             return;
         }
 
-        foreach (var file in files)
+        if (_downloadManagementButton is not null)
+            _downloadManagementButton.Visibility = Visibility.Visible;
+
+        for (var index = 0; index < files.Count; index++)
         {
+            var file = files[index];
             var row = new Grid
             {
                 MinHeight = 38,
-                Margin = new Thickness(0, 2, 0, 2)
+                Background = (Brush)FindResource(index % 2 == 0 ? "SurfaceBrush" : "ControlBrush"),
+                Margin = new Thickness(0, 0, 0, 1)
             };
-            row.ColumnDefinitions.Add(new ColumnDefinition
-            {
-                Width = new GridLength(1, GridUnitType.Star)
-            });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
             row.Children.Add(new TextBlock
             {
                 Text = $"YACA {file.Version}",
                 FontSize = 15,
                 FontWeight = FontWeights.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 8, 0)
             });
-
             var size = new TextBlock
             {
                 Text = $"{file.Size / 1024d / 1024d:0.00} MB",
                 FontSize = 13,
                 Foreground = (Brush)FindResource("SecondaryBrush"),
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 8, 0)
             };
             Grid.SetColumn(size, 1);
             row.Children.Add(size);
