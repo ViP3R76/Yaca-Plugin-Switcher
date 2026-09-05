@@ -216,7 +216,7 @@ public partial class MainWindow
             return;
 
         var replacement = DashboardIconRegistry.CreateNaturalIcon(desiredAsset, 44, 44);
-        replacement.HorizontalAlignment = HorizontalAlignment.Left;
+        replacement.HorizontalAlignment = HorizontalAlignment.Center;
         replacement.VerticalAlignment = VerticalAlignment.Center;
         replacement.Margin = new Thickness(0);
         DashboardIconRegistry.SetFill(replacement, brush);
@@ -378,5 +378,11 @@ public partial class MainWindow
                 label.Foreground = (Brush)FindResource("SecondaryBrush");
             }
         }
+
+        // The updater reports "Abgeschlossen" only after the DLL has been
+        // validated and moved into Plugins. Refresh the active list at that
+        // authoritative point instead of waiting for the batch task to return.
+        if (current == 6 && _activePage == "switch" && _installedVersionList is not null)
+            RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
     }
 }
