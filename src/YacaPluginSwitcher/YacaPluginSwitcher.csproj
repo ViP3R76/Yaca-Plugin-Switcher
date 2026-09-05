@@ -10,7 +10,7 @@
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>$(MSBuildProjectDirectory)\Assets\vip3r_76.ico</ApplicationIcon>
+    <ApplicationIcon>$(MSBuildProjectDirectory)\Assets\branding_icon.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -20,14 +20,14 @@
   <ItemGroup>
     <ProjectReference Include="..\YacaPluginSwitcher.Core\YacaPluginSwitcher.Core.csproj" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-    <Resource Include="Assets\vip3r_76.ico" />
-    <Resource Include="Assets\vip3r_76_logo.png" />
+    <Resource Include="Assets\branding_icon.ico" />
+    <Resource Include="Assets\branding_logo.png" />
     <Resource Include="Assets\discord_icon.png" />
     <Resource Include="Assets\github_icon.png" />
     <Resource Include="Assets\*.svg" />
   </ItemGroup>
-  <Target Name="GenerateVip3rBrandingIcon" BeforeTargets="PrepareResourceNames">
-    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\GenerateBrandingIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76_logo.png&quot; -Output &quot;$(MSBuildProjectDirectory)\Assets\vip3r_76.ico&quot;" />
+  <Target Name="GenerateBrandingIcon" BeforeTargets="PrepareResourceNames">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\GenerateBrandingIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\branding_logo.png&quot; -Output &quot;$(MSBuildProjectDirectory)\Assets\branding_icon.ico&quot;" />
   </Target>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>None</DebugType>
