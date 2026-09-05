@@ -127,7 +127,7 @@ public partial class MainWindow
     private void CreateAvailableDownloadsPanel(Grid root)
     {
         var yellow = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(yellow, new Thickness(6, 6, 6, 3));
+        var card = CreatePanelCardForSwitch(yellow, new Thickness(6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
@@ -152,7 +152,8 @@ public partial class MainWindow
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
             Foreground = yellow,
-            Margin = new Thickness(4, 4, 4, 5)
+            Margin = new Thickness(4, 4, 4, 5),
+            VerticalAlignment = VerticalAlignment.Center
         };
         _updaterSelectAll.Click += UpdaterSelectAll_Click;
 
@@ -226,7 +227,7 @@ public partial class MainWindow
         _rendererUpdaterSteps.Clear();
 
         var gold = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(gold, new Thickness(6, 6, 6, 3));
+        var card = CreatePanelCardForSwitch(gold, new Thickness(6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
@@ -260,8 +261,7 @@ public partial class MainWindow
     private void CreateDownloadedFilesPanel(Grid root, bool automaticDownloads)
     {
         var yellow = (Brush)FindResource("GoldBrush");
-        var margin = automaticDownloads ? new Thickness(6) : new Thickness(6, 3, 6, 6);
-        var card = CreatePanelCardForSwitch(yellow, margin);
+        var card = CreatePanelCardForSwitch(yellow, new Thickness(6));
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
