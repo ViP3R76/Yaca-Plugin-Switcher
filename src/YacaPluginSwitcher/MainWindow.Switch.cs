@@ -9,7 +9,6 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    private Task? _storedDownloadsInitializationTask;
     private Button? _downloadManagementButton;
 
     private void ShowSwitchPage(string? status = null)
@@ -151,7 +150,6 @@ public partial class MainWindow
         {
             Content = IsGerman ? "Alle Versionen auswählen" : "Select all versions",
             FontSize = 13,
-            FontWeight = FontWeights.SemiBold,
             Foreground = yellow,
             Margin = new Thickness(4, 4, 4, 5),
             VerticalAlignment = VerticalAlignment.Center,
@@ -373,8 +371,7 @@ public partial class MainWindow
         return content;
     }
 
-    private Task EnsureStoredDownloadsProcessedAsync() =>
-        _storedDownloadsInitializationTask ??= _updater.ProcessStoredDownloadsAsync();
+    private Task EnsureStoredDownloadsProcessedAsync() => _updater.ProcessStoredDownloadsAsync();
 
     private async Task InitializeStoredDownloadsAsync()
     {
@@ -385,8 +382,6 @@ public partial class MainWindow
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
 
-            // Refresh the currently displayed installed-list instance, not the
-            // detached list captured when the async operation originally started.
             if (_activePage == "switch" && _installedVersionList is not null)
                 RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
         }
