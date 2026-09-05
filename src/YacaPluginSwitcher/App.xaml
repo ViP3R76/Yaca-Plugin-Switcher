@@ -6,6 +6,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/Controls.xaml" />
+                <ResourceDictionary Source="Styles/ScrollBarTheme.xaml" />
                 <ResourceDictionary Source="Styles/SortButton.xaml" />
                 <ResourceDictionary Source="Styles/Navigation.xaml" />
             </ResourceDictionary.MergedDictionaries>
