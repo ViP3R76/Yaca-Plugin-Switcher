@@ -36,6 +36,7 @@ public static class SettingsLocalization
             ["ApplicationDirectory"] = ("App-Verzeichnis", "Application directory"),
             ["Save"] = ("Speichern", "Save"),
             ["Cancel"] = ("Abbrechen", "Cancel"),
+            ["PendingChanges"] = ("Änderungen ausstehend – bitte speichern", "Pending changes – please save"),
             ["MaximumBackups"] = ("Maximale Backups", "Maximum backups"),
             ["AutomaticBackup"] = ("Automatisches Backup vor dem Wechsel erstellen", "Create automatic backup before switching"),
             ["WarnRunning"] = ("Warnen, wenn TeamSpeak 3 läuft", "Warn when TeamSpeak 3 is running"),
