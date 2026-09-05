@@ -427,8 +427,8 @@ public partial class MainWindow
         {
             var badge = new Border
             {
-                Background = (Brush)FindResource("GoldBrush"),
-                BorderBrush = (Brush)FindResource("GoldBrush"),
+                Background = (Brush)FindResource("SuccessBrush"),
+                BorderBrush = (Brush)FindResource("SuccessBrush"),
                 BorderThickness = new Thickness(1),
                 Padding = new Thickness(9, 3, 9, 3),
                 Margin = new Thickness(12, 0, 0, 0),
@@ -438,7 +438,7 @@ public partial class MainWindow
             badge.Child = new TextBlock
             {
                 Text = "INSTALLIERT",
-                Foreground = Brushes.Black,
+                Foreground = Brushes.White,
                 FontSize = 11,
                 FontWeight = FontWeights.Bold,
                 VerticalAlignment = VerticalAlignment.Center,
