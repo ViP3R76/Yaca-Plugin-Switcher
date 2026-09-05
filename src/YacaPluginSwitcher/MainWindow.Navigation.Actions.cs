@@ -60,7 +60,6 @@ public partial class MainWindow
         {
             var selected = item.Key.Equals(key, StringComparison.OrdinalIgnoreCase);
             item.Button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
-            item.Button.Foreground = (Brush)FindResource("ForegroundBrush");
             item.Button.BorderBrush = Brushes.Transparent;
             item.Button.BorderThickness = new Thickness(0);
         }
