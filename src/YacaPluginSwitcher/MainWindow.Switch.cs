@@ -260,9 +260,8 @@ public partial class MainWindow
     private void CreateDownloadedFilesPanel(Grid root, bool automaticDownloads)
     {
         var yellow = (Brush)FindResource("GoldBrush");
-        var card = CreatePanelCardForSwitch(yellow, automaticDownloads
-            ? new Thickness(6, 3, 6, 6)
-            : new Thickness(6, 3, 6, 6));
+        var margin = automaticDownloads ? new Thickness(6) : new Thickness(6, 3, 6, 6);
+        var card = CreatePanelCardForSwitch(yellow, margin);
         var panel = new Grid();
         panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 0 });
@@ -298,7 +297,7 @@ public partial class MainWindow
 
         card.Child = panel;
         Grid.SetColumn(card, automaticDownloads ? 1 : 0);
-        Grid.SetRow(card, automaticDownloads ? 1 : 1);
+        Grid.SetRow(card, 1);
         root.Children.Add(card);
     }
 
