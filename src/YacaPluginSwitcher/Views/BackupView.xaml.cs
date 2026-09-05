@@ -64,6 +64,11 @@ public partial class BackupView : UserControl
             (Brush)FindResource("GoldBrush"),
             20,
             20);
+        PluginDownloadsSortButton.Background = (Brush)FindResource("BackgroundBrush");
+        PluginDownloadsSortButton.BorderBrush = (Brush)FindResource("GoldBrush");
+        PluginDownloadsSortButton.Foreground = (Brush)FindResource("GoldBrush");
+        PluginDownloadsSortButton.Padding = new Thickness(0);
+        PluginDownloadsSortButton.Style = (Style)FindResource("NormalActionButtonStyle");
         PluginDownloadsSortButton.Click -= PluginDownloadsSort_Click;
         PluginDownloadsSortButton.Click += PluginDownloadsSort_Click;
 
