@@ -13,6 +13,7 @@ public partial class MainWindow
     private StackPanel? _updaterSelectionPanel;
     private Button? _updaterDownloadButton;
     private Button? _updaterCancelButton;
+    private TextBlock? _updaterFoundVersionsSummary;
     private string[] _pendingUpdaterDownloads = [];
     private CancellationTokenSource? _updaterNoUpdatesMessageCts;
     private bool _updaterDownloadInProgress;
@@ -63,7 +64,7 @@ public partial class MainWindow
             if (downloadAllWithoutPrompt)
             {
                 _pendingUpdaterDownloads = missingVersions.ToArray();
-                ShowBulkDownloadReadyState(missingVersions.Count);
+                ShowBulkDownloadReadyState(missingVersions);
             }
             else
             {
@@ -116,6 +117,12 @@ public partial class MainWindow
             _updaterStatus.Foreground = successBrush;
         }
 
+        if (_updaterFoundVersionsSummary is not null)
+        {
+            _updaterFoundVersionsSummary.Text = string.Empty;
+            _updaterFoundVersionsSummary.Visibility = Visibility.Collapsed;
+        }
+
         _ = RestoreUpdaterReadyStateAfterNoUpdatesAsync(cts);
     }
 
@@ -146,7 +153,7 @@ public partial class MainWindow
         }
     }
 
-    private void ShowBulkDownloadReadyState(int count)
+    private void ShowBulkDownloadReadyState(IReadOnlyList<string> versions)
     {
         if (_updaterProgress is not null)
         {
@@ -156,7 +163,7 @@ public partial class MainWindow
 
         if (_updaterVersion is not null)
         {
-            _updaterVersion.Text = IsGerman ? $"{count} Downloads verfügbar" : $"{count} downloads available";
+            _updaterVersion.Text = IsGerman ? $"{versions.Count} Downloads verfügbar" : $"{versions.Count} downloads available";
             _updaterVersion.Foreground = (Brush)FindResource("ForegroundBrush");
         }
         if (_updaterStatus is not null)
@@ -165,6 +172,14 @@ public partial class MainWindow
                 ? "Alle fehlenden oder neuen YACA Plugins sind bereit zum Download."
                 : "All missing or new YACA plugins are ready to download.";
             _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+        }
+        if (_updaterFoundVersionsSummary is not null)
+        {
+            _updaterFoundVersionsSummary.Text = IsGerman
+                ? $"Gefundene Versionen: {string.Join(" | ", versions)}"
+                : $"Found versions: {string.Join(" | ", versions)}";
+            _updaterFoundVersionsSummary.Foreground = (Brush)FindResource("SuccessBrush");
+            _updaterFoundVersionsSummary.Visibility = Visibility.Visible;
         }
         if (_updaterSearchButton is not null)
         {
@@ -179,6 +194,9 @@ public partial class MainWindow
             return;
 
         _updaterSelectionList.Children.Clear();
+        if (_updaterFoundVersionsSummary is not null)
+            _updaterFoundVersionsSummary.Visibility = Visibility.Collapsed;
+
         for (var index = 0; index < versions.Count; index++)
         {
             var row = new Border
@@ -260,6 +278,8 @@ public partial class MainWindow
         _updaterNoUpdatesMessageCts?.Cancel();
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.IsEnabled = false;
+        if (_updaterFoundVersionsSummary is not null)
+            _updaterFoundVersionsSummary.Visibility = Visibility.Collapsed;
         if (_updaterProgress is not null)
         {
             _updaterProgress.Visibility = Visibility.Visible;
@@ -373,6 +393,11 @@ public partial class MainWindow
             _updaterSelectionList.Children.Clear();
         if (_updaterSelectAll is not null)
             _updaterSelectAll.IsChecked = false;
+        if (_updaterFoundVersionsSummary is not null)
+        {
+            _updaterFoundVersionsSummary.Text = string.Empty;
+            _updaterFoundVersionsSummary.Visibility = Visibility.Collapsed;
+        }
         UpdateUpdaterActionButtonState();
     }
 
