@@ -19,6 +19,17 @@ public partial class MainWindow
         GlobalFooterStatusText.VerticalAlignment = VerticalAlignment.Center;
     }
 
+    private void SetGlobalWarningStatus(string message)
+    {
+        GlobalFooterStatusText.Text = message;
+        GlobalFooterStatusText.Foreground = (Brush)FindResource("GoldBrush");
+        GlobalFooterStatusText.FontWeight = FontWeights.Bold;
+        GlobalFooterStatusText.TextWrapping = TextWrapping.NoWrap;
+        GlobalFooterStatusText.TextTrimming = TextTrimming.None;
+        GlobalFooterStatusText.TextAlignment = TextAlignment.Center;
+        GlobalFooterStatusText.VerticalAlignment = VerticalAlignment.Center;
+    }
+
     private void SetPluginSwitchFooterStatus(YacaPluginInfo plugin)
     {
         ArgumentNullException.ThrowIfNull(plugin);
