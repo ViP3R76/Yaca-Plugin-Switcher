@@ -27,7 +27,8 @@ public partial class MainWindow : Window
 
     private Button? _tsClose;
 
-    private StackPanel? _versionList => GetActiveInstalledVersionList();
+    private StackPanel? _versionList;
+    private StackPanel? _dashboardVersionList;
     private StackPanel? _downloadedFilesPanel;
 
     private Border? _currentCard;
@@ -64,20 +65,5 @@ public partial class MainWindow : Window
         BuildNavigation();
         LoadLanguageSelector();
         ShowHome();
-    }
-
-    private StackPanel? GetActiveInstalledVersionList()
-    {
-        if (_activePage != "switch" || PageHost.Content is not Grid root || root.Children.Count == 0)
-            return null;
-
-        if (root.Children[0] is not Border installedCard || installedCard.Child is not Grid installedPanel)
-            return null;
-
-        return installedPanel.Children
-            .OfType<ScrollViewer>()
-            .Select(viewer => viewer.Content)
-            .OfType<StackPanel>()
-            .FirstOrDefault();
     }
 }
