@@ -26,7 +26,6 @@ public partial class InfoView : UserControl
         DiscordLinkText.Text = "Discord Community";
         TwitchLinkText.Text = "Twitch Stream";
         GitHubLinkText.Text = _german ? "Projekt auf GitHub" : "Project on GitHub";
-        TwitchIconHost.Content = DashboardIconRegistry.CreateNaturalIcon(DashboardIconRegistry.IconAssetTwitch, 28, 28);
         YacaLinks.ItemsSource = CreateLinkItems(_german
             ? new[] { new LinkItem("YACA Homepage", "https://yaca.systems/"), new LinkItem("YACA Downloads", "https://yaca.systems/download"), new LinkItem("YACA Lizenzen", "https://yaca.systems/licenses"), new LinkItem("YACA FAQ", "https://yaca.systems/faq"), new LinkItem("YACA Discord", "https://discord.yaca.systems/") }
             : new[] { new LinkItem("YACA Homepage", "https://yaca.systems/"), new LinkItem("YACA Downloads", "https://yaca.systems/download"), new LinkItem("YACA Licenses", "https://yaca.systems/licenses"), new LinkItem("YACA FAQ", "https://yaca.systems/faq"), new LinkItem("YACA Discord", "https://discord.yaca.systems/") });
