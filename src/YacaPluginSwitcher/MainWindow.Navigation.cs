@@ -20,7 +20,6 @@ public partial class MainWindow
             _ = ClearTemporaryRefreshStatusAsync(status);
         });
         AddNav("switch", DashboardIconRegistry.IconAssetSync, IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
-        AddNav("updater", DashboardIconRegistry.IconAssetSync, "YACA Updater", () => ShowUpdaterPage());
 
         NavPanel.Children.Add(new Separator
         {
