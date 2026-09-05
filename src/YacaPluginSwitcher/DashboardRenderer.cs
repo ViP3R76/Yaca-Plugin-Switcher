@@ -55,7 +55,7 @@ public partial class MainWindow
         AddDashboardTile(actions, 2, DashboardIconRegistry.IconAssetUpdater,
             "YACA UPDATER",
             IsGerman ? "Neueste DLL prüfen\nund herunterladen" : "Check and download\nlatest DLL",
-            (Brush)FindResource("AccentBrush"), () => ShowUpdaterPage());
+            (Brush)FindResource("AccentBrush"), () => ShowSwitchPage());
         Grid.SetRow(actions, 1);
         root.Children.Add(actions);
 
@@ -222,93 +222,43 @@ public partial class MainWindow
         var header = CreateDashboardHeader(DashboardIconRegistry.IconAssetBackup, IsGerman ? "LETZTES BACKUP" : "LATEST BACKUP"); Grid.SetRow(header, 0); panel.Children.Add(header);
         var content = new Grid { Margin = new Thickness(6, 16, 6, 0), VerticalAlignment = VerticalAlignment.Center };
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(160) });
-        _backupSummary = new TextBlock { FontSize = 15, LineHeight = 22, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 10, 0) };
+        _backupSummary = new TextBlock { FontSize = 15, LineHeight = 22, Foreground = (Brush)FindResource("ForegroundBrush"), TextWrapping = TextWrapping.NoWrap, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left, TextAlignment = TextAlignment.Left };
         Grid.SetColumn(_backupSummary, 0); content.Children.Add(_backupSummary);
-        var backupIcon = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetBackup, purple, 132, 132); backupIcon.VerticalAlignment = VerticalAlignment.Center; Grid.SetColumn(backupIcon, 1); content.Children.Add(backupIcon);
-        Grid.SetRow(content, 1); panel.Children.Add(content); card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
-    }
-
-    private SolidColorBrush GetVersionRowBackground(int index)
-    {
-        if (index % 2 == 0) return Brushes.Transparent;
-        if (FindResource("AccentBrush") is SolidColorBrush accent)
-            return new SolidColorBrush(Color.FromArgb(18, accent.Color.R, accent.Color.G, accent.Color.B));
-        return Brushes.Transparent;
-    }
-
-    private void RenderVersionList(YacaPluginInfo? current)
-    {
-        if (_versionList is null) return;
-        _versionList.Children.Clear();
-        var ordered = _plugins.OrderByDescending(plugin => plugin.Version).ThenByDescending(plugin => plugin.Build).ToList();
-        for (var index = 0; index < ordered.Count; index++)
-        {
-            var plugin = ordered[index];
-            var row = new Border { Background = GetVersionRowBackground(index), CornerRadius = new CornerRadius(0), Padding = new Thickness(7, 2, 7, 2), Margin = new Thickness(0, 1, 0, 1) };
-            var grid = new Grid { MinHeight = 34 };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            grid.Children.Add(new TextBlock { Text = $"YACA {plugin.Version} - (Build: {plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"})", FontSize = DashboardVersionListFontSize, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center });
-            if (current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true)
-            {
-                var badge = new Border { Background = (Brush)FindResource("SuccessBrush"), CornerRadius = new CornerRadius(0), Padding = new Thickness(7, 2, 7, 2), MinHeight = 24, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Child = new TextBlock { Text = IsGerman ? "INSTALLIERT" : "INSTALLED", Foreground = Brushes.Black, FontSize = 10, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center } };
-                Grid.SetColumn(badge, 1); grid.Children.Add(badge);
-            }
-            row.Child = grid; _versionList.Children.Add(row);
-        }
-        if (_versionsFooterText is not null)
-            _versionsFooterText.Text = IsGerman ? $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} Version(en) verfügbar" : $"{_plugins.Count.ToString(CultureInfo.InvariantCulture)} version(s) available";
+        var button = new Button { Content = IsGerman ? "BACKUP VERWALTEN" : "MANAGE BACKUPS", Style = (Style)FindResource("NormalActionButtonStyle"), Margin = new Thickness(12, 0, 0, 0), Height = 42, VerticalAlignment = VerticalAlignment.Center };
+        button.Click += (_, _) => ShowBackups(); Grid.SetColumn(button, 1); content.Children.Add(button);
+        Grid.SetRow(content, 1); panel.Children.Add(content);
+        card.Child = panel; Grid.SetColumn(card, column); host.Children.Add(card);
     }
 
     private void UpdateBackupSummary(BackupInfo? backup)
     {
-        if (_backupSummary is null) return;
-        _backupSummary.Inlines.Clear();
-        if (backup is null) { _backupSummary.Inlines.Add(new Run(Texts.NoBackups)); return; }
-        var versionText = backup.DisplayName.Split(" - ", 2, StringSplitOptions.None)[0];
-        var statusText = backup.IsAutomatic ? (IsGerman ? "Automatisches Backup" : "Automatic Backup") : (IsGerman ? "Manuelles Backup" : "Manual Backup");
-        var buildText = backup.SourceBuild?.ToString(CultureInfo.InvariantCulture) ?? "—";
-        var sizeBytes = backup.FileSize; var sizeMb = sizeBytes / 1024d / 1024d; var foreground = (Brush)FindResource("ForegroundBrush");
-        _backupSummary.Inlines.Add(new Run($"{backup.Timestamp:dd.MM.yyyy HH:mm}") { FontSize = 34, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("GoldBrush") });
-        _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"{versionText} • (Build: {buildText})") { FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = foreground });
-        _backupSummary.Inlines.Add(new LineBreak()); _backupSummary.Inlines.Add(new Run(" ") { FontSize = 8 }); _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"Status: {statusText}") { FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = foreground });
-        _backupSummary.Inlines.Add(new LineBreak());
-        _backupSummary.Inlines.Add(new Run($"Größe: {sizeMb:0.00} MB ({sizeBytes.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} Bytes)") { FontSize = 15, Foreground = foreground });
+        if (_backupSummary is null)
+            return;
+        _backupSummary.Text = backup is null
+            ? (IsGerman ? "Kein Backup vorhanden." : "No backup available.")
+            : $"YACA {backup.Version}\n{backup.CreatedAt.ToLocalTime():g}";
     }
 
-    private static ControlTemplate CreateSquareButtonTemplate()
+    private void RenderVersionList(YacaPluginInfo? current)
     {
-        var template = new ControlTemplate(typeof(Button));
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-        border.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
-        border.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
-        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(0));
-        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
-        presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        presenter.SetValue(ContentPresenter.MarginProperty, new TemplateBindingExtension(Button.PaddingProperty));
-        border.AppendChild(presenter); template.VisualTree = border; return template;
+        if (_versionList is null)
+            return;
+        _versionList.Children.Clear();
+        var plugins = GetDistinctPlugins().OrderByDescending(plugin => plugin.Version).ThenByDescending(plugin => plugin.Build).ToList();
+        foreach (var plugin in plugins)
+        {
+            var active = current?.Sha256.Equals(plugin.Sha256, StringComparison.OrdinalIgnoreCase) == true;
+            var row = new Grid { MinHeight = 34, Background = active ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.Children.Add(new TextBlock { Text = $"YACA {plugin.Version}", FontSize = DashboardVersionListFontSize, Foreground = active ? (Brush)FindResource("SuccessBrush") : (Brush)FindResource("ForegroundBrush"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 2) });
+            _versionList.Children.Add(row);
+        }
+        if (_versionsFooterText is not null)
+            _versionsFooterText.Text = plugins.Count.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static void AddAutoRow(Grid grid, int count = 1)
+    private void UpdateCurrentInstalledDetailsFromTextFallback(string text)
     {
-        for (var i = 0; i < count; i++) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-    }
-
-    private static void AddStarColumns(Grid grid, int count)
-    {
-        for (var i = 0; i < count; i++) grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-    }
-}
-
-internal sealed class DashboardDetailsTextBlock : TextBlock
-{
-    private readonly Action<string> _onTextChanged;
-    internal DashboardDetailsTextBlock(Action<string> onTextChanged)
-    {
-        _onTextChanged = onTextChanged ?? throw new ArgumentNullException(nameof(onTextChanged));
-        DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock))?.AddValueChanged(this, (_, _) => _onTextChanged(Text));
+        UpdateCurrentInstalledDetailsFromText(text);
     }
 }
