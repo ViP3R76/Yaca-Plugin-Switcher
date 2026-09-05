@@ -58,7 +58,7 @@ public partial class MainWindow : Window
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion;
         GlobalFooterVersionText.Text = string.IsNullOrWhiteSpace(informationalVersion)
-            ? "v1.0.0"
+            ? "v1.1.0"
             : $"v{informationalVersion}";
 
         BuildNavigation();
