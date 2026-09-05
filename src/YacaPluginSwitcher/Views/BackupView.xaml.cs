@@ -32,7 +32,7 @@ public partial class BackupView : UserControl
     {
         PageHeaderText.Text = IsGerman() ? "BACKUPS VERWALTEN" : "MANAGE BACKUPS";
         TitleText.Text = Texts.BackupTitle;
-        BackupSectionHeader.Text = IsGerman() ? "YACA Plugin Backups" : "YACA Plugin Backups";
+        BackupSectionHeader.Text = "YACA Plugin Backups";
         RestoreButton.Content = Texts.Restore;
         CloseButton.Content = Texts.Close;
         DeleteButton.Content = Texts.Delete.ToUpperInvariant();
@@ -42,11 +42,10 @@ public partial class BackupView : UserControl
             _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
 
         Grid.ItemsSource = _rows;
-        BackupCapacityText.Text = $"{(IsGerman() ? "Backups" : "Backups")}: {_rows.Count} / {_service.Settings.MaxBackups}";
+        BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
 
         var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
         BackupCard.Height = 99 + maximumBackups * 44;
-
         DeleteButton.Visibility = Visibility.Visible;
     }
 
@@ -59,11 +58,11 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = "YACA Plugin Downloads";
-        PluginDownloadsHeaderIcon.Source = DashboardIconRegistry.CreateIcon(
+        PluginDownloadsHeaderIcon.Content = DashboardIconRegistry.CreateIcon(
             DashboardIconRegistry.IconAssetInstalled,
             (Brush)FindResource("GoldBrush"),
             28,
-            28).Source;
+            28);
         PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
             DashboardIconRegistry.IconAssetSort,
             (Brush)FindResource("GoldBrush"),
