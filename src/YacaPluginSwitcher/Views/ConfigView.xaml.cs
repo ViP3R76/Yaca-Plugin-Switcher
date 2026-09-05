@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using YacaPluginSwitcher.Configuration;
 using YacaPluginSwitcher.Core;
 
 namespace YacaPluginSwitcher;
@@ -76,8 +77,8 @@ public partial class ConfigView : UserControl
 
             var isGerman = Localization.Normalize(_service.Settings.Language) == Localization.German;
             LanguageCombo.Items.Clear();
-            LanguageCombo.Items.Add(textsForLanguage(Localization.German, "LanguageGerman"));
-            LanguageCombo.Items.Add(textsForLanguage(Localization.English, "LanguageEnglish"));
+            LanguageCombo.Items.Add(Localization.Get(Localization.German).LanguageGerman);
+            LanguageCombo.Items.Add(Localization.Get(Localization.English).LanguageEnglish);
             LanguageCombo.SelectedIndex = isGerman ? 0 : 1;
 
             MaxBackups.Items.Clear();
@@ -111,14 +112,6 @@ public partial class ConfigView : UserControl
             _loading = false;
         }
     }
-
-    private static string textsForLanguage(string language, string property) =>
-        property switch
-        {
-            "LanguageGerman" => Localization.Get(language).LanguageGerman,
-            "LanguageEnglish" => Localization.Get(language).LanguageEnglish,
-            _ => throw new ArgumentOutOfRangeException(nameof(property), property, null)
-        };
 
     private void UpdateExpert()
     {
