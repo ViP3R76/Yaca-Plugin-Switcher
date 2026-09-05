@@ -27,7 +27,6 @@ public partial class MainWindow : Window
 
     private Button? _tsClose;
 
-    private StackPanel? _versionList;
     private StackPanel? _dashboardVersionList;
     private StackPanel? _downloadedFilesPanel;
 
