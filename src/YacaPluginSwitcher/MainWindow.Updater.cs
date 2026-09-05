@@ -176,8 +176,8 @@ public partial class MainWindow
         if (_updaterFoundVersionsSummary is not null)
         {
             _updaterFoundVersionsSummary.Text = IsGerman
-                ? $"Gefundene Versionen: {string.Join(" | ", versions)}"
-                : $"Found versions: {string.Join(" | ", versions)}";
+                ? $"Gefundene Versionen\n{string.Join(" | ", versions)}"
+                : $"Found versions\n{string.Join(" | ", versions)}";
             _updaterFoundVersionsSummary.Foreground = (Brush)FindResource("SuccessBrush");
             _updaterFoundVersionsSummary.Visibility = Visibility.Visible;
         }
