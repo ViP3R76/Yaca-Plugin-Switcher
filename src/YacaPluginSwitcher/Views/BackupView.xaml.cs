@@ -30,20 +30,24 @@ public partial class BackupView : UserControl
 
     private void LoadBackups()
     {
+        PageHeaderText.Text = IsGerman() ? "BACKUPS VERWALTEN" : "MANAGE BACKUPS";
         TitleText.Text = Texts.BackupTitle;
-        _rows.Clear();
+        BackupSectionHeader.Text = IsGerman() ? "YACA Plugin Backups" : "YACA Plugin Backups";
+        RestoreButton.Content = Texts.Restore;
+        CloseButton.Content = Texts.Close;
+        DeleteButton.Content = Texts.Delete.ToUpperInvariant();
 
+        _rows.Clear();
         foreach (var backup in _service.Backups.ListBackups().OrderByDescending(backup => backup.Timestamp))
             _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
 
         Grid.ItemsSource = _rows;
-        BackupCapacityText.Text = $"Backups: {_rows.Count} / {_service.Settings.MaxBackups}";
+        BackupCapacityText.Text = $"{(IsGerman() ? "Backups" : "Backups")}: {_rows.Count} / {_service.Settings.MaxBackups}";
 
         var maximumBackups = Math.Max(1, _service.Settings.MaxBackups);
         BackupCard.Height = 99 + maximumBackups * 44;
 
         DeleteButton.Visibility = Visibility.Visible;
-        DeleteButton.Content = "LÖSCHEN";
     }
 
     private void LoadPluginDownloads()
@@ -55,14 +59,19 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = "YACA Plugin Downloads";
+        PluginDownloadsHeaderIcon.Source = DashboardIconRegistry.CreateIcon(
+            DashboardIconRegistry.IconAssetInstalled,
+            (Brush)FindResource("GoldBrush"),
+            28,
+            28).Source;
         PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
             DashboardIconRegistry.IconAssetSort,
             (Brush)FindResource("GoldBrush"),
             20,
             20);
         PluginDownloadsSortButton.ToolTip = _pluginDownloadsNewestFirst
-            ? "Auf Alt → Neu umschalten"
-            : "Auf Neu → Alt umschalten";
+            ? (IsGerman() ? "Auf Alt → Neu umschalten" : "Switch to oldest → newest")
+            : (IsGerman() ? "Auf Neu → Alt umschalten" : "Switch to newest → oldest");
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
 
@@ -73,10 +82,7 @@ public partial class BackupView : UserControl
             .Select(file => new PluginDownloadRow(file))
             .OrderByDescending(row => ParseVersion(row.Version));
 
-        var orderedFiles = _pluginDownloadsNewestFirst
-            ? files
-            : files.Reverse();
-
+        var orderedFiles = _pluginDownloadsNewestFirst ? files : files.Reverse();
         foreach (var row in orderedFiles)
             _pluginDownloadRows.Add(row);
 
@@ -89,10 +95,8 @@ public partial class BackupView : UserControl
         LoadPluginDownloads();
     }
 
-    private static Version ParseVersion(string version)
-    {
-        return Version.TryParse(version, out var parsed) ? parsed : new Version(0, 0, 0);
-    }
+    private static Version ParseVersion(string version) =>
+        Version.TryParse(version, out var parsed) ? parsed : new Version(0, 0, 0);
 
     private void BackupSelection_Changed(object sender, RoutedEventArgs e)
     {
