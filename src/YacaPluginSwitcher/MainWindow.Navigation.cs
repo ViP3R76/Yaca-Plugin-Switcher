@@ -14,9 +14,9 @@ public partial class MainWindow
         AddNav("home", DashboardIconRegistry.IconAssetDashboard, "Dashboard", () => ShowHome());
         AddNav("refresh", DashboardIconRegistry.IconAssetRefresh, IsGerman ? "Aktualisieren" : "Refresh", () =>
         {
-            var status = IsGerman ? "Aktualisierung wird ausgeführt …" : "Refreshing …";
-            SetGlobalStatus(status);
             RefreshActivePage(false);
+            var status = IsGerman ? "Aktualisierung durchgeführt." : "Refresh completed.";
+            SetGlobalStatus(status);
             _ = ClearTemporaryRefreshStatusAsync(status);
         });
         AddNav("switch", DashboardIconRegistry.IconAssetSync, IsGerman ? "YACA wechseln" : "Switch YACA", () => ShowSwitchPage());
