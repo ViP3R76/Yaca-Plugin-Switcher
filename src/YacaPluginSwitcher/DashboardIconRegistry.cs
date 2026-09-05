@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using SharpVectors.Converters;
 
@@ -57,7 +58,7 @@ internal static class DashboardIconRegistry
         if (!TryGetAssetPath(assetKey, out var path))
             throw new InvalidOperationException($"Unknown dashboard icon asset '{assetKey}'.");
 
-        return new SvgIcon
+        var icon = new SvgIcon
         {
             UriSource = new Uri(path, UriKind.RelativeOrAbsolute),
             AppName = "YacaPluginSwitcher",
@@ -71,6 +72,15 @@ internal static class DashboardIconRegistry
             UseLayoutRounding = true,
             Tag = assetKey
         };
+
+        icon.SetBinding(SvgIcon.FillProperty, new Binding(nameof(Control.Foreground))
+        {
+            RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
+            FallbackValue = fill,
+            TargetNullValue = fill
+        });
+
+        return icon;
     }
 
     internal static Image CreateNaturalIcon(string assetKey, double width, double height)
