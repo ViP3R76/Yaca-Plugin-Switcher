@@ -423,10 +423,7 @@ public partial class MainWindow
     private Grid CreateVersionButtonContent(YacaPluginInfo plugin, bool active)
     {
         var build = plugin.Build?.ToString(CultureInfo.InvariantCulture) ?? "—";
-        var content = new Grid
-        {
-            VerticalAlignment = VerticalAlignment.Center
-        };
+        var content = new Grid { VerticalAlignment = VerticalAlignment.Center };
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
@@ -455,7 +452,7 @@ public partial class MainWindow
             };
             badge.Child = new TextBlock
             {
-                Text = "INSTALLIERT",
+                Text = IsGerman ? "INSTALLIERT" : "INSTALLED",
                 Foreground = Brushes.Black,
                 FontSize = 11,
                 FontWeight = FontWeights.Bold,
