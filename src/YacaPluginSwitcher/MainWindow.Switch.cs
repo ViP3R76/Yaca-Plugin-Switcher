@@ -34,6 +34,7 @@ public partial class MainWindow
         var current = _service.DetectCurrent();
         var automaticDownloads = _service.Settings.DownloadAllPluginsWithoutPrompt;
         var installedList = CreateInstalledVersionsPanel(root, automaticDownloads);
+        _installedVersionList = installedList;
 
         if (!automaticDownloads)
             CreateAvailableDownloadsPanel(root);
