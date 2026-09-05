@@ -44,7 +44,9 @@ public partial class ConfigView : UserControl
             KeepYacaPluginDownloads.Content = isGerman ? "Yaca Plugin Downloads behalten" : "Keep Yaca plugin downloads";
             DownloadAllWithoutPrompt.Content = isGerman ? "Alle Plugins direkt downloaden, ohne Nachfrage" : "Download all plugins directly without prompting";
             Expert.Content = text.ExpertSettings;
-            MultipleInstances.Content = text.MultipleTeamSpeakInstancesOption;
+            MultipleInstances.Content = isGerman
+                ? "Mehrere TeamSpeak-3-Installationen verwenden (Experten-Einstellungen)"
+                : "Use multiple TeamSpeak 3 installations (Expert settings)";
             GeneralLogging.Content = text.GeneralLogging;
             DebugLogging.Content = text.DebugLogging;
             SelectableBackups.Content = text.SelectableBackups;
