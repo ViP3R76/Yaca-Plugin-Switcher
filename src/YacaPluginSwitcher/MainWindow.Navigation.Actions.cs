@@ -53,12 +53,6 @@ public partial class MainWindow
         _navButtons.Add((key, button));
     }
 
-    private void ShowUpdaterPage(string? status = null)
-    {
-        ShowSwitchPage(status);
-        SetActiveNav("updater");
-    }
-
     private void SetActiveNav(string key)
     {
         _activePage = key;
@@ -78,9 +72,6 @@ public partial class MainWindow
         {
             case "switch":
                 ShowSwitchPage();
-                break;
-            case "updater":
-                ShowUpdaterPage();
                 break;
             case "backups":
                 ShowBackups();
