@@ -47,7 +47,7 @@ public partial class MainWindow
         AddDashboardTile(actions, 0, DashboardIconRegistry.IconAssetSync,
             IsGerman ? "YACA WECHSELN" : "SWITCH YACA",
             IsGerman ? "Version auswählen\nund wechseln" : "Select a version\nand switch",
-            (Brush)FindResource("AccentBrush"), ShowSwitchPage);
+            (Brush)FindResource("AccentBrush"), () => ShowSwitchPage());
         AddDashboardTile(actions, 1, DashboardIconRegistry.IconAssetBackup,
             IsGerman ? "BACKUP ERSTELLEN" : "CREATE BACKUP",
             IsGerman ? "Aktuelle Version sichern" : "Save current version",
