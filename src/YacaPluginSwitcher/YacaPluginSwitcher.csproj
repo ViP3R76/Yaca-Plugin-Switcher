@@ -10,7 +10,7 @@
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
     <RootNamespace>YacaPluginSwitcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\branding_icon.ico</ApplicationIcon>
+    <ApplicationIcon>$(IntermediateOutputPath)branding_icon.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -37,6 +37,9 @@
     <PublishTrimmed>false</PublishTrimmed>
     <PublishDir>$(MSBuildProjectDirectory)\..\..\releases\</PublishDir>
   </PropertyGroup>
+  <Target Name="GenerateApplicationIcon" BeforeTargets="CoreCompile" Inputs="$(MSBuildProjectDirectory)\Assets\branding_logo.png;$(MSBuildProjectDirectory)\Build\Generate-ApplicationIcon.ps1" Outputs="$(IntermediateOutputPath)branding_icon.ico">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\Generate-ApplicationIcon.ps1&quot; -InputPath &quot;$(MSBuildProjectDirectory)\Assets\branding_logo.png&quot; -OutputPath &quot;$(IntermediateOutputPath)branding_icon.ico&quot;" />
+  </Target>
   <Target Name="PublishReleaseFromBuild" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(YacaReleasePackaging)' != 'true'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
