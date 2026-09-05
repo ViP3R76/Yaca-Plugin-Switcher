@@ -139,7 +139,7 @@ public partial class ConfigView : UserControl
             AppDirectory.Text = _service.Paths.BaseDirectory;
 
             UpdateExpert();
-            UpdateLogDeletionPrompt();
+            DeleteLogsPanel.Visibility = Visibility.Collapsed;
             UpdatePendingChangesIndicator();
         }
         finally
@@ -182,16 +182,8 @@ public partial class ConfigView : UserControl
     private void LoggingSettingChanged(object sender, RoutedEventArgs e)
     {
         MarkPendingChange();
-        UpdateLogDeletionPrompt();
-    }
 
-    private void UpdateLogDeletionPrompt()
-    {
-        if (DeleteLogsPanel is null)
-            return;
-
-        var loggingDisabled = GeneralLogging.IsChecked != true || DebugLogging.IsChecked != true;
-        DeleteLogsPanel.Visibility = loggingDisabled && Expert.IsChecked == true
+        DeleteLogsPanel.Visibility = sender is CheckBox { IsChecked: false } && Expert.IsChecked == true
             ? Visibility.Visible
             : Visibility.Collapsed;
     }
@@ -214,7 +206,8 @@ public partial class ConfigView : UserControl
     private void Expert_Changed(object sender, RoutedEventArgs e)
     {
         UpdateExpert();
-        UpdateLogDeletionPrompt();
+        if (Expert.IsChecked != true)
+            DeleteLogsPanel.Visibility = Visibility.Collapsed;
         MarkPendingChange();
     }
 
