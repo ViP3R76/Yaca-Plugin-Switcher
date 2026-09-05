@@ -8,7 +8,7 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    private static void ConfigureNavContent(StackPanel content, string iconAssetKey, string text, Brush? iconBrush = null)
+    private static void ConfigureNavContent(StackPanel content, Button owner, string iconAssetKey, string text, Brush? iconBrush = null)
     {
         content.Orientation = Orientation.Horizontal;
         content.VerticalAlignment = VerticalAlignment.Center;
@@ -22,7 +22,7 @@ public partial class MainWindow
         {
             svgIcon.SetBinding(SvgIcon.FillProperty, new Binding("Foreground")
             {
-                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
+                Source = owner,
                 Mode = BindingMode.OneWay
             });
         }
@@ -39,23 +39,20 @@ public partial class MainWindow
 
     private void AddNav(string key, string iconAssetKey, string text, Action action)
     {
-        var content = new StackPanel();
-        ConfigureNavContent(content, iconAssetKey, text);
         var button = new Button
         {
             Style = (Style)FindResource("NavButtonStyle"),
             Height = 46,
-            Tag = key,
-            Content = content
+            Tag = key
         };
+        var content = new StackPanel();
+        ConfigureNavContent(content, button, iconAssetKey, text);
+        button.Content = content;
         button.Click += (_, _) => action();
         NavPanel.Children.Add(button);
         _navButtons.Add((key, button));
     }
 
-    /// <summary>
-    /// Öffnet den gemeinsamen Switch/Updater-Bereich und markiert ihn als Updater-Seite.
-    /// </summary>
     private void ShowUpdaterPage(string? status = null)
     {
         ShowSwitchPage(status);
@@ -69,9 +66,9 @@ public partial class MainWindow
         {
             var selected = item.Key.Equals(key, StringComparison.OrdinalIgnoreCase);
             item.Button.Background = selected ? (Brush)FindResource("NavSelectedBrush") : Brushes.Transparent;
-            item.Button.Foreground = selected ? (Brush)FindResource("GoldBrush") : (Brush)FindResource("ForegroundBrush");
-            item.Button.BorderBrush = selected ? (Brush)FindResource("GoldBrush") : Brushes.Transparent;
-            item.Button.BorderThickness = selected ? new Thickness(1) : new Thickness(0);
+            item.Button.Foreground = (Brush)FindResource("ForegroundBrush");
+            item.Button.BorderBrush = Brushes.Transparent;
+            item.Button.BorderThickness = new Thickness(0);
         }
     }
 
