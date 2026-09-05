@@ -7,7 +7,7 @@ namespace YacaPluginSwitcher;
 
 public partial class MainWindow
 {
-    private void BuildBrandingPanel(Grid host, int column)
+    private static void BuildBrandingPanel(Grid host, int column)
     {
         var card = new Border
         {
