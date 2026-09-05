@@ -41,12 +41,10 @@ public partial class InfoView : UserControl
     private LinkItem[] CreateLinkItems(IEnumerable<LinkItem> links)
     {
         var accent = (SolidColorBrush)FindResource("AccentBrush");
-        return links
-            .Select((link, index) => link with { Background = GetLinkRowBackground(accent, index) })
-            .ToArray();
+        return links.Select((link, index) => link with { Background = GetLinkRowBackground(accent, index) }).ToArray();
     }
 
-    private static Brush GetLinkRowBackground(SolidColorBrush accent, int index)
+    private static SolidColorBrush GetLinkRowBackground(SolidColorBrush accent, int index)
     {
         if (index % 2 == 0)
             return Brushes.Transparent;
