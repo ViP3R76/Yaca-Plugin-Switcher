@@ -146,6 +146,9 @@ public partial class MainWindow
 
     private void UpdateUpdaterCopy()
     {
+        if (_updaterCts is not null || _updaterDownloadInProgress)
+            return;
+
         if (_updaterVersion is not null)
             _updaterVersion.Text = IsGerman
                 ? "Bereit auf Updates zu prüfen"
@@ -230,7 +233,8 @@ public partial class MainWindow
                       || status.Contains("Updateprüfung für neuere Yaca Plugin Versionen", StringComparison.OrdinalIgnoreCase)
                       || status.Contains("Check for newer Yaca Plugin versions", StringComparison.OrdinalIgnoreCase);
 
-        var active = status.Length > 0
+        var active = _updaterDownloadInProgress
+                     && status.Length > 0
                      && !preview
                      && !status.Equals("Abgeschlossen", StringComparison.OrdinalIgnoreCase)
                      && !status.Equals("Completed", StringComparison.OrdinalIgnoreCase);
