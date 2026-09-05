@@ -38,22 +38,20 @@
             <Style.Triggers><DataTrigger Binding="{Binding CanSelect}" Value="False"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
         </Style>
         <DataTemplate x:Key="PluginDownloadsVersionHeaderTemplate">
-            <Button Width="30" Height="30"
+            <Button Width="30"
+                    Height="30"
                     Padding="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Background="{StaticResource BackgroundBrush}"
-                    BorderBrush="{StaticResource GoldBrush}"
-                    BorderThickness="1"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    BorderThickness="0"
                     Foreground="{StaticResource GoldBrush}"
                     ToolTip="Sortierung umschalten"
                     Click="PluginDownloadsSort_Click"
-                    Style="{StaticResource NormalActionButtonStyle}">
-                <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ContentControl.Content>
-                        <Image Width="20" Height="20" Source="{x:Null}" />
-                    </ContentControl.Content>
-                </ContentControl>
+                    Style="{StaticResource HeaderSortButtonStyle}">
+                <Path Width="16" Height="16" Stretch="Uniform" Fill="{StaticResource GoldBrush}"
+                      Data="M 8,1 L 8,11 M 4,5 L 8,1 L 12,5 M 4,11 L 8,15 L 12,11" />
             </Button>
         </DataTemplate>
     </UserControl.Resources>
