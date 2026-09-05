@@ -314,6 +314,8 @@ public partial class MainWindow
         _updaterCts = new CancellationTokenSource();
         _updaterDownloadInProgress = true;
         _updaterNoUpdatesMessageCts?.Cancel();
+        ResetUpdaterSteps(versions[0]);
+
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.IsEnabled = false;
         if (_updaterFoundVersionsSummary is not null)
@@ -324,11 +326,7 @@ public partial class MainWindow
             _updaterProgress.Value = 0;
         }
         EnsureUpdaterStepPanel();
-        if (_updaterStatus is not null)
-        {
-            UpdateUpdaterSteps(_updaterStatus.Text);
-            ApplyUpdaterStatusVisibility();
-        }
+        ApplyUpdaterStatusVisibility();
         if (_updaterSearchButton is not null)
             _updaterSearchButton.IsEnabled = false;
 
@@ -493,10 +491,7 @@ public partial class MainWindow
         {
             _updaterStatus.Text = progress.Status;
             _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
-            // Update the central step renderer directly from the real updater
-            // progress event. The TextBlock property watcher remains only as a
-            // synchronization path for programmatic status changes.
-            UpdateUpdaterSteps(progress.Status);
+            UpdateUpdaterSteps(progress);
             ApplyUpdaterStatusVisibility();
         }
         if (_updaterProgress is not null && progress.TotalBytes is > 0)
@@ -560,7 +555,7 @@ public partial class MainWindow
             var size = new TextBlock
             {
                 Text = $"{file.Size / 1024d / 1024d:0.00} MB",
-                FontSize = 13,
+                FontSize = 12,
                 Foreground = (Brush)FindResource("SecondaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(8, 0, 8, 0)
