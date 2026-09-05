@@ -18,6 +18,7 @@ public partial class ConfigView : UserControl
     private readonly MainWindow _owner;
     private bool _loading;
     private bool _useCustomPath;
+    private bool _hasPendingChanges;
 
     private UiText Texts => Localization.Get(_service.Settings.Language);
 
@@ -27,18 +28,42 @@ public partial class ConfigView : UserControl
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
         InitializeComponent();
+        RegisterPendingChangeHandlers();
         LoadSettings();
     }
 
     private string SettingsText(string key) => SettingsLocalization.Get(_service.Settings.Language, key);
 
+    private void RegisterPendingChangeHandlers()
+    {
+        foreach (var checkBox in new[]
+                 {
+                     AutomaticBackup,
+                     WarnRunning,
+                     KeepYacaPluginDownloads,
+                     DownloadAllWithoutPrompt,
+                     GeneralLogging,
+                     DebugLogging,
+                     SelectableBackups
+                 })
+        {
+            checkBox.Checked += SettingChanged;
+            checkBox.Unchecked += SettingChanged;
+        }
+
+        MaxBackups.SelectionChanged += MaxBackups_SelectionChanged;
+        ActivePath.TextChanged += ActivePath_TextChanged;
+    }
+
     private void LoadSettings()
     {
         _loading = true;
+        _hasPendingChanges = false;
 
         try
         {
             TitleText.Text = SettingsText("Configuration");
+            PendingChangesText.Text = SettingsText("PendingChanges");
             GeneralHeader.Text = SettingsText("General");
             LanguageLabel.Text = SettingsText("Language");
             YacaDownloaderHeader.Text = SettingsText("YacaDownloader");
@@ -106,6 +131,7 @@ public partial class ConfigView : UserControl
             AppDirectory.Text = _service.Paths.BaseDirectory;
 
             UpdateExpert();
+            UpdatePendingChangesIndicator();
         }
         finally
         {
@@ -122,9 +148,43 @@ public partial class ConfigView : UserControl
             : Visibility.Collapsed;
     }
 
-    private void Expert_Changed(object sender, RoutedEventArgs e) => UpdateExpert();
+    private void MarkPendingChange()
+    {
+        if (_loading)
+            return;
 
-    private void MultipleInstances_Changed(object sender, RoutedEventArgs e) => UpdateExpert();
+        _hasPendingChanges = true;
+        UpdatePendingChangesIndicator();
+    }
+
+    private void UpdatePendingChangesIndicator()
+    {
+        if (PendingChangesText is null)
+            return;
+
+        PendingChangesText.Text = SettingsText("PendingChanges");
+        PendingChangesText.Visibility = _hasPendingChanges
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void SettingChanged(object sender, RoutedEventArgs e) => MarkPendingChange();
+
+    private void MaxBackups_SelectionChanged(object sender, SelectionChangedEventArgs e) => MarkPendingChange();
+
+    private void ActivePath_TextChanged(object sender, TextChangedEventArgs e) => MarkPendingChange();
+
+    private void Expert_Changed(object sender, RoutedEventArgs e)
+    {
+        UpdateExpert();
+        MarkPendingChange();
+    }
+
+    private void MultipleInstances_Changed(object sender, RoutedEventArgs e)
+    {
+        UpdateExpert();
+        MarkPendingChange();
+    }
 
     private void Language_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -155,6 +215,7 @@ public partial class ConfigView : UserControl
         {
             _service.Settings.AddTeamSpeakPluginDirectory(dialog.FolderName);
             PathsList.ItemsSource = _service.Settings.TeamSpeakPluginDirectories.ToList();
+            MarkPendingChange();
         }
     }
 
@@ -165,6 +226,7 @@ public partial class ConfigView : UserControl
 
         _service.Settings.RemoveTeamSpeakPluginDirectory(path);
         PathsList.ItemsSource = _service.Settings.TeamSpeakPluginDirectories.ToList();
+        MarkPendingChange();
     }
 
     private void UsePath_Click(object sender, RoutedEventArgs e)
@@ -173,13 +235,15 @@ public partial class ConfigView : UserControl
         {
             ActivePath.Text = path;
             _useCustomPath = true;
+            MarkPendingChange();
         }
     }
 
     private void AutoDetect_Click(object sender, RoutedEventArgs e)
     {
-        ActivePath.Text = YacaService.GetDefaultTeamSpeakPluginDirectory();
+        ActivePath.Text = YacaService.GetDefaultTeamSpeakPluginPluginDirectory();
         _useCustomPath = false;
+        MarkPendingChange();
     }
 
     private void Browse_Click(object sender, RoutedEventArgs e)
@@ -196,6 +260,7 @@ public partial class ConfigView : UserControl
         {
             ActivePath.Text = dialog.FolderName;
             _useCustomPath = true;
+            MarkPendingChange();
         }
     }
 
@@ -245,6 +310,8 @@ public partial class ConfigView : UserControl
         _service.Settings.SelectableBackupsForDeletion = SelectableBackups.IsChecked == true;
         _service.Logger.Configure(_service.Settings.GeneralLogging, _service.Settings.DebugLogging);
         _service.Settings.Save();
+        _hasPendingChanges = false;
+        UpdatePendingChangesIndicator();
 
         _owner.ReturnHome();
     }
