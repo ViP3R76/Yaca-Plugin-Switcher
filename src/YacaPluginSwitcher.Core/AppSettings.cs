@@ -16,11 +16,11 @@ public sealed class AppSettings
     public List<string> TeamSpeakPluginDirectories { get; set; } = [];
     public bool UseMultipleTeamSpeakInstances { get; set; }
     public bool UseCustomTeamSpeakPluginDirectory { get; set; }
-    public int MaxBackups { get; set; } = 4;
-    public bool AutomaticBackup { get; set; } = true;
-    public bool WarnIfTeamSpeakRunning { get; set; } = true;
+    public int MaxBackups { get; set; }
+    public bool AutomaticBackup { get; set; }
+    public bool WarnIfTeamSpeakRunning { get; set; }
     public bool ExpertSettings { get; set; }
-    public bool GeneralLogging { get; set; } = true;
+    public bool GeneralLogging { get; set; }
     public bool DebugLogging { get; set; }
     public bool SelectableBackupsForDeletion { get; set; }
     public bool KeepYacaPluginDownloads { get; set; }
@@ -30,31 +30,58 @@ public sealed class AppSettings
     [JsonIgnore]
     public string SettingsFilePath { get; private set; } = string.Empty;
 
+    [JsonIgnore]
+    public bool IsFirstRun { get; private set; }
+
     public static AppSettings Load(string settingsFilePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(settingsFilePath);
+        var fullPath = Path.GetFullPath(settingsFilePath);
 
-        try
+        if (File.Exists(fullPath))
         {
-            if (File.Exists(settingsFilePath))
+            try
             {
-                var json = File.ReadAllText(settingsFilePath);
+                var json = File.ReadAllText(fullPath);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
-                settings.SettingsFilePath = Path.GetFullPath(settingsFilePath);
+                settings.SettingsFilePath = fullPath;
+                settings.IsFirstRun = false;
                 settings.Normalize();
                 return settings;
             }
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
-        {
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
+            {
+                // An existing configuration is never replaced by first-run defaults.
+                // Keep the legacy load-failure behavior without marking it as first run.
+                return new AppSettings
+                {
+                    SettingsFilePath = fullPath,
+                    IsFirstRun = false,
+                    Language = Localization.DetectSystemLanguage()
+                };
+            }
         }
 
-        return new AppSettings
-        {
-            SettingsFilePath = Path.GetFullPath(settingsFilePath),
-            Language = Localization.DetectSystemLanguage()
-        };
+        return CreateFirstRunDefaults(fullPath);
     }
+
+    private static AppSettings CreateFirstRunDefaults(string settingsFilePath) => new()
+    {
+        SettingsFilePath = settingsFilePath,
+        IsFirstRun = true,
+        MaxBackups = 4,
+        AutomaticBackup = true,
+        WarnIfTeamSpeakRunning = true,
+        KeepYacaPluginDownloads = false,
+        DownloadAllPluginsWithoutPrompt = false,
+        UseMultipleTeamSpeakInstances = false,
+        ExpertSettings = false,
+        GeneralLogging = false,
+        DebugLogging = false,
+        SelectableBackupsForDeletion = false,
+        UseCustomTeamSpeakPluginDirectory = false,
+        Language = Localization.DetectSystemLanguage()
+    };
 
     public void Save()
     {
