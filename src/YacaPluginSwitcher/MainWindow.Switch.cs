@@ -153,7 +153,8 @@ public partial class MainWindow
             FontWeight = FontWeights.SemiBold,
             Foreground = yellow,
             Margin = new Thickness(4, 4, 4, 5),
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Center,
+            Style = (Style)FindResource("DarkCheckBoxStyle")
         };
         _updaterSelectAll.Click += UpdaterSelectAll_Click;
 
