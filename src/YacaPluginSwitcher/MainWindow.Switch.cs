@@ -54,7 +54,7 @@ public partial class MainWindow
                 : "Installed Yaca plugin version made available in Plugins");
         }
 
-        _ = InitializeStoredDownloadsAsync(installedList);
+        _ = InitializeStoredDownloadsAsync();
     }
 
     private static Grid CreateSwitchPageRoot()
@@ -376,7 +376,7 @@ public partial class MainWindow
     private Task EnsureStoredDownloadsProcessedAsync() =>
         _storedDownloadsInitializationTask ??= _updater.ProcessStoredDownloadsAsync();
 
-    private async Task InitializeStoredDownloadsAsync(StackPanel installedList)
+    private async Task InitializeStoredDownloadsAsync()
     {
         try
         {
@@ -384,7 +384,11 @@ public partial class MainWindow
             await RefreshDownloadedFilesAsync();
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
-            RenderSwitchVersionList(installedList, _service.DetectCurrent());
+
+            // Refresh the currently displayed installed-list instance, not the
+            // detached list captured when the async operation originally started.
+            if (_activePage == "switch" && _installedVersionList is not null)
+                RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
         }
         catch (OperationCanceledException)
         {
