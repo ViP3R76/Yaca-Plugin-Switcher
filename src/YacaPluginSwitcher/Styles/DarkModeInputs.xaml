@@ -13,15 +13,24 @@
                           VerticalScrollBarVisibility="Hidden" />
         </Border>
         <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}" Value="False" />
+                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="TextBoxBorder" Property="Background" Value="{StaticResource ControlHoverBrush}" />
                 <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
-            </Trigger>
-            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}" Value="False" />
+                    <Condition Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
-            </Trigger>
+            </MultiDataTrigger>
             <Trigger Property="IsReadOnly" Value="True">
                 <Setter TargetName="TextBoxBorder" Property="Background" Value="{StaticResource ControlBrush}" />
+                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="TextBoxBorder" Property="Opacity" Value="0.45" />
