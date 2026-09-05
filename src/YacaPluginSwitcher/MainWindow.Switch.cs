@@ -397,7 +397,27 @@ public partial class MainWindow
 
     private void RenderSwitchVersionList(StackPanel list, YacaPluginInfo? currentForSort)
     {
-        list.Children.Clear();
+        // Keep the ScrollViewer's direct child stable. WPF can retain stale
+        // scroll/layout state when a StackPanel inside a ScrollViewer is
+        // repeatedly cleared and repopulated. ItemsControl owns the dynamic
+        // item collection and correctly invalidates its layout when Items.Clear/
+        // Items.Add is used, so the installed list refreshes reliably.
+        var items = list.Children.OfType<ItemsControl>().FirstOrDefault();
+        if (items is null)
+        {
+            items = new ItemsControl
+            {
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(0)
+            };
+            list.Children.Clear();
+            list.Children.Add(items);
+        }
+        else
+        {
+            items.Items.Clear();
+        }
+
         var plugins = GetDistinctPlugins();
         var ordered = _switchSortDescending
             ? plugins.OrderByDescending(plugin => plugin.Version).ThenByDescending(plugin => plugin.Build).ToList()
@@ -417,7 +437,7 @@ public partial class MainWindow
                 Content = CreateVersionButtonContent(plugin, active)
             };
             button.Click += (_, _) => Activate(plugin);
-            list.Children.Add(button);
+            items.Items.Add(button);
         }
     }
 
