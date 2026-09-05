@@ -119,54 +119,38 @@ public partial class BackupView : UserControl
     {
         var selectedBackups = _rows.Where(row => row.Selected).Select(row => row.Info).ToList();
         var selectedDownloads = _pluginDownloadRows.Where(row => row.Selected).ToList();
+        var backupsToDelete = SelectiveDeletionEnabled
+            ? selectedBackups
+            : _rows.Select(row => row.Info).ToList();
 
-        if (selectedDownloads.Count > 0 && selectedBackups.Count == 0)
+        if (backupsToDelete.Count == 0 && selectedDownloads.Count == 0)
         {
-            DeletePluginDownloads(selectedDownloads);
-            return;
-        }
-
-        if (selectedBackups.Count > 0 && selectedDownloads.Count == 0)
-        {
-            DeleteBackups(selectedBackups);
-            return;
-        }
-
-        if (selectedDownloads.Count > 0 && selectedBackups.Count > 0)
-        {
-            var deletedDownloads = DeletePluginDownloads(selectedDownloads, false);
-            var deletedBackups = DeleteBackups(selectedBackups, false);
-            var parts = new List<string>();
-
-            if (deletedBackups > 0)
-                parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
-            if (deletedDownloads > 0)
-                parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
-
             SetFooter(
-                parts.Count > 0
-                    ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.")
-                    : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."),
-                parts.Count > 0);
+                SelectiveDeletionEnabled
+                    ? (IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.")
+                    : (IsGerman() ? "Keine Backups oder Plugin-Downloads zum Löschen vorhanden." : "No backups or plugin downloads available for deletion."),
+                false);
             return;
         }
 
-        if (!SelectiveDeletionEnabled)
-        {
-            var allBackups = _rows.Select(row => row.Info).ToList();
-            if (allBackups.Count == 0)
-            {
-                SetFooter(IsGerman() ? "Keine Backups vorhanden." : "No backups available.", false);
-                return;
-            }
+        var deletedBackups = backupsToDelete.Count > 0
+            ? DeleteBackups(backupsToDelete, false)
+            : 0;
+        var deletedDownloads = selectedDownloads.Count > 0
+            ? DeletePluginDownloads(selectedDownloads, false)
+            : 0;
 
-            DeleteBackups(allBackups);
-            return;
-        }
+        var parts = new List<string>();
+        if (deletedBackups > 0)
+            parts.Add(IsGerman() ? $"{deletedBackups} Backup(s)" : $"{deletedBackups} backup(s)");
+        if (deletedDownloads > 0)
+            parts.Add(IsGerman() ? $"{deletedDownloads} Plugin-Download(s)" : $"{deletedDownloads} plugin download(s)");
 
         SetFooter(
-            IsGerman() ? "Bitte mindestens ein Backup oder einen Plugin-Download markieren." : "Please select at least one backup or plugin download.",
-            false);
+            parts.Count > 0
+                ? (IsGerman() ? string.Join(" und ", parts) + " wurden gelöscht." : string.Join(" and ", parts) + " deleted.")
+                : (IsGerman() ? "Keine ausgewählten Einträge konnten gelöscht werden." : "No selected entries could be deleted."),
+            parts.Count > 0);
     }
 
     private int DeleteBackups(List<BackupInfo> backups, bool updateFooter = true)
