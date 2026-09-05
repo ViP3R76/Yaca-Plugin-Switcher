@@ -440,3 +440,4 @@ public sealed partial class YacaUpdaterService
         var dllMatch = VersionDigitsRegex.Match(fileName);
         return dllMatch.Success ? DecodeCompactVersion(dllMatch.Groups[1].Value) : null;
     }
+}
