@@ -55,7 +55,11 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = "YACA Plugin Downloads";
-        PluginDownloadsSortButton.Content = _pluginDownloadsNewestFirst ? "Neu → Alt" : "Alt → Neu";
+        PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
+            DashboardIconRegistry.IconAssetSort,
+            (Brush)FindResource("GoldBrush"),
+            20,
+            20);
         PluginDownloadsSortButton.ToolTip = _pluginDownloadsNewestFirst
             ? "Auf Alt → Neu umschalten"
             : "Auf Neu → Alt umschalten";
