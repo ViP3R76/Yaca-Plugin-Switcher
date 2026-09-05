@@ -13,7 +13,6 @@ public partial class InfoView : UserControl
         _german = Localization.Normalize(language) == Localization.German;
         InitializeComponent();
         SizeChanged += InfoView_SizeChanged;
-        InfoScrollViewer.Loaded += (_, _) => UpdateInfoScrollBar();
         Build();
         UpdateCommunityLayout();
     }
@@ -43,16 +42,6 @@ public partial class InfoView : UserControl
         var useTwoRows = availableWidth > 0 && availableWidth < 760;
         CommunityLinksGrid.Columns = useTwoRows ? 2 : 4;
         CommunityLinksGrid.Rows = useTwoRows ? 2 : 1;
-        UpdateInfoScrollBar();
-    }
-
-    private void InfoScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateInfoScrollBar();
-
-    private void UpdateInfoScrollBar()
-    {
-        if (InfoScrollViewer is null || InfoContentGrid is null) return;
-        var needsScroll = InfoContentGrid.DesiredSize.Height > InfoScrollViewer.ViewportHeight + 1;
-        InfoScrollViewer.VerticalScrollBarVisibility = needsScroll ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden;
     }
 
     private static void Open(string url)
