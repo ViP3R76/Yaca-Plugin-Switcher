@@ -97,23 +97,6 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = IsGerman() ? "YACA Plugin Downloads" : "YACA Plugin Downloads";
-        PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
-            DashboardIconRegistry.IconAssetSort,
-            (Brush)FindResource("GoldBrush"),
-            20,
-            20);
-        PluginDownloadsSortButton.Background = (Brush)FindResource("BackgroundBrush");
-        PluginDownloadsSortButton.BorderBrush = (Brush)FindResource("GoldBrush");
-        PluginDownloadsSortButton.Foreground = (Brush)FindResource("GoldBrush");
-        PluginDownloadsSortButton.Padding = new Thickness(0);
-        PluginDownloadsSortButton.Width = 32;
-        PluginDownloadsSortButton.Height = 30;
-        PluginDownloadsSortButton.MinHeight = 0;
-        PluginDownloadsSortButton.VerticalAlignment = VerticalAlignment.Center;
-        PluginDownloadsSortButton.Margin = new Thickness(0, 0, 0, 3);
-        PluginDownloadsSortButton.Style = (Style)FindResource("NormalActionButtonStyle");
-        PluginDownloadsSortButton.Click -= PluginDownloadsSort_Click;
-        PluginDownloadsSortButton.Click += PluginDownloadsSort_Click;
 
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
