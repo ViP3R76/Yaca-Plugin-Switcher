@@ -38,7 +38,7 @@ public partial class MainWindow
 
         AddNav("config", DashboardIconRegistry.IconAssetSettings, IsGerman ? "Einstellungen" : "Settings", () => ShowConfig());
         AddNav("info", DashboardIconRegistry.IconAssetInfo, "Info & Links", () => ShowInfo());
-        AddNav("exit", DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit", Close_Click);
+        AddNav("exit", DashboardIconRegistry.IconAssetExit, IsGerman ? "Beenden" : "Exit", () => Close());
     }
 
     private async Task ClearTemporaryRefreshStatusAsync(string expectedStatus)
