@@ -63,14 +63,31 @@ public partial class BackupView : UserControl
             (Brush)FindResource("GoldBrush"),
             28,
             28);
-        PluginDownloadsSortButton.Content = DashboardIconRegistry.CreateIcon(
-            DashboardIconRegistry.IconAssetSort,
-            (Brush)FindResource("GoldBrush"),
-            20,
-            20);
-        PluginDownloadsSortButton.ToolTip = _pluginDownloadsNewestFirst
-            ? (IsGerman() ? "Auf Alt → Neu umschalten" : "Switch to oldest → newest")
-            : (IsGerman() ? "Auf Neu → Alt umschalten" : "Switch to newest → oldest");
+
+        var sortButton = new Button
+        {
+            Width = 34,
+            Height = 30,
+            Background = Brushes.Transparent,
+            BorderBrush = (Brush)FindResource("AccentBrush"),
+            BorderThickness = new Thickness(1),
+            Foreground = (Brush)FindResource("AccentBrush"),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            ToolTip = _pluginDownloadsNewestFirst
+                ? (IsGerman() ? "Auf Alt → Neu umschalten" : "Switch to oldest → newest")
+                : (IsGerman() ? "Auf Neu → Alt umschalten" : "Switch to newest → oldest"),
+            Content = DashboardIconRegistry.CreateIcon(
+                DashboardIconRegistry.IconAssetSort,
+                (Brush)FindResource("AccentBrush"),
+                20,
+                20)
+        };
+        sortButton.Click += PluginDownloadsSort_Click;
+        var versionColumn = PluginDownloadsGrid.Columns.OfType<DataGridTextColumn>().LastOrDefault();
+        if (versionColumn is not null)
+            versionColumn.Header = sortButton;
+
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
 
