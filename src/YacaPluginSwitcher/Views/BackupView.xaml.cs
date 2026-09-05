@@ -13,6 +13,7 @@ public partial class BackupView : UserControl
     private readonly MainWindow _owner;
     private readonly ObservableCollection<BackupRow> _rows = [];
     private readonly ObservableCollection<PluginDownloadRow> _pluginDownloadRows = [];
+    private bool _pluginDownloadsNewestFirst = true;
     private UiText Texts => Localization.Get(_service.Settings.Language);
     private static string PluginDownloadDirectory => Path.Combine(AppContext.BaseDirectory, "plugins_download");
 
@@ -32,7 +33,7 @@ public partial class BackupView : UserControl
         TitleText.Text = Texts.BackupTitle;
         _rows.Clear();
 
-        foreach (var backup in _service.Backups.ListBackups())
+        foreach (var backup in _service.Backups.ListBackups().OrderByDescending(backup => backup.Timestamp))
             _rows.Add(new BackupRow(backup, SelectiveDeletionEnabled));
 
         Grid.ItemsSource = _rows;
@@ -54,16 +55,39 @@ public partial class BackupView : UserControl
             return;
 
         PluginDownloadsTitle.Text = "YACA Plugin Downloads";
+        PluginDownloadsSortButton.Content = _pluginDownloadsNewestFirst ? "Neu → Alt" : "Alt → Neu";
+        PluginDownloadsSortButton.ToolTip = _pluginDownloadsNewestFirst
+            ? "Auf Alt → Neu umschalten"
+            : "Auf Neu → Alt umschalten";
         _pluginDownloadRows.Clear();
         Directory.CreateDirectory(PluginDownloadDirectory);
 
-        foreach (var file in Directory.EnumerateFiles(PluginDownloadDirectory, "*.ts3_plugin", SearchOption.TopDirectoryOnly)
-                     .OrderByDescending(File.GetLastWriteTime))
-        {
-            _pluginDownloadRows.Add(new PluginDownloadRow(file));
-        }
+        var files = Directory.EnumerateFiles(
+                PluginDownloadDirectory,
+                "*.ts3_plugin",
+                SearchOption.TopDirectoryOnly)
+            .Select(file => new PluginDownloadRow(file))
+            .OrderByDescending(row => ParseVersion(row.Version));
+
+        var orderedFiles = _pluginDownloadsNewestFirst
+            ? files
+            : files.Reverse();
+
+        foreach (var row in orderedFiles)
+            _pluginDownloadRows.Add(row);
 
         PluginDownloadsGrid.ItemsSource = _pluginDownloadRows;
+    }
+
+    private void PluginDownloadsSort_Click(object sender, RoutedEventArgs e)
+    {
+        _pluginDownloadsNewestFirst = !_pluginDownloadsNewestFirst;
+        LoadPluginDownloads();
+    }
+
+    private static Version ParseVersion(string version)
+    {
+        return Version.TryParse(version, out var parsed) ? parsed : new Version(0, 0, 0);
     }
 
     private void BackupSelection_Changed(object sender, RoutedEventArgs e)
