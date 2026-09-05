@@ -10,7 +10,7 @@
         </Style>
         <Style x:Key="CenteredTextStyle" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="TextAlignment" Value="Center" /></Style>
         <Style x:Key="CenteredHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{StaticResource ControlBrush}" /><Setter Property="Foreground" Value="{StaticResource AccentBrush}" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="Padding" Value="8,0" /><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Background" Value="{StaticResource ControlBrush}" /><Setter Property="Foreground" Value="{StaticResource AccentBrush}" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="Padding" Value="8,0" /><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" /><Setter Property="SeparatorVisibility" Value="Collapsed" />
         </Style>
         <Style x:Key="BackupSelectionCheckBoxStyle" TargetType="CheckBox">
             <Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="VerticalAlignment" Value="Center" />
@@ -50,14 +50,10 @@
             <Border x:Name="PluginDownloadsCard" Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" CornerRadius="0" Padding="10" Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ContentControl x:Name="PluginDownloadsHeaderIcon" Width="28" Height="28" Margin="4,0,10,0" VerticalAlignment="Center" />
-                            <TextBlock x:Name="PluginDownloadsTitle" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" />
-                        </StackPanel>
-                        <Button x:Name="PluginDownloadsSortButton" Grid.Column="1" Width="120" Height="30" HorizontalAlignment="Right" VerticalAlignment="Center" Click="PluginDownloadsSort_Click" Style="{StaticResource NormalActionButtonStyle}" />
-                    </Grid>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ContentControl x:Name="PluginDownloadsHeaderIcon" Width="28" Height="28" Margin="4,0,10,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="PluginDownloadsTitle" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" />
+                    </StackPanel>
                     <Border Grid.Row="1" Background="{StaticResource GoldBrush}" Opacity="0.65" />
                     <DataGrid x:Name="PluginDownloadsGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="Background" Value="{StaticResource SurfaceBrush}" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" /><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /></Trigger></Style.Triggers></Style></DataGrid.RowStyle>
