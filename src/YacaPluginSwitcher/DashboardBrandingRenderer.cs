@@ -13,7 +13,7 @@ public partial class MainWindow
         {
             Background = (Brush)FindResource("SurfaceBrush"),
             BorderThickness = new Thickness(0),
-            Padding = new Thickness(20),
+            Padding = new Thickness(8),
             Margin = new Thickness(6)
         };
 
@@ -27,13 +27,14 @@ public partial class MainWindow
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
             MaxWidth = 520,
-            MaxHeight = DashboardPanelHeight - 40,
+            MaxHeight = DashboardPanelHeight - 28,
             SnapsToDevicePixels = true,
+            UseLayoutRounding = true,
             IsHitTestVisible = false
         };
 
         RenderOptions.SetBitmapScalingMode(branding, BitmapScalingMode.HighQuality);
-        RenderOptions.SetEdgeMode(branding, EdgeMode.Aliased);
+        RenderOptions.SetEdgeMode(branding, EdgeMode.Unspecified);
 
         card.Child = branding;
         Grid.SetColumn(card, column);
