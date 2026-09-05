@@ -257,6 +257,7 @@ public partial class MainWindow
         Grid.SetColumn(card, 1);
         Grid.SetRow(card, 0);
         root.Children.Add(card);
+        RestoreCachedUpdaterState();
     }
 
     private void CreateDownloadedFilesPanel(Grid root, bool automaticDownloads)
