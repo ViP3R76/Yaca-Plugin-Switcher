@@ -115,7 +115,7 @@ public partial class MainWindow
             ? string.Empty
             : $"Build: YACA {current.Version} - " +
               $"{current.Build?.ToString(CultureInfo.InvariantCulture) ?? "—"}\n" +
-              $"Größe: {current.FileSize.ToString("N0", CultureInfo.GetCultureInfo("de-DE"))} Bytes\n" +
+              $"{(IsGerman ? "Größe" : "Size")}: {current.FileSize.ToString("N0", CultureInfo.InvariantCulture)} Bytes\n" +
               "SHA-256\n" +
               "────────────────────\n" +
               current.Sha256;
