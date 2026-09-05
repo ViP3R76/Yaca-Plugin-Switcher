@@ -12,7 +12,9 @@ public partial class InfoView : UserControl
     {
         _german = Localization.Normalize(language) == Localization.German;
         InitializeComponent();
+        SizeChanged += InfoView_SizeChanged;
         Build();
+        UpdateCommunityLayout();
     }
 
     private void Build()
@@ -72,7 +74,20 @@ public partial class InfoView : UserControl
 
         LegalText.Text = _german
             ? "Diese Anwendung wird unabhängig entwickelt und steht in keiner geschäftlichen oder technischen Verbindung zu YACA Systems, TeamSpeak Systems GmbH oder anderen in den verlinkten Ressourcen genannten Drittanbietern. YACA und TeamSpeak sind eigenständige Produkte und Marken ihrer jeweiligen Rechteinhaber. Die Verwendung dieses Switchers erfolgt auf eigene Verantwortung. Prüfe vor Installations-, Backup-, Restore- oder Wechselvorgängen stets den vorgesehenen Zielpfad und stelle sicher, dass benötigte Programme nicht gleichzeitig auf die betroffenen Dateien zugreifen. Für Inhalte, Verfügbarkeit oder Änderungen externer Webseiten, Dienste und Downloads wird keine Gewähr übernommen. Externe Links öffnen sich in deinem Standardbrowser."
-            : "This application is developed independently and has no business or technical affiliation with YACA Systems, TeamSpeak Systems GmbH, or other third parties referenced by the linked resources. YACA and TeamSpeak are independent products and trademarks of their respective rights holders. Use of this switcher is at your own responsibility. Before installation, backup, restore or switching operations, verify the intended target path and make sure required applications are not accessing the affected files. No warranty is provided for the content, availability or changes of external websites, services or downloads. External links open in your default browser.";
+            : "This application is developed independently and has no business or technical affiliation with YACA Systems, TeamSpeak Systems GmbH, or other third parties referenced by the linked resources. YACA and TeamSpeak are independent products and trademarks of their respective rights holders. Use of this switcher is at your own responsibility. Before installation, backup, restore or switching operations, verify the intended target path and make sure required applications are not accessing the affected files. No warranty is provided for the content, availability or changes of external websites, services or downloads. External links open in your standard browser.";
+    }
+
+    private void InfoView_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateCommunityLayout();
+
+    private void UpdateCommunityLayout()
+    {
+        if (CommunityLinksGrid is null)
+            return;
+
+        var availableWidth = CommunityLinksGrid.ActualWidth;
+        var useTwoRows = availableWidth > 0 && availableWidth < 760;
+        CommunityLinksGrid.Columns = useTwoRows ? 2 : 4;
+        CommunityLinksGrid.Rows = useTwoRows ? 2 : 1;
     }
 
     private static void Open(string url)
