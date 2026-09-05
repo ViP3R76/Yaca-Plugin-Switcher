@@ -19,31 +19,16 @@
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource ControlHoverBrush}" />
                 <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
                 <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource NavSelectedBrush}" />
                 <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
-                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="SortBorder" Property="Opacity" Value="0.45" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
-
-    <Style x:Key="SortButtonStyle" TargetType="Button">
-        <Setter Property="Template" Value="{StaticResource SortButtonTemplate}" />
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-    </Style>
 
     <ControlTemplate x:Key="HeaderSortButtonTemplate" TargetType="Button">
         <Border Background="Transparent"
