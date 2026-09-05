@@ -333,8 +333,8 @@ public partial class MainWindow
             await RefreshDownloadedFilesAsync();
             _plugins.Clear();
             _plugins.AddRange(GetDistinctPlugins());
-            if (_versionList is not null)
-                RenderSwitchVersionList(_versionList, _service.DetectCurrent());
+            if (_installedVersionList is not null)
+                RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
             HideUpdaterSelection();
             ClearCachedUpdaterResults();
             ShowUpdaterReadyState();
