@@ -1,8 +1,8 @@
 namespace YacaPluginSwitcher.Configuration;
 
 /// <summary>
-/// Zentrale Texte der Einstellungen. UI-spezifische Bezeichnungen bleiben
-/// außerhalb der View-XAML und werden abhängig von der aktiven Sprache geliefert.
+/// Zentrale Texte der Einstellungen und kleiner datenorientierter UI-Tabellen.
+/// UI-spezifische Bezeichnungen bleiben außerhalb der View-XAML und werden abhängig von der aktiven Sprache geliefert.
 /// </summary>
 public static class SettingsLocalization
 {
@@ -43,7 +43,13 @@ public static class SettingsLocalization
             ["AutomaticBackup"] = ("Automatisches Backup vor dem Wechsel erstellen", "Create automatic backup before switching"),
             ["WarnRunning"] = ("Warnen, wenn TeamSpeak 3 läuft", "Warn when TeamSpeak 3 is running"),
             ["SelectableBackups"] = ("Einzelne Backups zum Löschen markierbar machen", "Allow individual backups to be selected for deletion"),
-            ["BackupReplacementNotice"] = ("Älteste Backups werden ersetzt", "Oldest backups are replaced")
+            ["BackupReplacementNotice"] = ("Älteste Backups werden ersetzt", "Oldest backups are replaced"),
+            ["BackupColumn"] = ("Backup", "Backup"),
+            ["FileColumn"] = ("Datei", "File"),
+            ["DateColumn"] = ("Datum", "Date"),
+            ["SizeColumn"] = ("Größe", "Size"),
+            ["HashColumn"] = ("SHA-256", "SHA-256"),
+            ["VersionColumn"] = ("Version", "Version")
         };
 
     public static string Get(string? language, string key)
