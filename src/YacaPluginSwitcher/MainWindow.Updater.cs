@@ -315,7 +315,6 @@ public partial class MainWindow
         _updaterDownloadInProgress = true;
         _updaterNoUpdatesMessageCts?.Cancel();
         ResetUpdaterSteps(versions[0]);
-
         if (_updaterSelectionPanel is not null)
             _updaterSelectionPanel.IsEnabled = false;
         if (_updaterFoundVersionsSummary is not null)
@@ -453,6 +452,7 @@ public partial class MainWindow
     {
         _pendingUpdaterDownloads = [];
         HideUpdaterSelection();
+        ResetUpdaterSteps(string.Empty);
         if (_updaterProgress is not null)
         {
             _updaterProgress.Visibility = Visibility.Collapsed;
@@ -555,7 +555,7 @@ public partial class MainWindow
             var size = new TextBlock
             {
                 Text = $"{file.Size / 1024d / 1024d:0.00} MB",
-                FontSize = 12,
+                FontSize = 13,
                 Foreground = (Brush)FindResource("SecondaryBrush"),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(8, 0, 8, 0)
