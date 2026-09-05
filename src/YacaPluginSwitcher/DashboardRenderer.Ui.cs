@@ -77,27 +77,107 @@ public partial class MainWindow
             Grid.SetColumn(downloaded, 1);
             Grid.SetRow(downloaded, 1);
             Grid.SetRowSpan(downloaded, 1);
-            return;
+        }
+        else
+        {
+            available.Visibility = Visibility.Visible;
+            Grid.SetColumn(installed, 0);
+            Grid.SetRow(installed, 0);
+            Grid.SetRowSpan(installed, 1);
+
+            Grid.SetColumn(available, 1);
+            Grid.SetRow(available, 1);
+            Grid.SetRowSpan(available, 1);
+
+            updater.Visibility = Visibility.Visible;
+            Grid.SetColumn(updater, 1);
+            Grid.SetRow(updater, 0);
+            Grid.SetRowSpan(updater, 1);
+
+            downloaded.Visibility = Visibility.Visible;
+            Grid.SetColumn(downloaded, 0);
+            Grid.SetRow(downloaded, 1);
+            Grid.SetRowSpan(downloaded, 1);
         }
 
-        available.Visibility = Visibility.Visible;
-        Grid.SetColumn(installed, 0);
-        Grid.SetRow(installed, 0);
-        Grid.SetRowSpan(installed, 1);
+        ApplySwitchControlStyling(root);
+    }
 
-        Grid.SetColumn(available, 1);
-        Grid.SetRow(available, 1);
-        Grid.SetRowSpan(available, 1);
+    private void ApplySwitchControlStyling(Grid root)
+    {
+        var gold = (Brush)FindResource("GoldBrush");
+        var purple = (Brush)FindResource("AccentBrush");
+        var normalBackground = (Brush)FindResource("BackgroundBrush");
 
-        updater.Visibility = Visibility.Visible;
-        Grid.SetColumn(updater, 1);
-        Grid.SetRow(updater, 0);
-        Grid.SetRowSpan(updater, 1);
+        foreach (var button in FindVisualChildren<Button>(root))
+        {
+            if (button.Content is not Image icon || !string.Equals(icon.Tag as string, DashboardIconRegistry.IconAssetSort, StringComparison.OrdinalIgnoreCase))
+                continue;
 
-        downloaded.Visibility = Visibility.Visible;
-        Grid.SetColumn(downloaded, 0);
-        Grid.SetRow(downloaded, 1);
-        Grid.SetRowSpan(downloaded, 1);
+            if (!Equals(button.Tag, "switch-sort-dark-mode"))
+            {
+                button.Tag = "switch-sort-dark-mode";
+                button.Style = (Style)FindResource("NormalActionButtonStyle");
+                button.Background = normalBackground;
+                button.BorderBrush = purple;
+                button.Foreground = purple;
+                button.MouseEnter += (_, _) => button.Foreground = gold;
+                button.MouseLeave += (_, _) => button.Foreground = purple;
+            }
+        }
+
+        foreach (var headerText in FindVisualChildren<TextBlock>(root))
+        {
+            if (!string.Equals(headerText.Text, IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (FindVisualParent<Border>(headerText) is not Border panel)
+                continue;
+
+            panel.BorderBrush = gold;
+            foreach (var button in FindVisualChildren<Button>(panel))
+            {
+                if (!string.Equals(button.Content?.ToString(), IsGerman ? "DOWNLOADS VERWALTEN" : "MANAGE DOWNLOADS", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                button.Style = (Style)FindResource("NormalActionButtonStyle");
+                button.Background = normalBackground;
+                button.Foreground = gold;
+                button.BorderBrush = gold;
+            }
+
+            break;
+        }
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
+    {
+        if (root is null)
+            yield break;
+
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T typedChild)
+                yield return typedChild;
+
+            foreach (var descendant in FindVisualChildren<T>(child))
+                yield return descendant;
+        }
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        var parent = VisualTreeHelper.GetParent(child);
+        while (parent is not null)
+        {
+            if (parent is T typedParent)
+                return typedParent;
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
     }
 
     private void ApplyTeamSpeakVisualState()
