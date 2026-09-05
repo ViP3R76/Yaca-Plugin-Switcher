@@ -78,6 +78,8 @@
         <Setter Property="Width" Value="10" />
         <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
         <Setter Property="Foreground" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
@@ -90,8 +92,8 @@
                                IsDirectionReversed="True">
                             <Track.Thumb>
                                 <Thumb Background="{StaticResource BorderBrush}"
-                                       BorderBrush="{StaticResource SurfaceBrush}"
-                                       BorderThickness="1" />
+                                       BorderBrush="Transparent"
+                                       BorderThickness="0" />
                             </Track.Thumb>
                         </Track>
                     </Grid>
