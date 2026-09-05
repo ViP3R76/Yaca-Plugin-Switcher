@@ -68,6 +68,7 @@ public partial class BackupView : UserControl
         PluginDownloadsSortButton.BorderBrush = (Brush)FindResource("GoldBrush");
         PluginDownloadsSortButton.Foreground = (Brush)FindResource("GoldBrush");
         PluginDownloadsSortButton.Padding = new Thickness(0);
+        PluginDownloadsSortButton.MinHeight = 0;
         PluginDownloadsSortButton.Style = (Style)FindResource("NormalActionButtonStyle");
         PluginDownloadsSortButton.Click -= PluginDownloadsSort_Click;
         PluginDownloadsSortButton.Click += PluginDownloadsSort_Click;
@@ -104,11 +105,6 @@ public partial class BackupView : UserControl
             return;
 
         row.Selected = checkBox.IsChecked == true;
-        if (!row.Selected)
-            return;
-
-        foreach (var pluginRow in _pluginDownloadRows)
-            pluginRow.Selected = false;
     }
 
     private void PluginDownloadSelection_Changed(object sender, RoutedEventArgs e)
@@ -117,11 +113,6 @@ public partial class BackupView : UserControl
             return;
 
         row.Selected = checkBox.IsChecked == true;
-        if (!row.Selected)
-            return;
-
-        foreach (var backupRow in _rows)
-            backupRow.Selected = false;
     }
 
     private void Delete_Click(object sender, RoutedEventArgs e)
