@@ -31,10 +31,6 @@
                                         <Button Tag="{Binding Url}"
                                                 Click="Link_Click"
                                                 Style="{DynamicResource LinkButtonStyle}"
-                                                Background="{Binding Background}"
-                                                BorderBrush="{StaticResource AccentBrush}"
-                                                BorderThickness="1"
-                                                Foreground="{StaticResource ForegroundBrush}"
                                                 HorizontalAlignment="Stretch"
                                                 HorizontalContentAlignment="Center"
                                                 VerticalContentAlignment="Center"
@@ -64,10 +60,6 @@
                                         <Button Tag="{Binding Url}"
                                                 Click="Link_Click"
                                                 Style="{DynamicResource LinkButtonStyle}"
-                                                Background="{Binding Background}"
-                                                BorderBrush="{StaticResource AccentBrush}"
-                                                BorderThickness="1"
-                                                Foreground="{StaticResource ForegroundBrush}"
                                                 HorizontalAlignment="Stretch"
                                                 HorizontalContentAlignment="Center"
                                                 VerticalContentAlignment="Center"
@@ -98,7 +90,7 @@
                     </StackPanel>
                 </Border>
                 <Border Grid.Row="3" Margin="6,12,6,12" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Padding="18">
-                    <StackPanel><TextBlock x:Name="LegalHeader" Text="DISCLAIMER" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" TextAlignment="Center" /><Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" /><TextBlock x:Name="LegalText" Foreground="{StaticResource ForegroundBrush}" FontSize="13" FontWeight="SemiBold" LineHeight="20" TextWrapping="Wrap" /></StackPanel>
+                    <StackPanel><TextBlock x:Name="LegalHeader" Text="DISCLAIMER" FontSize="20" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" TextAlignment="Center" /><Border Height="1" Background="{StaticResource AccentBrush}" Opacity="0.65" Margin="0,8,0,8" /><TextBlock x:Name="LegalText" Foreground="{StaticResource ForegroundBrush}" FontSize="13" FontWeight="SemiBold" LineHeight="20" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Border>
             </Grid>
         </ScrollViewer>
