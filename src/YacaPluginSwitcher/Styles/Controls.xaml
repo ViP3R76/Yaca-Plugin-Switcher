@@ -135,11 +135,11 @@
     <Style x:Key="CardStyle" TargetType="Border"><Setter Property="Background" Value="{StaticResource SurfaceBrush}" /><Setter Property="CornerRadius" Value="0" /><Setter Property="Padding" Value="20" /><Setter Property="Margin" Value="6" /></Style>
 
     <Style x:Key="LinkButtonStyle" TargetType="Button" BasedOn="{StaticResource NormalActionButtonStyle}">
-        <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{StaticResource AccentBrush}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" /><Setter Property="Foreground" Value="{StaticResource AccentBrush}" /><Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" /><Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" /><Setter Property="Padding" Value="10,8" /><Setter Property="Margin" Value="0,2" />
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /><Setter Property="Foreground" Value="{StaticResource GoldBrush}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Trigger>
-            <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /><Setter Property="Foreground" Value="{StaticResource GoldBrush}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Trigger>
+            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /><Setter Property="Foreground" Value="{StaticResource GoldBrush}" /><Setter Property="BorderBrush" Value="{StaticResource GoldBrush}" /><Setter Property="BorderThickness" Value="1" /></Trigger>
+            <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /><Setter Property="Foreground" Value="{StaticResource GoldBrush}" /><Setter Property="BorderBrush" Value="{StaticResource GoldBrush}" /><Setter Property="BorderThickness" Value="1" /></Trigger>
         </Style.Triggers>
     </Style>
 
@@ -163,10 +163,25 @@
     </Style>
     <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
 
-    <!-- DataGrid creates its own ScrollBar scope inside its default template.
-         Keep the same central DarkScrollBarStyle there instead of styling each view separately. -->
+    <!-- ScrollViewer owns the ScrollBar instances in page-level views. Remove the
+         platform border/background so the central ScrollBar style is the only visible edge. -->
+    <Style TargetType="ScrollViewer">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- DataGrid creates its own ScrollViewer/ScrollBar scope. Keep both controls
+         inside the same central dark theme instead of styling individual views. -->
     <Style TargetType="DataGrid">
         <Style.Resources>
+            <Style TargetType="ScrollViewer">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="0" />
+            </Style>
             <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBarStyle}" />
         </Style.Resources>
     </Style>
