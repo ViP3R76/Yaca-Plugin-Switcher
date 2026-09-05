@@ -8,8 +8,6 @@
                 <ResourceDictionary Source="Styles/Controls.xaml" />
                 <ResourceDictionary Source="Styles/SortButton.xaml" />
                 <ResourceDictionary Source="Styles/Navigation.xaml" />
-                <ResourceDictionary Source="Styles/PopupControls.xaml" />
-                <ResourceDictionary Source="Styles/DarkModeInputs.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
