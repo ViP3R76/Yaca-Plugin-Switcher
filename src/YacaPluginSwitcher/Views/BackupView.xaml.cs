@@ -34,6 +34,7 @@ public partial class BackupView : UserControl
         PageHeaderText.Text = IsGerman() ? "BACKUPS VERWALTEN" : "MANAGE BACKUPS";
         TitleText.Text = Texts.BackupTitle;
         BackupSectionHeader.Text = "YACA Plugin Backups";
+        BackupReplacementText.Text = SettingsLocalization.Get(_service.Settings.Language, "BackupReplacementNotice");
         RestoreButton.Content = Texts.Restore;
         CloseButton.Content = Texts.Close;
         DeleteButton.Content = Texts.Delete.ToUpperInvariant();
