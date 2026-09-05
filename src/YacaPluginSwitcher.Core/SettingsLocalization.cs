@@ -40,7 +40,8 @@ public static class SettingsLocalization
             ["MaximumBackups"] = ("Maximale Backups", "Maximum backups"),
             ["AutomaticBackup"] = ("Automatisches Backup vor dem Wechsel erstellen", "Create automatic backup before switching"),
             ["WarnRunning"] = ("Warnen, wenn TeamSpeak 3 läuft", "Warn when TeamSpeak 3 is running"),
-            ["SelectableBackups"] = ("Einzelne Backups zum Löschen markierbar machen", "Allow individual backups to be selected for deletion")
+            ["SelectableBackups"] = ("Einzelne Backups zum Löschen markierbar machen", "Allow individual backups to be selected for deletion"),
+            ["BackupReplacementNotice"] = ("Älteste Backups werden ersetzt", "Oldest backups are replaced")
         };
 
     public static string Get(string? language, string key)
