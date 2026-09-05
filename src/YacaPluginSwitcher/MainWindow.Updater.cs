@@ -323,6 +323,12 @@ public partial class MainWindow
             _updaterProgress.Visibility = Visibility.Visible;
             _updaterProgress.Value = 0;
         }
+        EnsureUpdaterStepPanel();
+        if (_updaterStatus is not null)
+        {
+            UpdateUpdaterSteps(_updaterStatus.Text);
+            ApplyUpdaterStatusVisibility();
+        }
         if (_updaterSearchButton is not null)
             _updaterSearchButton.IsEnabled = false;
 
@@ -476,6 +482,8 @@ public partial class MainWindow
 
     private void UpdateUpdaterProgress(YacaUpdaterProgress progress)
     {
+        EnsureUpdaterStepPanel();
+
         if (_updaterVersion is not null)
         {
             _updaterVersion.Text = $"YACA {progress.Version}";
@@ -485,6 +493,11 @@ public partial class MainWindow
         {
             _updaterStatus.Text = progress.Status;
             _updaterStatus.Foreground = (Brush)FindResource("SecondaryBrush");
+            // Update the central step renderer directly from the real updater
+            // progress event. The TextBlock property watcher remains only as a
+            // synchronization path for programmatic status changes.
+            UpdateUpdaterSteps(progress.Status);
+            ApplyUpdaterStatusVisibility();
         }
         if (_updaterProgress is not null && progress.TotalBytes is > 0)
         {
