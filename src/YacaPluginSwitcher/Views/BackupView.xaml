@@ -37,6 +37,25 @@
             <Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Style.Triggers><DataTrigger Binding="{Binding CanSelect}" Value="False"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
         </Style>
+        <DataTemplate x:Key="PluginDownloadsVersionHeaderTemplate">
+            <Button Width="30" Height="30"
+                    Padding="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource BackgroundBrush}"
+                    BorderBrush="{StaticResource GoldBrush}"
+                    BorderThickness="1"
+                    Foreground="{StaticResource GoldBrush}"
+                    ToolTip="Sortierung umschalten"
+                    Click="PluginDownloadsSort_Click"
+                    Style="{StaticResource NormalActionButtonStyle}">
+                <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ContentControl.Content>
+                        <Image Width="20" Height="20" Source="{x:Null}" />
+                    </ContentControl.Content>
+                </ContentControl>
+            </Button>
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid Margin="6,6,0,0">
@@ -76,9 +95,7 @@
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                     <Grid Grid.Row="0" Margin="4,0,0,0">
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="220" /><ColumnDefinition Width="180" /><ColumnDefinition Width="120" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
-                        <TextBlock x:Name="PluginDownloadsTitle" Grid.Column="0" Grid.ColumnSpan="4" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{StaticResource GoldBrush}" />
-                        <Button x:Name="PluginDownloadsSortButton" Grid.Column="4" Width="34" Height="34" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" Foreground="{StaticResource GoldBrush}" Padding="0" Style="{StaticResource NormalActionButtonStyle}" />
+                        <TextBlock x:Name="PluginDownloadsTitle" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="{StaticResource GoldBrush}" />
                     </Grid>
                     <Border Grid.Row="1" Background="{StaticResource GoldBrush}" Opacity="0.65" />
                     <DataGrid x:Name="PluginDownloadsGrid" AlternationCount="2" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -89,7 +106,7 @@
                             <DataGridTextColumn Header="Datei" Binding="{Binding FileName}" Width="220" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Datum" Binding="{Binding Timestamp, StringFormat=dd.MM.yyyy HH:mm:ss}" Width="180" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                             <DataGridTextColumn Header="Größe" Binding="{Binding FileSizeDisplay}" Width="120" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
-                            <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
+                            <DataGridTextColumn Header="Version" HeaderTemplate="{StaticResource PluginDownloadsVersionHeaderTemplate}" Binding="{Binding Version}" Width="140" ElementStyle="{StaticResource CenteredTextStyle}" CellStyle="{StaticResource CenteredCellStyle}" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
