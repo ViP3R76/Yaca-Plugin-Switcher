@@ -21,18 +21,18 @@
     <Grid Margin="6,6,0,0">
         <Grid.RowDefinitions><RowDefinition Height="58" /><RowDefinition Height="1" /><RowDefinition Height="*" /><RowDefinition Height="58" /></Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,6,0">
-            <TextBlock Text="BACKUPS VERWALTEN" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <TextBlock x:Name="PageHeaderText" Text="BACKUPS VERWALTEN" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Left" />
             <TextBlock x:Name="TitleText" Visibility="Collapsed" />
             <TextBlock x:Name="BackupCapacityText" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource AccentBrush}" FontSize="28" FontWeight="SemiBold" />
         </Grid>
         <Border Grid.Row="1" Margin="0,0,6,0" Background="{StaticResource AccentBrush}" Opacity="0.65" />
 
         <Grid Grid.Row="2">
-            <Grid.RowDefinitions><RowDefinition x:Name="BackupPanelRow" Height="Auto" /><RowDefinition Height="10" /><RowDefinition x:Name="PluginDownloadsPanelRow" Height="*" /></Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition x:Name="BackupPanelRow" Height="Auto" /><RowDefinition Height="12" /><RowDefinition x:Name="PluginDownloadsPanelRow" Height="*" /></Grid.RowDefinitions>
             <Border x:Name="BackupCard" Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                    <TextBlock Text="YACA Plugin Backups" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
+                    <TextBlock x:Name="BackupSectionHeader" Text="YACA Plugin Backups" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                     <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" Opacity="0.65" />
                     <DataGrid x:Name="Grid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="Background" Value="{StaticResource SurfaceBrush}" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" /><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /></Trigger></Style.Triggers></Style></DataGrid.RowStyle>
@@ -51,15 +51,12 @@
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                     <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="52" />
-                            <ColumnDefinition Width="220" />
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="140" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="PluginDownloadsTitle" Grid.Column="0" Grid.ColumnSpan="4" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" Margin="4,0,0,0" />
-                        <Button x:Name="PluginDownloadsSortButton" Grid.Column="4" Width="120" Height="30" HorizontalAlignment="Center" VerticalAlignment="Center" Click="PluginDownloadsSort_Click" Style="{StaticResource NormalActionButtonStyle}" />
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image x:Name="PluginDownloadsHeaderIcon" Width="28" Height="28" Margin="4,0,10,0" Stretch="Uniform" />
+                            <TextBlock x:Name="PluginDownloadsTitle" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" />
+                        </StackPanel>
+                        <Button x:Name="PluginDownloadsSortButton" Grid.Column="1" Width="120" Height="30" HorizontalAlignment="Right" VerticalAlignment="Center" Click="PluginDownloadsSort_Click" Style="{StaticResource NormalActionButtonStyle}" />
                     </Grid>
                     <Border Grid.Row="1" Background="{StaticResource GoldBrush}" Opacity="0.65" />
                     <DataGrid x:Name="PluginDownloadsGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -78,7 +75,7 @@
 
         <Grid Grid.Row="3" Margin="6,6,6,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"><Button Content="Wiederherstellen" Click="Restore_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" /><Button Content="Schließen" Click="Close_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" /></StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"><Button x:Name="RestoreButton" Content="Wiederherstellen" Click="Restore_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" /><Button x:Name="CloseButton" Content="Schließen" Click="Close_Click" Margin="6,0" Style="{StaticResource BackupActionButtonStyle}" /></StackPanel>
             <Button x:Name="DeleteButton" Grid.Column="2" Content="LÖSCHEN" Click="Delete_Click" HorizontalAlignment="Right" Margin="6,0,0,0" Style="{StaticResource DeleteBackupButtonStyle}" />
         </Grid>
     </Grid>
