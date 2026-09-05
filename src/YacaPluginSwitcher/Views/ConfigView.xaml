@@ -2,8 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="{StaticResource BackgroundBrush}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -19,81 +18,81 @@
             </StackPanel>
             <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,10">
                 <StackPanel>
-                    <TextBlock Text="ALLGEMEIN" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,12" />
+                    <TextBlock x:Name="GeneralHeader" Text="ALLGEMEIN" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
-                        <TextBlock Text="Sprache" FontSize="15" VerticalAlignment="Center" />
-                        <ComboBox x:Name="LanguageCombo" Width="125" Height="36" Margin="14,0,0,0" SelectionChanged="Language_SelectionChanged" PreviewMouseLeftButtonDown="LanguageCombo_PreviewMouseLeftButtonDown" />
+                        <TextBlock x:Name="LanguageLabel" Text="Sprache" FontSize="15" VerticalAlignment="Center" />
+                        <ComboBox x:Name="LanguageCombo" Width="92" Height="34" Margin="14,0,0,0" HorizontalAlignment="Left" SelectionChanged="Language_SelectionChanged" PreviewMouseLeftButtonDown="LanguageCombo_PreviewMouseLeftButtonDown" />
                     </StackPanel>
                     <CheckBox x:Name="AutomaticBackup" Margin="0,5" FontSize="15" />
                     <CheckBox x:Name="WarnRunning" Margin="0,5" FontSize="15" />
-                    <TextBlock Text="Maximale Backups" Margin="0,12,0,5" FontSize="15" Foreground="{StaticResource SecondaryBrush}" />
-                    <ComboBox x:Name="MaxBackups" Width="100" Height="34" HorizontalAlignment="Left" />
+                    <TextBlock x:Name="MaxBackupsLabel" Text="Maximale Backups" Margin="0,12,0,5" FontSize="15" Foreground="{StaticResource SecondaryBrush}" />
+                    <ComboBox x:Name="MaxBackups" Width="58" Height="34" HorizontalAlignment="Left" />
                 </StackPanel>
             </Border>
             <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,10">
                 <StackPanel>
-                    <TextBlock Text="YACA DOWNLOADER" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10" />
+                    <TextBlock x:Name="YacaDownloaderHeader" Text="YACA DOWNLOADER" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10" />
                     <CheckBox x:Name="KeepYacaPluginDownloads" Margin="0,5" FontSize="15" />
                     <CheckBox x:Name="DownloadAllWithoutPrompt" Margin="0,5" FontSize="15" />
                 </StackPanel>
             </Border>
             <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0,0,0,10">
                 <StackPanel>
-                    <TextBlock Text="TEAMSPEAK" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10" />
-                    <TextBlock Text="Aktiver TeamSpeak-Pfad" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,0,0,5" />
+                    <TextBlock x:Name="TeamSpeakHeader" Text="TEAMSPEAK" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10" />
+                    <TextBlock x:Name="ActiveTeamSpeakPathLabel" Text="Aktiver TeamSpeak-Pfad" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,0,0,5" />
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <TextBox x:Name="ActivePath" Height="36" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="14" ToolTip="Vollständiger TeamSpeak Plugin-Pfad" />
-                        <Button Grid.Column="1" Content="Durchsuchen" Click="Browse_Click" Width="120" Height="40" Margin="8,0,0,0" Style="{StaticResource NormalActionButtonStyle}" />
+                        <Button x:Name="BrowseButton" Grid.Column="1" Content="Durchsuchen" Click="Browse_Click" Width="120" Height="40" Margin="8,0,0,0" Style="{StaticResource NormalActionButtonStyle}" />
                     </Grid>
                     <CheckBox x:Name="MultipleInstances" Margin="0,4,0,8" FontSize="15" Checked="MultipleInstances_Changed" Unchecked="MultipleInstances_Changed" />
                 </StackPanel>
             </Border>
             <Border Grid.Row="4" Style="{StaticResource CardStyle}" Margin="0,0,0,10">
                 <StackPanel>
-                    <CheckBox x:Name="Expert" Content="Experteneinstellungen" FontSize="16" FontWeight="SemiBold" IsChecked="False" Checked="Expert_Changed" Unchecked="Expert_Changed" Margin="0,0,0,10" />
+                    <CheckBox x:Name="Expert" Content="Experten-Einstellungen" FontSize="16" FontWeight="SemiBold" IsChecked="False" Checked="Expert_Changed" Unchecked="Expert_Changed" Margin="0,0,0,10" />
                     <StackPanel x:Name="ExpertPanel" Visibility="Collapsed">
                         <Border x:Name="TeamSpeakInstancesPanel" Background="{StaticResource ControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="14" Margin="0,2,0,10" Visibility="Collapsed">
                             <StackPanel>
-                                <TextBlock Text="TEAMSPEAK INSTANZEN" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
-                                <TextBlock Text="Verfügbare TeamSpeak-Pfade" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,2,0,5" />
+                                <TextBlock x:Name="TeamSpeakInstancesHeader" Text="TEAMSPEAK INSTANZEN" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
+                                <TextBlock x:Name="AvailableTeamSpeakPathsLabel" Text="Verfügbare TeamSpeak-Pfade" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,2,0,5" />
                                 <ListBox x:Name="PathsList" Height="130" Margin="0,0,0,8" />
                                 <WrapPanel>
-                                    <Button Content="Hinzufügen" Click="AddPath_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="110" />
-                                    <Button Content="Entfernen" Click="RemovePath_Click" Style="{StaticResource DeleteActionButtonStyle}" Margin="0,0,6,6" MinWidth="110" />
-                                    <Button Content="Ausgewählten Pfad verwenden" Click="UsePath_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="190" />
-                                    <Button Content="Auto-Erkennung" Click="AutoDetect_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="130" />
+                                    <Button x:Name="AddPathButton" Content="Hinzufügen" Click="AddPath_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="110" />
+                                    <Button x:Name="RemovePathButton" Content="Entfernen" Click="RemovePath_Click" Style="{StaticResource DeleteActionButtonStyle}" Margin="0,0,6,6" MinWidth="110" />
+                                    <Button x:Name="UsePathButton" Content="Ausgewählten Pfad verwenden" Click="UsePath_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="190" />
+                                    <Button x:Name="AutoDetectButton" Content="Auto-Erkennung" Click="AutoDetect_Click" Style="{StaticResource NormalActionButtonStyle}" Margin="0,0,6,6" MinWidth="130" />
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
                         <Border Background="{StaticResource ControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="14" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="PROTOKOLLIERUNG &amp; BACKUPS" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
+                                <TextBlock x:Name="LoggingBackupsHeader" Text="PROTOKOLLIERUNG &amp; BACKUPS" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
                                 <CheckBox x:Name="GeneralLogging" Margin="0,3" FontSize="15" />
                                 <CheckBox x:Name="DebugLogging" Margin="0,3" FontSize="15" />
                                 <CheckBox x:Name="SelectableBackups" Margin="0,3" FontSize="15" />
-                                <TextBlock Text="Log-Verzeichnis" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,10,0,5" />
+                                <TextBlock x:Name="LogDirectoryLabel" Text="Log-Verzeichnis" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,10,0,5" />
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                     <TextBox x:Name="LogDirectory" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="14" />
-                                    <Button Grid.Column="1" Content="Öffnen" Click="OpenLogDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" />
+                                    <Button x:Name="OpenLogButton" Grid.Column="1" Content="Öffnen" Click="OpenLogDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" />
                                 </Grid>
                             </StackPanel>
                         </Border>
                         <Border Background="{StaticResource ControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="14">
                             <StackPanel>
-                                <TextBlock Text="ANWENDUNGSVERZEICHNISSE" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
-                                <Grid Margin="0,2,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="Backups" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="BackupDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button Grid.Column="2" Content="Öffnen" Click="OpenBackupDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
-                                <Grid Margin="0,2,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="Plugins" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="PluginDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button Grid.Column="2" Content="Öffnen" Click="OpenPluginDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
-                                <Grid Margin="0,2,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="App-Verzeichnis" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="AppDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button Grid.Column="2" Content="Öffnen" Click="OpenAppDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
+                                <TextBlock x:Name="ApplicationDirectoriesHeader" Text="ANWENDUNGSVERZEICHNISSE" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8" />
+                                <Grid Margin="0,2,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock x:Name="BackupsDirectoryLabel" Text="Backups" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="BackupDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button x:Name="OpenBackupButton" Grid.Column="2" Content="Öffnen" Click="OpenBackupDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
+                                <Grid Margin="0,2,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock x:Name="PluginsDirectoryLabel" Text="Plugins" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="PluginDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button x:Name="OpenPluginButton" Grid.Column="2" Content="Öffnen" Click="OpenPluginDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
+                                <Grid Margin="0,2,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock x:Name="ApplicationDirectoryLabel" Text="App-Verzeichnis" FontSize="14" VerticalAlignment="Center" /><TextBox x:Name="AppDirectory" Grid.Column="1" Height="34" IsReadOnly="True" VerticalContentAlignment="Center" FontSize="13" /><Button x:Name="OpenAppButton" Grid.Column="2" Content="Öffnen" Click="OpenAppDirectory_Click" Style="{StaticResource NormalActionButtonStyle}" Width="90" Height="38" Margin="8,0,0,0" /></Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </StackPanel>
             </Border>
             <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
-                <Button Content="Speichern" Click="Save_Click" Margin="6" MinWidth="120" Height="42" Style="{StaticResource NormalActionButtonStyle}" />
-                <Button Content="Abbrechen" Click="Cancel_Click" Margin="6" MinWidth="120" Height="42" Style="{StaticResource NormalActionButtonStyle}" />
+                <Button x:Name="SaveButton" Content="Speichern" Click="Save_Click" Margin="6" MinWidth="120" Height="42" Style="{StaticResource NormalActionButtonStyle}" />
+                <Button x:Name="CancelButton" Content="Abbrechen" Click="Cancel_Click" Margin="6" MinWidth="120" Height="42" Style="{StaticResource NormalActionButtonStyle}" />
             </StackPanel>
         </Grid>
     </ScrollViewer>
