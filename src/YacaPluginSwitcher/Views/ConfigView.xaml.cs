@@ -241,7 +241,7 @@ public partial class ConfigView : UserControl
 
     private void AutoDetect_Click(object sender, RoutedEventArgs e)
     {
-        ActivePath.Text = YacaService.GetDefaultTeamSpeakPluginPluginDirectory();
+        ActivePath.Text = YacaService.GetDefaultTeamSpeakPluginDirectory();
         _useCustomPath = false;
         MarkPendingChange();
     }
