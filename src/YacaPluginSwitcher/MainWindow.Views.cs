@@ -33,9 +33,6 @@ public partial class MainWindow
             case "switch":
                 ShowSwitchPage();
                 break;
-            case "updater":
-                ShowUpdaterPage();
-                break;
             case "backups":
                 PageHost.Content = new BackupView(_service, this);
                 break;
