@@ -148,6 +148,11 @@ public sealed class YacaService
 
     private void InitializeTeamSpeakPathSettings()
     {
+        // Existing configurations must be loaded as-is. First-run defaults are
+        // initialized and persisted exactly once, when no configuration existed.
+        if (!Settings.IsFirstRun)
+            return;
+
         var defaultPath = GetDefaultTeamSpeakPluginDirectory();
 
         if (Settings.UseMultipleTeamSpeakInstances)
