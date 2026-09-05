@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using YacaPluginSwitcher.Core;
 
@@ -51,6 +52,12 @@ public partial class App : Application
             FrameworkElement.LoadedEvent,
             new RoutedEventHandler(ApplyDarkScrollBarStyle),
             true);
+
+        EventManager.RegisterClassHandler(
+            typeof(ScrollViewer),
+            FrameworkElement.LoadedEvent,
+            new RoutedEventHandler(ApplyDarkScrollViewerStyle),
+            true);
     }
 
     private static void ApplyDarkScrollBarStyle(object sender, RoutedEventArgs e)
@@ -63,6 +70,18 @@ public partial class App : Application
             return;
 
         scrollBar.Style = darkStyle;
+    }
+
+    private static void ApplyDarkScrollViewerStyle(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ScrollViewer scrollViewer)
+            return;
+
+        var darkStyle = Current.TryFindResource("DarkScrollViewerStyle") as Style;
+        if (darkStyle is null || ReferenceEquals(scrollViewer.Style, darkStyle))
+            return;
+
+        scrollViewer.Style = darkStyle;
     }
 
     protected override void OnExit(ExitEventArgs e)
