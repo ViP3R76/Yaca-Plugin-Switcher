@@ -32,7 +32,7 @@
             <Border x:Name="BackupCard" Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="0" Padding="10">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                    <TextBlock Text="YACA Backups" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
+                    <TextBlock Text="YACA Plugin Backups" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="4,0,0,0" />
                     <Border Grid.Row="1" Background="{StaticResource AccentSoftBrush}" Opacity="0.65" />
                     <DataGrid x:Name="Grid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="Background" Value="{StaticResource SurfaceBrush}" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" /><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /></Trigger></Style.Triggers></Style></DataGrid.RowStyle>
@@ -50,7 +50,17 @@
             <Border x:Name="PluginDownloadsCard" Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource GoldBrush}" BorderThickness="1" CornerRadius="0" Padding="10" Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                    <TextBlock x:Name="PluginDownloadsTitle" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" Margin="4,0,0,0" />
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="PluginDownloadsTitle" Grid.Column="0" Grid.ColumnSpan="4" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}" Margin="4,0,0,0" />
+                        <Button x:Name="PluginDownloadsSortButton" Grid.Column="4" Width="120" Height="30" HorizontalAlignment="Center" VerticalAlignment="Center" Click="PluginDownloadsSort_Click" Style="{StaticResource NormalActionButtonStyle}" />
+                    </Grid>
                     <Border Grid.Row="1" Background="{StaticResource GoldBrush}" Opacity="0.65" />
                     <DataGrid x:Name="PluginDownloadsGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource ForegroundBrush}" BorderThickness="0" SelectionMode="Single" RowHeight="44" ColumnHeaderHeight="38" ColumnHeaderStyle="{StaticResource CenteredHeaderStyle}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="Background" Value="{StaticResource SurfaceBrush}" /><Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" /><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ControlHoverBrush}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource NavSelectedBrush}" /></Trigger></Style.Triggers></Style></DataGrid.RowStyle>
