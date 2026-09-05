@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>latest</LangVersion>
     <NoWarn>CA1826</NoWarn>
     <AssemblyName>YacaPluginSwitcher</AssemblyName>
@@ -18,6 +19,7 @@
     <ReleasePackageName>YacaPluginSwitcher-v$(InformationalVersion)-win-x64</ReleasePackageName>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="**\*.cs" Exclude="bin\**;obj\**" />
     <ProjectReference Include="..\YacaPluginSwitcher.Core\YacaPluginSwitcher.Core.csproj" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
     <Resource Include="Assets\branding_logo.png" />
