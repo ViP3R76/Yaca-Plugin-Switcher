@@ -47,7 +47,7 @@
                     <TextBlock x:Name="ActiveTeamSpeakPathLabel" Text="Aktiver TeamSpeak-Pfad" FontSize="15" Foreground="{StaticResource SecondaryBrush}" Margin="0,0,0,5" />
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <TextBox x:Name="ActivePath" Height="36" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="14" ToolTip="Vollständiger TeamSpeak Plugin-Pfad" />
+                        <TextBox x:Name="ActivePath" Height="36" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="14" ToolTip="Vollständiger TeamSpeak Plugin-Pfad" />
                         <Button x:Name="BrowseButton" Grid.Column="1" Content="Durchsuchen" Click="Browse_Click" Width="120" Height="40" Margin="8,0,0,0" Style="{StaticResource NormalActionButtonStyle}" />
                     </Grid>
                     <CheckBox x:Name="MultipleInstances" Margin="0,4,0,8" FontSize="15" Checked="MultipleInstances_Changed" Unchecked="MultipleInstances_Changed" />
