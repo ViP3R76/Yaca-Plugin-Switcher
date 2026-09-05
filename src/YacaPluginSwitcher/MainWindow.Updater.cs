@@ -13,11 +13,11 @@ public partial class MainWindow
     private StackPanel? _updaterSelectionPanel;
     private Button? _updaterDownloadButton;
     private Button? _updaterCancelButton;
-    private IReadOnlyList<string> _pendingUpdaterDownloads = [];
+    private string[] _pendingUpdaterDownloads = [];
 
     private async Task RunUpdaterActionAsync()
     {
-        if (_service.Settings.DownloadAllPluginsWithoutPrompt && _pendingUpdaterDownloads.Count > 0)
+        if (_service.Settings.DownloadAllPluginsWithoutPrompt && _pendingUpdaterDownloads.Length > 0)
         {
             var pending = _pendingUpdaterDownloads;
             _pendingUpdaterDownloads = [];
