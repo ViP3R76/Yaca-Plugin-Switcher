@@ -9,7 +9,7 @@ A lightweight Windows application for managing, validating, backing up and switc
 
 **Version 1.1.0** — Windows x64, .NET 10, self-contained.
 
-urlDownload the latest releasehttps://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest
+[Download the latest release](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 
 ## Features
 
