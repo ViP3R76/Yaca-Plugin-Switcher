@@ -51,6 +51,11 @@ public partial class ConfigView : UserControl
             checkBox.Unchecked += SettingChanged;
         }
 
+        GeneralLogging.Checked += LoggingSettingChanged;
+        GeneralLogging.Unchecked += LoggingSettingChanged;
+        DebugLogging.Checked += LoggingSettingChanged;
+        DebugLogging.Unchecked += LoggingSettingChanged;
+
         MaxBackups.SelectionChanged += MaxBackups_SelectionChanged;
         ActivePath.TextChanged += ActivePath_TextChanged;
     }
@@ -82,6 +87,9 @@ public partial class ConfigView : UserControl
             LoggingBackupsHeader.Text = SettingsText("LoggingBackups");
             LogDirectoryLabel.Text = SettingsText("LogDirectory");
             OpenLogButton.Content = SettingsText("Open");
+            DeleteLogsLabel.Text = SettingsText("DeleteLogs");
+            DeleteLogsButton.Content = SettingsText("Delete");
+            CancelDeleteLogsButton.Content = SettingsText("Cancel");
             ApplicationDirectoriesHeader.Text = SettingsText("ApplicationDirectories");
             BackupsDirectoryLabel.Text = SettingsText("Backups");
             PluginsDirectoryLabel.Text = SettingsText("Plugins");
@@ -131,6 +139,7 @@ public partial class ConfigView : UserControl
             AppDirectory.Text = _service.Paths.BaseDirectory;
 
             UpdateExpert();
+            UpdateLogDeletionPrompt();
             UpdatePendingChangesIndicator();
         }
         finally
@@ -170,6 +179,34 @@ public partial class ConfigView : UserControl
 
     private void SettingChanged(object sender, RoutedEventArgs e) => MarkPendingChange();
 
+    private void LoggingSettingChanged(object sender, RoutedEventArgs e)
+    {
+        MarkPendingChange();
+        UpdateLogDeletionPrompt();
+    }
+
+    private void UpdateLogDeletionPrompt()
+    {
+        if (DeleteLogsPanel is null)
+            return;
+
+        var loggingDisabled = GeneralLogging.IsChecked != true || DebugLogging.IsChecked != true;
+        DeleteLogsPanel.Visibility = loggingDisabled && Expert.IsChecked == true
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void DeleteLogs_Click(object sender, RoutedEventArgs e)
+    {
+        _service.Logger.DeleteLogs();
+        DeleteLogsPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private void CancelDeleteLogs_Click(object sender, RoutedEventArgs e)
+    {
+        DeleteLogsPanel.Visibility = Visibility.Collapsed;
+    }
+
     private void MaxBackups_SelectionChanged(object sender, SelectionChangedEventArgs e) => MarkPendingChange();
 
     private void ActivePath_TextChanged(object sender, TextChangedEventArgs e) => MarkPendingChange();
@@ -177,6 +214,7 @@ public partial class ConfigView : UserControl
     private void Expert_Changed(object sender, RoutedEventArgs e)
     {
         UpdateExpert();
+        UpdateLogDeletionPrompt();
         MarkPendingChange();
     }
 
