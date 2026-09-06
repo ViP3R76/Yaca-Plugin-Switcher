@@ -3,71 +3,59 @@
 [![Latest Release](https://img.shields.io/github/v/release/ViP3R76/Yaca-Plugin-Switcher?display_name=tag&style=for-the-badge&logo=github)](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 [![GitHub Downloads](https://img.shields.io/github/downloads/ViP3R76/Yaca-Plugin-Switcher/latest/total?style=for-the-badge&logo=github)](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 
-A lightweight Windows application for managing, validating, backing up and switching between YACA TeamSpeak 3 plugin builds.
+Leichte Windows-Anwendung zum **Erkennen, Prüfen, Sichern und Wechseln** verschiedener YACA-TeamSpeak-3-Plugin-Versionen.
 
-## Current Release
+## Aktuelle Version
 
-**Version 1.1.0** — Windows x64, .NET 10, self-contained.
+**Version 1.1.0** — Windows x64, .NET 10, Self-Contained.
 
-[Download the latest release](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
+[Neueste Version herunterladen](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 
-## Screenshot
+## Funktionen
 
-![YACA Plugin Switcher Dashboard](docs/dashboard.png)
+- Automatische Erkennung von YACA-DLLs im lokalen `Plugins`-Ordner
+- Erkennung von **Version und Build** direkt aus der DLL
+- Prüfung auf Windows PE/x64 sowie YACA-spezifische Signaturen ohne Laden der DLL
+- SHA-256-Integritätsprüfung
+- Sicheres Wechseln zwischen YACA-Versionen
+- Automatische Sicherung vor dem Wechsel
+- Wiederherstellung von Backups mit Integritätsprüfung
+- Automatischer Rollback bei fehlgeschlagener Prüfung nach der Installation
+- Konfigurierbare Anzahl der Backups
+- Optionale gezielte Backup-Löschung über die Experteneinstellungen
+- Automatische TeamSpeak-3-Erkennung und konfigurierbare Plugin-Verzeichnisse
+- Integrierter Updater für verfügbare YACA-Versionen
+- Fortschrittsanzeige für Download, Entpacken, Prüfung, Validierung und Installation
+- Deutsch / Englisch mit automatischer Spracherkennung beim ersten Start
+- Dunkle WPF-Oberfläche
+- Portable Konfiguration, Backups und Logs neben der Anwendung
+- Schutz vor mehrfach gestarteten Instanzen und Diagnose-Logging
 
-## Features
-
-- Automatic discovery of YACA DLLs in the local `Plugins` folder
-- Version **and Build** detection directly from the DLL
-- x64 PE validation and YACA-specific signature checks without loading the DLL
-- SHA-256 integrity information
-- Safe YACA plugin switching with temporary-file validation
-- Automatic backup before switching
-- Backup restoration with integrity validation
-- Automatic rollback when post-install verification fails
-- Configurable backup retention
-- Optional selective backup deletion in Expert Settings
-- Automatic TeamSpeak 3 process detection and configurable plugin directories
-- Built-in updater for available YACA plugin versions
-- Download, extraction, verification, validation and installation progress
-- English / German interface with automatic initial language detection
-- Dark-mode WPF user interface
-- Portable configuration, backups and logs beside the application
-- Single-instance protection and diagnostic logging
-
-## Requirements
-
-### End users
+## Voraussetzungen
 
 - Windows 10/11 x64
 - TeamSpeak 3 Client
-- A valid YACA Windows x64 plugin
+- Eine gültige YACA Windows-x64-Plugin-DLL
 
-The release is self-contained. No separate .NET runtime installation is required.
-
-### Development
-
-- Windows x64
-- .NET 10 SDK
-- JetBrains Rider or another .NET 10 compatible IDE
+Die Release-Version ist **Self-Contained**. Eine separate .NET-Runtime muss nicht installiert werden.
 
 ## Installation
 
-1. Download the latest release ZIP.
-2. Extract it to a folder of your choice.
-3. Start `YacaPluginSwitcher.exe`.
-4. Place the YACA Windows x64 DLLs you are licensed to use into the local `Plugins` folder.
-5. Use the application to select, switch and manage installed YACA versions.
+1. Aktuelle Release-ZIP herunterladen.
+2. ZIP in einen beliebigen Ordner entpacken.
+3. `YacaPluginSwitcher.exe` starten.
+4. Eigene, lizenzierte YACA Windows-x64-DLLs in den lokalen `Plugins`-Ordner legen.
+5. YACA-Version über die Anwendung prüfen und verwalten.
 
-YACA binaries and TeamSpeak software are **not** distributed with this project.
+**YACA-Binaries und TeamSpeak-Software werden nicht mit diesem Projekt ausgeliefert.**
 
-## YACA Detection
+## YACA-Erkennung
 
-YACA versions are not identified from filenames or from a hard-coded version list. The application inspects each DLL and checks its Windows PE/x64 characteristics, YACA-specific signatures and embedded version information before accepting it.
+YACA-Versionen werden nicht anhand von Dateinamen oder einer fest hinterlegten Versionsliste erkannt. Jede DLL wird auf PE/x64-Eigenschaften, YACA-spezifische Signaturen und eingebettete Versionsinformationen geprüft.
 
-A recognized new YACA build can therefore be added by placing its DLL into `Plugins`.
+Neue erkannte YACA-Builds können daher einfach durch Ablegen der DLL im `Plugins`-Ordner hinzugefügt werden.
 
-Example:
+Beispiel:
 
 ```text
 YacaPluginSwitcher/
@@ -81,49 +69,49 @@ YacaPluginSwitcher/
 └── config.json
 ```
 
-## Switching & Backups
+## Wechseln & Backups
 
-Before a switch, the selected source DLL is revalidated. When automatic backups are enabled, the currently installed plugin is backed up before replacement. The new file is copied through a temporary path, validated and installed as `yaca_win64.dll`.
+Vor jedem Wechsel wird die ausgewählte DLL erneut validiert. Bei aktivierten automatischen Backups wird das aktuell installierte Plugin vor dem Austausch gesichert.
 
-If post-install verification fails, the application can automatically restore the created backup.
+Die neue DLL wird zunächst über einen temporären Pfad verarbeitet, geprüft und anschließend als `yaca_win64.dll` installiert.
 
-Backups are kept locally beside the executable. The default retention limit is **4 backups** and can be configured from 1–9.
+Schlägt die Prüfung nach der Installation fehl, kann das zuvor erstellte Backup automatisch wiederhergestellt werden.
+
+Standardmäßig werden **4 Backups** behalten. Die Anzahl kann zwischen 1 und 9 eingestellt werden.
 
 ## Updater
 
-The integrated updater can discover available YACA plugin versions and download selected versions into the local application storage. The installation flow verifies the downloaded archive before the plugin DLL is moved into `Plugins`.
+Der integrierte Updater kann verfügbare YACA-Versionen erkennen und ausgewählte Versionen in den lokalen Anwendungsspeicher herunterladen.
 
-The updater reports the actual processing chain:
+Der Ablauf umfasst:
 
 1. Download
-2. Extraction
-3. Verification
-4. Validation
-5. Move
-6. Download cleanup / keep
-7. Completed
+2. Entpacken
+3. Verifizierung
+4. Validierung
+5. Installation
+6. Aufräumen / Beibehalten des Downloads
+7. Abschluss
 
-## Configuration & Logs
+## Konfiguration & Logs
 
-The application is portable. Configuration, backups and logs are stored beside the executable rather than in `%APPDATA%` or `%LOCALAPPDATA%`.
+Die Anwendung arbeitet portabel. Konfiguration, Backups und Logs werden direkt neben der Anwendung gespeichert.
 
-Available settings include language, TeamSpeak 3 plugin directories, automatic backups, backup retention, TeamSpeak warnings, updater behavior and Expert Settings.
+Einstellbar sind unter anderem Sprache, TeamSpeak-3-Plugin-Verzeichnisse, automatische Backups, Backup-Aufbewahrung, TeamSpeak-Warnungen, Updater-Verhalten und Experteneinstellungen.
 
-Logs are written to `Logs\YacaPluginSwitcher-YYYY-MM-DD.log`. Log retention is limited to three days and cleanup is restricted to the application-local log directory.
+Logs befinden sich unter `Logs\YacaPluginSwitcher-YYYY-MM-DD.log`. Die Log-Aufbewahrung ist auf drei Tage begrenzt.
 
-## Build
+## Entwicklung & Build
 
-Open `YacaPluginSwitcher.sln` in Rider and build the `Release | x64` configuration.
-
-For a normal development build:
+`YacaPluginSwitcher.sln` kann in Rider oder einer kompatiblen .NET-10-IDE geöffnet werden.
 
 ```powershell
 dotnet build -c Release
 ```
 
-Release packaging is handled by the repository's GitHub Actions workflow. The production package is a self-contained Windows x64 single-file application and is accompanied by a SHA-256 checksum.
+Das Release-Paket wird über GitHub Actions erstellt. Die Produktionsversion ist eine **Self-Contained Windows-x64 Single-File-Anwendung** und wird mit einer SHA-256-Prüfsumme veröffentlicht.
 
-## Project Structure
+## Projektstruktur
 
 ```text
 YacaPluginSwitcher/
@@ -135,7 +123,6 @@ YacaPluginSwitcher/
 │       ├── Views/
 │       └── MainWindow.*
 ├── docs/
-│   └── dashboard.png
 ├── scripts/
 ├── Build/
 ├── .github/workflows/
@@ -145,26 +132,26 @@ YacaPluginSwitcher/
 └── README.md
 ```
 
-The application is implemented as a WPF frontend with a framework-neutral Core library. Centralized WPF resource dictionaries provide the application-wide colors, controls, navigation, DataGrid, scrollbar and ScrollViewer styling.
+Die Anwendung besteht aus einer WPF-Oberfläche und einer frameworkneutralen Core-Bibliothek. Zentrale Resource Dictionaries übernehmen das Styling der Oberfläche.
 
-## Third-Party Software
+## Drittanbieter
 
-YACA and TeamSpeak 3 are third-party products. This project is independent and does not distribute their software or grant any rights to their binaries or trademarks.
+YACA und TeamSpeak 3 sind Produkte von Drittanbietern. Dieses Projekt ist unabhängig und liefert deren Software nicht mit aus.
 
 - YACA: https://yaca.systems/
 - TeamSpeak: https://www.teamspeak.com/
 
-## Legal Notice
+## Rechtlicher Hinweis
 
-YACA Plugin Switcher is an independent third-party application created by **ViP3R_76**. It is not affiliated with, endorsed by, sponsored by, or officially associated with YACA or TeamSpeak Systems GmbH.
+YACA Plugin Switcher ist eine unabhängige Drittanbieter-Anwendung von **ViP3R_76**. Es besteht keine Verbindung zu, Unterstützung durch oder offizielle Zusammenarbeit mit YACA oder TeamSpeak Systems GmbH.
 
-YACA and TeamSpeak / TeamSpeak 3 are trademarks or property of their respective owners. The MIT License in this repository applies only to the YACA Plugin Switcher source code.
+YACA und TeamSpeak / TeamSpeak 3 sind Marken bzw. Eigentum ihrer jeweiligen Rechteinhaber. Die MIT-Lizenz dieses Repositorys gilt ausschließlich für den Quellcode des YACA Plugin Switchers.
 
 ## Community
 
-**Author:** ViP3R_76  
+**Autor:** ViP3R_76  
 **Discord:** https://discord.gg/9AxuZkyU7P
 
-## License
+## Lizenz
 
-The YACA Plugin Switcher source code is released under the MIT License. See `LICENSE`.
+Der Quellcode des YACA Plugin Switchers steht unter der MIT-Lizenz. Siehe `LICENSE`.
