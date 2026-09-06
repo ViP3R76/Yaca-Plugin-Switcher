@@ -224,6 +224,7 @@ public partial class MainWindow
                 MinWidth = 300,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Center,
+                Style = (Style)FindResource("DarkCheckBoxStyle"),
                 Background = Brushes.Transparent,
                 BorderBrush = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
