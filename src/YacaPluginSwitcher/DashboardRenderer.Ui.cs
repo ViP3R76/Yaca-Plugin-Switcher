@@ -111,23 +111,6 @@ public partial class MainWindow
         var normalBackground = (Brush)FindResource("BackgroundBrush");
         var downloadedBrush = _service.Settings.DownloadAllPluginsWithoutPrompt ? gold : purple;
 
-        foreach (var button in FindVisualChildren<Button>(root))
-        {
-            if (button.Content is not Image icon || !string.Equals(icon.Tag as string, DashboardIconRegistry.IconAssetSort, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (!Equals(button.Tag, "switch-sort-dark-mode"))
-            {
-                button.Tag = "switch-sort-dark-mode";
-                button.Style = (Style)FindResource("NormalActionButtonStyle");
-                button.Background = normalBackground;
-                button.BorderBrush = purple;
-                button.Foreground = purple;
-                button.MouseEnter += (_, _) => button.Foreground = gold;
-                button.MouseLeave += (_, _) => button.Foreground = purple;
-            }
-        }
-
         foreach (var headerText in FindVisualChildren<TextBlock>(root))
         {
             if (!string.Equals(headerText.Text, IsGerman ? "HERUNTERGELADENE DATEIEN" : "DOWNLOADED FILES", StringComparison.OrdinalIgnoreCase))

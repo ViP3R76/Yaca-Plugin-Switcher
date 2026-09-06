@@ -73,15 +73,12 @@ internal static class DashboardIconRegistry
             Tag = assetKey
         };
 
-        if (!assetKey.Equals(IconAssetSort, StringComparison.OrdinalIgnoreCase))
+        icon.SetBinding(SvgIcon.FillProperty, new Binding(nameof(Control.Foreground))
         {
-            icon.SetBinding(SvgIcon.FillProperty, new Binding(nameof(Control.Foreground))
-            {
-                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
-                FallbackValue = fill,
-                TargetNullValue = fill
-            });
-        }
+            RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(Button), 1),
+            FallbackValue = fill,
+            TargetNullValue = fill
+        });
 
         return icon;
     }

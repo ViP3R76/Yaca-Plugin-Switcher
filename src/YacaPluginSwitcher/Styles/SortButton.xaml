@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ControlTemplate x:Key="SortButtonTemplate" TargetType="Button">
         <Border x:Name="SortBorder"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                BorderThickness="0"
                 CornerRadius="0"
                 SnapsToDevicePixels="True">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -17,12 +17,10 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource BackgroundBrush}" />
-                <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource NavSelectedBrush}" />
-                <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
+                <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="SortBorder" Property="Opacity" Value="0.45" />
@@ -84,11 +82,12 @@
     </Style>
 
     <Style x:Key="SortButtonStyle" TargetType="Button">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="Template" Value="{StaticResource SortButtonTemplate}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Padding" Value="0" />
