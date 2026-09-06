@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ControlTemplate x:Key="SortButtonTemplate" TargetType="Button">
         <Border x:Name="SortBorder"
-                Background="{TemplateBinding Background}"
+                Background="Transparent"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="0"
@@ -17,11 +17,11 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource BackgroundBrush}" />
+                <Setter TargetName="SortBorder" Property="Background" Value="Transparent" />
                 <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource NavSelectedBrush}" />
+                <Setter TargetName="SortBorder" Property="Background" Value="Transparent" />
                 <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
@@ -100,6 +100,14 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Content.Tag}" Value="icon_asset_sort">
                 <Setter Property="Template" Value="{StaticResource SortButtonTemplate}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
