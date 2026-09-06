@@ -8,8 +8,10 @@ public static class Localization
     public const string English = "en";
     public const string German = "de";
 
-    // Detects the Windows-installed UI language.
-    // German is selected only for German Windows cultures; every other language intentionally falls back to English.
+    /// <summary>
+    /// Detects the Windows-installed UI language. German is selected only for
+    /// German Windows cultures; every other language intentionally falls back to English.
+    /// </summary>
     public static string DetectSystemLanguage(CultureInfo? culture = null)
     {
         var systemCulture = culture ?? CultureInfo.InstalledUICulture;
