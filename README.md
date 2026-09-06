@@ -49,26 +49,6 @@ Die Release-Version ist **Self-Contained**. Eine separate .NET-Runtime muss nich
 
 **YACA-Binaries und TeamSpeak-Software werden nicht mit diesem Projekt ausgeliefert.**
 
-## YACA-Erkennung
-
-YACA-Versionen werden nicht anhand von Dateinamen oder einer fest hinterlegten Versionsliste erkannt. Jede DLL wird auf PE/x64-Eigenschaften, YACA-spezifische Signaturen und eingebettete Versionsinformationen geprüft.
-
-Neue erkannte YACA-Builds können daher einfach durch Ablegen der DLL im `Plugins`-Ordner hinzugefügt werden.
-
-Beispiel:
-
-```text
-YacaPluginSwitcher/
-├── YacaPluginSwitcher.exe
-├── Plugins/
-│   ├── yaca_181_win64.dll
-│   ├── yaca_182_win64.dll
-│   └── ...
-├── Backups/
-├── Logs/
-└── config.json
-```
-
 ## Wechseln & Backups
 
 Vor jedem Wechsel wird die ausgewählte DLL erneut validiert. Bei aktivierten automatischen Backups wird das aktuell installierte Plugin vor dem Austausch gesichert.
@@ -101,51 +81,18 @@ Einstellbar sind unter anderem Sprache, TeamSpeak-3-Plugin-Verzeichnisse, automa
 
 Logs befinden sich unter `Logs\YacaPluginSwitcher-YYYY-MM-DD.log`. Die Log-Aufbewahrung ist auf drei Tage begrenzt.
 
-## Entwicklung & Build
-
-`YacaPluginSwitcher.sln` kann in Rider oder einer kompatiblen .NET-10-IDE geöffnet werden.
-
-```powershell
-dotnet build -c Release
-```
-
-Das Release-Paket wird über GitHub Actions erstellt. Die Produktionsversion ist eine **Self-Contained Windows-x64 Single-File-Anwendung** und wird mit einer SHA-256-Prüfsumme veröffentlicht.
-
-## Projektstruktur
-
-```text
-YacaPluginSwitcher/
-├── src/
-│   ├── YacaPluginSwitcher.Core/
-│   └── YacaPluginSwitcher/
-│       ├── Assets/
-│       ├── Styles/
-│       ├── Views/
-│       └── MainWindow.*
-├── docs/
-├── scripts/
-├── Build/
-├── .github/workflows/
-├── YacaPluginSwitcher.sln
-├── LICENSE
-├── CHANGELOG.md
-└── README.md
-```
-
-Die Anwendung besteht aus einer WPF-Oberfläche und einer frameworkneutralen Core-Bibliothek. Zentrale Resource Dictionaries übernehmen das Styling der Oberfläche.
-
 ## Drittanbieter
 
 YACA und TeamSpeak 3 sind Produkte von Drittanbietern. Dieses Projekt ist unabhängig und liefert deren Software nicht mit aus.
 
-- YACA: https://yaca.systems/
+- YACA Systems: https://yaca.systems/
 - TeamSpeak: https://www.teamspeak.com/
 
 ## Rechtlicher Hinweis
 
-YACA Plugin Switcher ist eine unabhängige Drittanbieter-Anwendung von **ViP3R_76**. Es besteht keine Verbindung zu, Unterstützung durch oder offizielle Zusammenarbeit mit YACA oder TeamSpeak Systems GmbH.
+YACA Plugin Switcher ist eine unabhängige Drittanbieter-Anwendung von **ViP3R_76**. Es besteht keine Verbindung zu, Unterstützung durch oder offizielle Zusammenarbeit mit **YACA Systems oder TeamSpeak Systems GmbH**.
 
-YACA und TeamSpeak / TeamSpeak 3 sind Marken bzw. Eigentum ihrer jeweiligen Rechteinhaber. Die MIT-Lizenz dieses Repositorys gilt ausschließlich für den Quellcode des YACA Plugin Switchers.
+**YACA, YACA Systems und TeamSpeak / TeamSpeak 3** sind Marken bzw. Eigentum ihrer jeweiligen Rechteinhaber. Die MIT-Lizenz dieses Repositorys gilt ausschließlich für den Quellcode des YACA Plugin Switchers.
 
 ## Community
 
