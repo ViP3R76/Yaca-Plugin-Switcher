@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ControlTemplate x:Key="SortButtonTemplate" TargetType="Button">
         <Border x:Name="SortBorder"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                BorderThickness="0"
                 CornerRadius="0"
                 SnapsToDevicePixels="True">
             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -18,13 +18,9 @@
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource BackgroundBrush}" />
-                <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
                 <Setter Property="Foreground" Value="{StaticResource GoldBrush}" />
-                <Setter TargetName="SortBorder" Property="Background" Value="{StaticResource NavSelectedBrush}" />
-                <Setter TargetName="SortBorder" Property="BorderBrush" Value="{StaticResource GoldBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="SortBorder" Property="Opacity" Value="0.45" />
