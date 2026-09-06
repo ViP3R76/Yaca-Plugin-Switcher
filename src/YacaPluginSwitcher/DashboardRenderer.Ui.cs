@@ -25,8 +25,12 @@ public partial class MainWindow
             return;
 
         _rendererInitialized = true;
-        var descriptor = DependencyPropertyDescriptor.FromProperty(ContentControl.ContentProperty, typeof(ContentControl));
-        descriptor?.AddValueChanged(PageHost, (_, _) => Dispatcher.BeginInvoke(new Action(ApplyCentralRendererState)));
+        var descriptor = DependencyPropertyDescriptor.FromProperty(
+            ContentControl.ContentProperty,
+            typeof(ContentControl));
+        descriptor?.AddValueChanged(
+            PageHost,
+            (_, _) => Dispatcher.BeginInvoke(new Action(ApplyCentralRendererState)));
         ApplyCentralRendererState();
     }
 
@@ -60,13 +64,16 @@ public partial class MainWindow
         if (_service.Settings.DownloadAllPluginsWithoutPrompt)
         {
             available.Visibility = Visibility.Collapsed;
+
             Grid.SetColumn(installed, 0);
             Grid.SetRow(installed, 0);
             Grid.SetRowSpan(installed, 2);
+
             updater.Visibility = Visibility.Visible;
             Grid.SetColumn(updater, 1);
             Grid.SetRow(updater, 0);
             Grid.SetRowSpan(updater, 1);
+
             downloaded.Visibility = Visibility.Visible;
             Grid.SetColumn(downloaded, 1);
             Grid.SetRow(downloaded, 1);
@@ -78,13 +85,16 @@ public partial class MainWindow
             Grid.SetColumn(installed, 0);
             Grid.SetRow(installed, 0);
             Grid.SetRowSpan(installed, 1);
+
             Grid.SetColumn(available, 1);
             Grid.SetRow(available, 1);
             Grid.SetRowSpan(available, 1);
+
             updater.Visibility = Visibility.Visible;
             Grid.SetColumn(updater, 1);
             Grid.SetRow(updater, 0);
             Grid.SetRowSpan(updater, 1);
+
             downloaded.Visibility = Visibility.Visible;
             Grid.SetColumn(downloaded, 0);
             Grid.SetRow(downloaded, 1);
@@ -156,8 +166,10 @@ public partial class MainWindow
         {
             if (parent is T typedParent)
                 return typedParent;
+
             parent = VisualTreeHelper.GetParent(parent);
         }
+
         return null;
     }
 
@@ -169,13 +181,18 @@ public partial class MainWindow
         if (!ReferenceEquals(_rendererTeamSpeakStatusSource, _tsStatus))
         {
             _rendererTeamSpeakStatusSource = _tsStatus;
-            var descriptor = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
+            var descriptor = DependencyPropertyDescriptor.FromProperty(
+                TextBlock.TextProperty,
+                typeof(TextBlock));
             descriptor?.AddValueChanged(_tsStatus, (_, _) => ApplyTeamSpeakVisualState());
         }
 
         var running = TeamSpeakDetector.IsRunning();
         var brush = (Brush)FindResource(running ? "ErrorBrush" : "SuccessBrush");
-        var desiredAsset = running ? DashboardIconRegistry.IconAssetTeamSpeakStarted : DashboardIconRegistry.IconAssetTeamSpeakStopped;
+        var desiredAsset = running
+            ? DashboardIconRegistry.IconAssetTeamSpeakStarted
+            : DashboardIconRegistry.IconAssetTeamSpeakStopped;
+
         _tsStatus.Foreground = brush;
         DashboardIconRegistry.SetFill(_teamSpeakStatusIcon, brush);
 
@@ -204,18 +221,33 @@ public partial class MainWindow
     {
         if (_updaterCts is not null || _updaterDownloadInProgress)
             return;
+
         if (_updaterVersion is not null)
-            _updaterVersion.Text = IsGerman ? "Bereit auf Updates zu prüfen" : "Ready to check for updates";
-        if (_updaterStatus is not null && _updaterSelectionPanel?.Visibility != Visibility.Visible)
-            _updaterStatus.Text = IsGerman ? "Updateprüfung für neuere Yaca Plugin Versionen" : "Check for newer Yaca Plugin versions";
+            _updaterVersion.Text = IsGerman
+                ? "Bereit auf Updates zu prüfen"
+                : "Ready to check for updates";
+
+        if (_updaterStatus is not null
+            && _updaterSelectionPanel?.Visibility != Visibility.Visible)
+        {
+            _updaterStatus.Text = IsGerman
+                ? "Updateprüfung für neuere Yaca Plugin Versionen"
+                : "Check for newer Yaca Plugin versions";
+        }
     }
 
     private void EnsureUpdaterStepPanel()
     {
-        if (_updaterStatus is null || _updaterProgress is null || _updaterStatus.Parent is not StackPanel parent)
+        if (_updaterStatus is null
+            || _updaterProgress is null
+            || _updaterStatus.Parent is not StackPanel parent)
+        {
             return;
+        }
 
-        if (_rendererUpdaterStepPanel is null || !ReferenceEquals(_rendererUpdaterStatusSource, _updaterStatus) || !parent.Children.Contains(_rendererUpdaterStepPanel))
+        if (_rendererUpdaterStepPanel is null
+            || !ReferenceEquals(_rendererUpdaterStatusSource, _updaterStatus)
+            || !parent.Children.Contains(_rendererUpdaterStepPanel))
         {
             _rendererUpdaterStepPanel = new StackPanel
             {
@@ -223,13 +255,20 @@ public partial class MainWindow
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Visibility = Visibility.Collapsed
             };
+
             _rendererUpdaterSteps.Clear();
             var progressIndex = parent.Children.IndexOf(_updaterProgress);
             parent.Children.Insert(Math.Max(0, progressIndex + 1), _rendererUpdaterStepPanel);
+
             _rendererUpdaterStatusSource = _updaterStatus;
-            var descriptor = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
-            descriptor?.AddValueChanged(_updaterStatus, (_, _) => ApplyUpdaterStatusVisibility());
+            var descriptor = DependencyPropertyDescriptor.FromProperty(
+                TextBlock.TextProperty,
+                typeof(TextBlock));
+            descriptor?.AddValueChanged(
+                _updaterStatus,
+                (_, _) => ApplyUpdaterStatusVisibility());
         }
+
         ApplyUpdaterStatusVisibility();
     }
 
@@ -244,7 +283,8 @@ public partial class MainWindow
 
     private void AddCompletedUpdaterStep(string name)
     {
-        if (_rendererUpdaterStepPanel is null || _rendererUpdaterSteps.Any(step => string.Equals(GetUpdaterStepName(step), name, StringComparison.OrdinalIgnoreCase)))
+        if (_rendererUpdaterStepPanel is null
+            || _rendererUpdaterSteps.Any(step => string.Equals(GetUpdaterStepName(step), name, StringComparison.OrdinalIgnoreCase)))
             return;
 
         var label = new TextBlock
@@ -259,7 +299,8 @@ public partial class MainWindow
         _rendererUpdaterStepPanel.Children.Add(label);
     }
 
-    private static string GetUpdaterStepName(TextBlock label) => label.Text.Length > 3 ? label.Text[3..] : label.Text;
+    private static string GetUpdaterStepName(TextBlock label) =>
+        label.Text.Length > 3 ? label.Text[3..] : label.Text;
 
     private void UpdateUpdaterSteps(YacaUpdaterProgress progress)
     {
@@ -267,7 +308,9 @@ public partial class MainWindow
 
         if (string.Equals(progress.Status, "Download", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(_rendererUpdaterStepVersion, progress.Version, StringComparison.OrdinalIgnoreCase))
+        {
             ResetUpdaterSteps(progress.Version);
+        }
 
         if (string.Equals(progress.Status, "Extraktion", StringComparison.OrdinalIgnoreCase))
             AddCompletedUpdaterStep(IsGerman ? "Download" : "Download");
@@ -296,7 +339,9 @@ public partial class MainWindow
                 || string.Equals(progress.Status, "Erfolgreich hinzugefügt", StringComparison.OrdinalIgnoreCase))
             && _activePage == "switch"
             && _installedVersionList is not null)
+        {
             RenderSwitchVersionList(_installedVersionList, _service.DetectCurrent());
+        }
     }
 
     private void ApplyUpdaterStatusVisibility()
@@ -309,7 +354,13 @@ public partial class MainWindow
                       || status.Contains("Ready to check", StringComparison.OrdinalIgnoreCase)
                       || status.Contains("Updateprüfung für neuere Yaca Plugin Versionen", StringComparison.OrdinalIgnoreCase)
                       || status.Contains("Check for newer Yaca Plugin versions", StringComparison.OrdinalIgnoreCase);
-        var active = _updaterDownloadInProgress && _rendererUpdaterSteps.Count > 0 && status.Length > 0 && !preview;
-        _rendererUpdaterStepPanel.Visibility = active ? Visibility.Visible : Visibility.Collapsed;
+
+        var active = _updaterDownloadInProgress
+                     && _rendererUpdaterSteps.Count > 0
+                     && status.Length > 0
+                     && !preview;
+        _rendererUpdaterStepPanel.Visibility = active
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 }
