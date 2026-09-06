@@ -90,18 +90,21 @@ public partial class MainWindow
             Height = 34,
             Margin = new Thickness(8, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Right,
             Background = Brushes.Transparent,
-            BorderBrush = purple,
-            Foreground = purple,
-            ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order",
-            Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, purple, 20, 20)
+            BorderBrush = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Style = (Style)FindResource("SortButtonStyle"),
+            ToolTip = IsGerman ? "Sortierung umschalten" : "Toggle sort order"
         };
+        sortButton.Content = DashboardIconRegistry.CreateIcon(DashboardIconRegistry.IconAssetSort, purple, 22, 22);
         sortButton.Click += (_, _) =>
         {
             _switchSortDescending = !_switchSortDescending;
             RenderSwitchVersionList(list, _service.DetectCurrent());
         };
         Grid.SetColumn(sortButton, 1);
+        Panel.SetZIndex(sortButton, 1);
         headerHost.Children.Add(sortButton);
         Grid.SetRow(headerHost, 0);
         panel.Children.Add(headerHost);
