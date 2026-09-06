@@ -11,6 +11,10 @@ Leichte Windows-Anwendung zum **Erkennen, Prüfen, Sichern und Wechseln** versch
 
 [Neueste Version herunterladen](https://github.com/ViP3R76/Yaca-Plugin-Switcher/releases/latest)
 
+## Screenshot
+
+![YACA Plugin Switcher Dashboard](docs/dashboard.png)
+
 ## Funktionen
 
 - Automatische Erkennung von YACA-DLLs im lokalen `Plugins`-Ordner
